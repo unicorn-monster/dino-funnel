@@ -1,6 +1,6 @@
 {
   "name": "dino-funnel",
-  "version": "1.20261019.905",
+  "version": "1.20261019.909",
   "description": "Dinosaurized funnel: pre-sale top 5, flip to win, sale page, checkout, bundle, FB ads. Start with /dino-funnel:funnel-setup, then /dino-funnel:funnel <amazon link>.",
   "author": { "name": "Huy" }
 }

@@ -1,6 +1,6 @@
 ---
 name: fb-top5
-description: Full Facebook ad kit for a Top 5 / buyer's-guide funnel from just the pre-sale page link: 5 ad combos (headline + primary text), 5 filled 1:1 image prompts from the T5 template library, and the 5 images generated with Kie GPT Image 2.5 Flare, all saved to output. Use when the user types "/fb-top5 <link>" (or the old "/fb-top5-hlpt"), or pastes a topreviewking / topreviewqueen / any top-5 pre-sale URL and asks for "fb ads", "hlpt", "headline primary text", "combo fb ads", "ảnh ads fb", "ads cho trang top 5", "viết ads khớp presale". Flow is ads > pre-sale > sale page > checkout, so every combo links to the pre-sale page and only uses claims both pages agree on. Not for ads that go straight to a sale page (that's hlpt-salepage), not for Google Discover images (that's gg-discoveronly).
+description: Full Facebook ad kit for a Top 5 / buyer's-guide funnel from just the pre-sale page link: 5 ad combos (headline + primary text), 5 filled 1:1 image prompts from the T5 template library, and the 5 images generated with Kie GPT Image 2.5 Flare, all saved to output. Use when the user types "/fb-top5 <link>" (or the old "/fb-top5-hlpt"), or pastes a topreviewking / topreviewqueen / any top-5 pre-sale URL and asks for "fb ads", "hlpt", "headline primary text", "combo fb ads", "ảnh ads fb", "ads cho trang top 5", "viết ads khớp presale". Flow is ads > pre-sale > sale page > checkout, so every combo links to the pre-sale page and only uses claims both pages agree on. Not for ads that go straight to a sale page (that's hlpt-salepage).
 ---
 
 # FB Top 5
@@ -93,7 +93,7 @@ Library: `${CLAUDE_PLUGIN_ROOT}/skills/assets/img-templates/top5-presale.md`. Re
 
 Look at the 5 product images and write the lock lines first: one `[HERO]` sentence for ours (repeated verbatim in every prompt), one short physical line per rival, each rival a visibly different shape.
 
-Default set (same mechanics proven in gg-discoveronly):
+Default set:
 
 | # | T5 | Mechanic |
 |---|---|---|
@@ -119,7 +119,7 @@ Image Input = the library's rule 8: every prompt attaches all 5 product images (
 python3 ${CLAUDE_PLUGIN_ROOT}/skills/assets/scripts/gen.py output/<product>/5-ads/meta/img-top5/00-prompts-top5-<YYYY-MM-DD>-1x1.md
 ```
 
-Shared with gg-discoveronly: Kie `gpt-image-2-5-flare-image-to-image`, 1K, `aspect_ratio: auto` (the prompt's 1:1 sets the frame), key `KIE_API_KEY` from `.env` at the working folder root, ~6 credits each, all 5 in parallel. Run `--dry` first to check prompt count vs refs. Each printed ratio must be ~1.00; a line with `ERR` or a ratio off 1:1 → fix that prompt and rerun it alone with `--only N` (the old file is kept as `NN-vK.png`).
+Kie `gpt-image-2-5-flare-image-to-image`, 1K, `aspect_ratio: auto` (the prompt's 1:1 sets the frame), key `KIE_API_KEY` from `.env` at the working folder root, ~6 credits each, all 5 in parallel. Run `--dry` first to check prompt count vs refs. Each printed ratio must be ~1.00; a line with `ERR` or a ratio off 1:1 → fix that prompt and rerun it alone with `--only N` (the old file is kept as `NN-vK.png`).
 
 Look at every image against the library checklist (exactly 5 products, distinct shapes, every character of copy correct, no brand/logo, fingers). A broken one → fix the prompt and `--only N` once; still broken → report it, don't loop.
 

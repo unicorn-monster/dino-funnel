@@ -1,4 +1,4 @@
-"""Generate ad images with Kie GPT Image 2.5 Flare (Khang 2026-10-09; was GPT Image 2). Used by gg-discoveronly (1200x628) and fb-top5 (1:1).
+"""Generate ad images with Kie GPT Image 2.5 Flare (Khang 2026-10-09; was GPT Image 2). Used for the 1:1 FB ad images and the 1200x628 Discover images.
 
 Usage: python gen.py <prompts.md> [--only 1,3] [--dry]
 Reads refs.json (same folder as prompts.md): {"1": [url, ...], ...}.
