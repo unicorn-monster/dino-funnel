@@ -1,0 +1,1164 @@
+<!DOCTYPE html>
+<!--
+# Template: top5-02
+
+Source: trustedconsumerreview.com, one shared template for every `/top-*/` and `/top5-*/` page (checked 2026-10-12 on top5-dash-cams, top5-drones, top-portable-ac, top-hair-removers, top-massage-guns, top5-dog-foods: same DOM and CSS, only copy and images change). Frozen copy = **top5-dash-cams** (most complete article), plus 2 optional blocks taken from sister pages (marked `OPTIONAL A` / `OPTIONAL B` in the HTML).
+
+Format: **"Top 5 [X] In [Year] Based On [A], [B], And [C]"**. Short intro (`p.top-txt`) → advertiser disclosure → **ranked top 5 table** (score /10, stars, price, 4-5 green-check key features; #1 has a red sale bubble + VISIT SITE, #2-#5 VIEW ON AMAZON; #4-#5 hidden behind "See the rest of the list") → "BEST OVERALL [X]" box (#1 row again + 3 icon features) → **one long first-person review of #1 only** ("We Bought & Tested The Most Popular [X], Here's Why [Product] Is #1": summary box, a personal story, First Impression, Features checklist, Testing, a second story, Verdict, scarcity, How To Order, Q&A, How Much Does It Cost, How Can It Be So Affordable, Why Is It Discounted, IMPORTANT box, CTA) → "Meet Our Expert" → footer. Competitors get **no cards and no cons**: they only live in the table.
+
+How it was built: server HTML of the live page; CSS = the site's `style.css` + `review.css` + `testimonial-slider.css` + `custom1.css`, pruned to selectors that match this DOM, inlined. jQuery + owl.carousel replaced by ~60 lines of plain JS with the same behavior. Verified in Chrome against the live page at 390px and 1710px: every section box has the same width/height (differences: optional blocks added, DMCA badge removed).
+
+## Copy rules for this template (not the top5-king-1 Strategy)
+
+- **Voice:** the top (intro, table, best-overall box) is "we" (the publication). The article from `h1` down is **first person "I"**, a reviewer who bought one, used it and tells a real-life story (dash cams: the accident the old 110° camera missed). Story > specs.
+- **Intro `p.top-txt`:** problem → why most [X] fail → "we bought the best sellers and tested them" → bold surprise line ("the test winner was a smaller company that beat the big brands on...") → "Here are our Top 5 Picks this year, with a full review at the bottom of the page:".
+- **Table:** #1 score 9.9 "Excellent", then dropping (9.2 "Great", 9.1 "Good", 8.5 "Good", 7.8 "Good"); stars follow the score (5 / 4.5 / 4.5 / 4.5 / 4). #1 key features = our real wins (bold the 2-3 strongest). Competitor features = their real listing features (honest, positive, short). Price = real price; #1 shows sale price + struck old price.
+- **Article sections** follow the h2 order in the slot map; rename/merge h2s to the product (drones used Flying Distance / Design / Controls / Camera / Battery; dog food used Easy To Purchase / Service / taste / health). Keep the money block in order: Verdict → A Recent Problem (sells out + copycats) → How To Order (ol) → Q&A → How Much Does It Cost → How Can It Be So Affordable → Why Is It Discounted → IMPORTANT INFORMATION → CTA.
+- Every mention of the product name in the article is a link to the offer (that's why there are ~40 offer links). Keep that density.
+- Guarantee = **120-day money-back** (Dinosaurized, always), not the source's 30-day.
+- Hub rules still apply: invoke `copywriting` first, contractions, American spelling, no em/en dashes, real facts only for competitors.
+
+## Placeholders to replace globally
+
+| Token | Replace with |
+|---|---|
+| `/SLUG/` | `/<slug>/` (every image) |
+| `https://offer.dinosaurized.com/OFFER-SLUG` | offer URL. 43 places (39 if OPTIONAL A is deleted): table #1 x6, best-overall #1 x6, every product-name link + image link in the article, CTA, How To Order. On Funnelish: every one becomes `#next-step` |
+| `https://www.amazon.com/dp/ASIN-2..5` | competitor #2-#5 Amazon URL, 1 each (VIEW ON AMAZON). Already `target="_blank" rel="sponsored nofollow noopener"` |
+| `Car Dash Camera` / `Car Dash Cam` / `watchtheroads` | product name / brand |
+| `TopReviewKing` (`.tlogo` header + footer, disclosure box, sale popup, copyright, Amazon line) | publication (`TopReview<b>Queen</b>` on topreviewqueen; a niche name on Funnelish) |
+| `href="#"` (logo, header/footer menu, Terms link) | real URLs or leave `#` |
+
+Dates are filled by JS at load (`.js-today` "October 12, 2026", `.js-month` "October 2026", `.js-year`), like the source which prints today's date server-side. The headline/title year ("In 2026") and "2025's best-selling" in `.top-txt` are static text: update them.
+
+## Slot map (in page order)
+
+| Block (selector) | What to write | Original size |
+|---|---|---|
+| `<title>` | same as `.headline` | |
+| `.page-header` `style="background-image"` | `header-bg.webp` 1920x518, dark moody photo of the category (text sits on it in white with shadow) | |
+| `.page-header .headline` | `Top 5 [X] In [Year] Based On [A], [B], And [C]` | 10-18 words |
+| `p.top-txt` x7 | intro (see copy rules), 6th has a `span.bold` surprise line, 7th is bold with the `scroll-down-entry` "full review" link | 110 words |
+| `.disclosure-box p` | advertiser disclosure, keep | |
+| `.reviews-table.firstitem` (top table, #1) | `.most-pop` `#1 BEST IN [Year]`, `product-1.webp`, `.item-score` 9.9, 5 stars, `.score-sub` "Excellent", `.selling-price-text` name, price new + old, 5 `a.selling-point-item` (link to offer), `.btnbubble` `CURRENT SALE: N% OFF<br />N VISITORS BOUGHT DURING SALE`, VISIT SITE | |
+| `.reviews-table` #2, #3 and `.fadeToggle .reviews-table` #4, #5 | `#N`, `product-N.webp`, score, stars (`star.svg` / `star-half.svg` / `star-empty.svg`), `.score-sub`, name, price, 4-5 `p.selling-point-item`, VIEW ON AMAZON | |
+| `.most-popular h3` | `BEST OVERALL [X]` (caps) | |
+| `.most-popular .reviews-table` | copy of the #1 row (keep identical to the top one) | |
+| `.best-overall-box > div` x3 | `icon-1..3.png` 140x140 line icon, `.best-overall-title` CAPS feature, `.best-overall-text` | 25-35 words each |
+| `.entry-content h1` | `We Bought & Tested The Most Popular [X], Here's Why [Product] Is #1` | |
+| `p.summary-box` | `SUMMARY:` + what #1 does, ends "In other words, you're covered!" style | 60 words |
+| story `<p>`s + `p.quote` | first-person story of the pain, one pulled stat/quote in `p.quote`, then finding [Product] | 9 short `<p>` |
+| `h2` First Impression / Features (`ul.checkbox-list` 7 `li`: bold label + " - " sentence) / Testing / [benefit h2] / second story h2 + 2-item `checkbox-list` | the review body, 4-6 `<p>` per h2, `img-container` image between sections | |
+| `img-container` x5 | `pic-1..5.webp`: pic-1 539x539 product hero, others ~1024x630-710 in-use / detail shots. Each image links to the offer | |
+| OPTIONAL A (`.accordion-box`, 6 `.card`) | "What Makes [Product] Different From Other [X]?" + 6 CAPS buttons + 1-2 sentence answer. First card open | 30 words each |
+| OPTIONAL B (`.testimonial-slider`, 4 slides) | "What Do Customers Think?" + `review-N.webp` round avatar (240px), name, bold headline line, quote, Verified Review, 5 stars | 30-60 words each |
+| `h2` Verdict → Why Is It Discounted (see copy rules) | money block, `ol.small-list` 5 steps, Q&A = `p.bold` "Q: ..." + answer `<p>`, price line with red struck price + bold sale price | |
+| `.entry-important-information` | "As of [date], ..." popularity + one-time discount | 50 words |
+| `.entry-btn-cta` | `CHECK AVAILABILITY` | |
+| `.page-reviewer` | `expert.webp` 240x240 round headshot, "Meet Our Expert", name, bio | 70 words |
+| `.sale-popup` | `product-1.webp`, "just bought [Product]!" (names/states rotate by JS) | |
+| `.bottom-disclosure` | keep | |
+
+PROS-style icons: the green check is `ui/new-checkmark.png`; `.checkbox-list` uses Font Awesome `fa-check-square`. Copy an existing `<li>`/item and change only the text.
+
+## Assets (`public/<slug>/assets/`)
+
+| File | Size | Content |
+|---|---|---|
+| `ui/star.svg`, `ui/star-half.svg`, `ui/star-empty.svg`, `ui/check.png`, `ui/new-checkmark.png` | | site UI icons, curl below |
+| `header-bg.webp` | 1920x518 | dark category photo behind the headline |
+| `product-1.webp` | ~195x306 or square, transparent/white | #1 packshot (table x2, sale popup) |
+| `product-2..5.webp` | 300x300 | competitor packshots, rank order |
+| `icon-1..3.png` | 140x140 | best-overall feature icons (simple line icons) |
+| `pic-1..5.webp` | 539x539, then ~1024 wide | article images |
+| `review-1..4.webp` | 240x240 | testimonial avatars (OPTIONAL B only; `${CLAUDE_PLUGIN_ROOT}/skills/assets/avatars/`) |
+| `expert.webp` | 240x240 | expert headshot (or curl the source `person5.webp` below) |
+
+```
+D=public/<slug>/assets; mkdir -p $D/ui
+for f in star.svg star-half.svg star-empty.svg check.png new-checkmark.png; do curl -sL "https://trustedconsumerreview.com/assets/images/$f" -o "$D/ui/$f"; done
+curl -sL https://trustedconsumerreview.com/assets/images/webP/person5.webp -o $D/expert.webp
+```
+
+Fonts: Roboto (Google Fonts) + Font Awesome 4.7 (cdnjs), linked in `<head>`, nothing to download.
+
+## Do not touch
+
+- `<head>` CSS, `/tags.js`, favicons, `noindex, nofollow`, the Roboto + Font Awesome links.
+- Class names used by the script: `.load-more-btn`, `.load-more-text` (its text must stay exactly `See the rest of the list`), `.fadeToggle`, `.scroll-down-entry`, `.entry-content`, `.accordion-box .card button`, `.testimonial-slider`, `.sale-popup*`, `.js-today/.js-month/.js-year`.
+- The click-ID passthrough script (only change its `a[href*="offer.dinosaurized.com"]` selector if the offer lives elsewhere).
+
+## Leftover grep
+
+grep -inE 'dash ?cam|watchtheroads|redtiger|\brove\b|chortau|biuone|quadair|drone|nom nom|coonhound|jake charleston|OFFER-SLUG|ASIN-|/SLUG/' index.html   # must be empty
+grep -c '<offer-url>' index.html                                                                                                    # 43 (39 without OPTIONAL A)
+
+## Template-specific traps
+
+| Trap | Fix |
+|---|---|
+| OPTIONAL A/B still hold drone and dog-food copy | Rewrite for the product or delete the whole block between its OPTIONAL start/end comments (drop the comments too) |
+| The #1 row exists twice (top table + BEST OVERALL box) | Edit both, they must match |
+| Source guarantee is 30-day | Dinosaurized = 120-day money-back |
+| "2025's best-selling" / "In 2026" are static | Set the year by hand |
+| Funnelish paste: generic class names (`.header`, `.footer`, `.inner`, `.table`, `.card`, `.review-content`) | Check them against Funnelish `core.min.css` on the live step before telling the user it's done; scope fixes with `!important` rules appended to `<style>` |
+| Sale popup and "N VISITORS BOUGHT" bubble | Part of the format; keep unless the user drops them |
+
+## Changes vs the live page
+
+- Header/footer logo image → text logo `.tlogo` (`TOPREVIEW` light + `KING` black, same look as the source logo). Footer background art removed.
+- jQuery, owl.carousel, GTM, gtag, the tracker script, DMCA badge, social share buttons and the (disabled) exit popup removed. Plain JS keeps: menu toggle, load more, smooth scroll to the review, accordion, review slider (autoplay 5s + dots, no arrows), sale popup, live date.
+- `javascript: void(0)` links → `#our-test-process`.
+
+This comment is template notes only: drop it from the built index.html (it would ship to a public page).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="initial-scale=1, width=device-width">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light">
+<title>Top 5 Dash Cams In 2026 Based On Features, Video Quality, And Price</title>
+<script src="/tags.js?v=8d6afa76" defer></script>
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,300;0,400;0,500;0,700;0,900;1,400&display=swap">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<style>
+html,body,div,span,h1,h2,h3,p,a,img,b,i,ol,ul,li{margin: 0;padding: 0;border: 0;font-size: 100%;font: inherit;vertical-align: baseline}
+body{line-height: 1}
+ol,ul{list-style: none}
+*{-webkit-box-sizing: border-box;-moz-box-sizing: border-box;box-sizing: border-box}
+body{font-family: 'Roboto', sans-serif;font-size: 16px;line-height: 1.5}
+a{text-decoration: none}
+.inner{max-width: 1140px;margin: 0 auto;padding: 0 15px}
+.bold{font-weight: 700}
+.italic{font-style: italic}
+.footer{background: #e6e6e6;padding: 30px 0;color: #5c5c5c;font-size: 0.875rem;text-align: center}
+.footer-menu{font-size: 0;margin-bottom: 20px}
+.footer-menu li{display: inline-block;vertical-align: middle}
+.footer-menu li a{display: block;padding: 5px 20px 8px;font-size: 0.875rem;text-decoration: none;color: #5c5c5c;position: relative}
+.footer-menu li a:after{background: #5c5c5c;content: "";position: absolute;bottom: 0;left: 0;width: 0%;height: 3px;transition: 250ms linear}
+.footer-menu li a:hover:after{width: 100%}
+.footer-menu-open{background: transparent;font-size: 1rem;font-family: 'Roboto', sans-serif;border: 0;display: none;width: 100%;text-align: left;padding: 20px 10px;cursor: pointer;color: #000;outline: 0}
+.copyright{margin-top: 20px}
+.bottom-disclosure{font-size: 0.875rem;padding: 25px 15px;max-width: 1140px;line-height: 1.6;margin: 0 auto;font-style: italic;text-align: center;word-wrap: break-word}
+.bottom-disclosure a{color: #005a8c;text-decoration: underline}
+.header{border-bottom: 1px solid #f3f3f3;font-size: 0;position: relative}
+.header-logo-area{display: inline-block;vertical-align: middle;text-align: left;width: 45%}
+.header-logo-area a{display: inline-block;max-width: 400px}
+.header-menu-area{display: inline-block;vertical-align: middle;width: 55%;text-align: right}
+.header-menu-area button{position: absolute;top: 0;right: 0;height: 50px;width: 50px;border: 0;outline: 0;border-left: 1px solid #f3f3f3;background: transparent;font-size: 1.25rem;text-align: center;cursor: pointer;display: none}
+.header-menu-area ul{display: inline-block}
+.header-menu-area ul li{display: inline-block;vertical-align: middle;padding: 10px 2px}
+.header-menu-area ul li a{display: block;line-height: 60px;text-decoration: none;font-size: 0.875rem;font-weight: 300;padding: 0 5px;color: #000}
+.header-menu-area ul li a.active,.header-menu-area ul li a:hover{color: #015fdb}
+@media screen and (max-width: 767px){
+.footer-menu-open{display: block}
+.footer-menu{display: none}
+.footer-menu li{display: block}
+.footer-menu li a{color: #000;padding: 15px 10px;border-top: 1px solid #5c5c5c}
+.footer-menu li a:after{display: none}
+.header-logo-area{line-height: 50px;height: 50px;padding-right: 35px;width: 100%}
+.header-logo-area a{vertical-align: middle}
+.header-menu-area{text-align: left;display: block;width: auto;margin: 0 -15px}
+.header-menu-area button{display: block}
+.header-menu-area ul{background: #fff;display: none}
+.header-menu-area ul li{border-top: 1px solid #f3f3f3;display: block;padding: 0}
+.header-menu-area ul li a{padding: 5px 20px;line-height: 40px}
+}
+@media screen and (min-width: 768px){
+.footer-menu,.header-menu-area ul{display: block !important}
+}
+a{color: #1f1e1e;text-decoration: none}
+a:hover,.selling-price-text.scroll-down-entry:hover{color: #005a8c}
+.review-top-bar{background: #f5f5f5;padding: 5px 0}
+.review-top-bar p{max-width: 1024px;margin: 0 auto;letter-spacing: 1px;text-transform: uppercase;font-size: 0.75rem;padding: 0 15px}
+.page-header{color: #fff;text-align: center;padding: 50px 20px;background-repeat: no-repeat;background-position: center;-webkit-background-size: cover;-moz-background-size: cover;background-size: cover;text-shadow: 1px 1px #000}
+.page-header .headline{max-width: 1140px;margin: 0 auto;font-weight: 500;font-size: 3rem}
+.page-header img{display: inline-block;vertical-align: middle;max-width: 20px;height: auto}
+.page-header .update span{display: inline-block;vertical-align: middle;font-style: italic;font-size: 1.125rem}
+.review-content{max-width: 1024px;margin: 0 auto;padding: 20px 15px 60px}
+.top-txt{margin-bottom: 15px}
+.top-txt a{color: #005a8c !important;text-decoration: underline !important}
+.disclosure-box{text-align: right;margin-bottom: 10px;position: relative}
+.disclosure-box span{cursor: pointer;display: inline-block;font-size: 0.875rem}
+.disclosure-box p{cursor: pointer;line-height: 1.1;padding: 10px;text-align: center;-webkit-border-radius: 8px;-moz-border-radius: 8px;border-radius: 8px;position: absolute;bottom: 80%;right: -5%;font-size: 0.75rem;background: #666;color: #fff;max-width: 235px;visibility: hidden;opacity: 0;transition: all 250ms linear}
+.disclosure-box p:after{content: "";display: block;position: absolute;bottom: -5px;left: 50%;margin-left: -6px;width: 0;height: 0;border-style: solid;border-width: 5px 5px 0 5px;border-color: #666 transparent transparent transparent}
+.disclosure-box span:hover + p,.disclosure-box p:hover{visibility: visible;opacity: 1;bottom: 125%}
+.table{position: relative;background: #fff;display: table}
+.reviews-head{width: 100%;background: #f5f5f5;border-top: 1px solid #d9d8d8;border-bottom: 1px solid #d9d8d8;color: #000;padding: 5px 0;font-size: 0.875rem;margin-bottom: 10px}
+.reviews-head .cell-3{text-align: center}
+.reviews-table{width: 100%;border: 1px solid #e8e8e8;margin-top: 25px}
+.reviews-table.table-shadow{transition: all 250ms linear}
+.reviews-table.table-shadow:hover{-webkit-box-shadow: 0px 5px 20px -5px rgba(0, 0, 0, 0.45);-moz-box-shadow: 0px 5px 20px -5px rgba(0, 0, 0, 0.45);box-shadow: 0px 5px 20px -5px rgba(0, 0, 0, 0.45)}
+.fadeToggle{display: none}
+.table-cell{display: table-cell;vertical-align: middle;text-align: center}
+.review-cell{border-right: 1px solid #e8e8e8;padding: 16px 10px}
+.review-cell:last-child{border-right: 0}
+.cell-1{width: 20%}
+.cell-2{width: 15%}
+.cell-3{text-align: left;width: 40%}
+.cell-4{width: 25%}
+.item-order{position: absolute;top: -1px;left: -1px;background: #e8e8e8;color: #020202;font-weight: 500;padding: 0 6px;font-size: 1.125rem}
+.firstitem .item-order{background: #78ae38;color: #fff}
+.most-pop{display: block;color: #fff;position: absolute;width: 170px;line-height: 32px;height: 32px;background: #78ae38;font-size: 1.125rem;left: -10px;top: -16px;text-align: center}
+.most-pop:before{content: "";display: block;position: absolute;bottom: -10px;left: 0;border-color: #5e872c #5e872c transparent transparent;border-width: 5px;border-style: solid}
+.most-pop:after{content: "";display: block;position: absolute;top: 0;left: 160px;border: 16px solid #79ae38;border-right-color: transparent}
+.item-logo{display: inline-block}
+.item-logo img{max-width: 155px;width: 100%;height: auto;display: block}
+.my-rating{margin: 8px auto;font-size: 0;display: block}
+.jq-star{width: 15px;height: 15px;margin: 0 1px;display: inline-block}
+.jq-star img{width: 100%;height: 100%}
+.review-link{margin-top: 6px;font-size: 1rem}
+.item-score{font-size: 61px;font-weight: 700;display: block;line-height: 1}
+.item-score:hover{color: #005a8c}
+.score-sub{color: #1361c9;font-size: 0.875rem;margin-top: 3px;display: block}
+.selling-price{text-align: center;margin: 0 -10px 8px;padding: 0 10px 8px;border-bottom: 1px solid #e8e8e8}
+.selling-price-text{font-size: 1.25rem;text-transform: uppercase;font-weight: 600}
+.selling-price-text.scroll-down-entry{cursor: pointer}
+.selling-price-number{font-size: 1rem}
+.selling-price-number span{display: inline-block;vertical-align: middle;font-weight: 500}
+.selling-price-number-new{font-size: 1.5rem;font-weight: 900 !important;color: #78ae38}
+.selling-price-number-old{text-decoration: line-through;color: #e9525e}
+.selling-point{display: block;width: 95%;margin: 0 auto}
+.selling-point:hover{color: #000}
+.selling-point-item{display: block;position: relative;margin: 2px 0;padding-left: 26px}
+p.selling-point-item{opacity: 0.85}
+.sellico{max-width: 19px;margin-right: 7px;display: block;position: absolute;top: 50%;margin-top: -12px;left: 0;-webkit-transition: all 250ms ease-in;-moz-transition: all 250ms ease-in;transition: all 250ms ease-in}
+.selling-point-item:hover .sellico{filter: grayscale(1)}
+.selling-point-text{font-size: 0.875rem}
+.visit-site-btn{display: block;max-width: 200px;margin: 0 auto;background: #78ae38;padding: 8px;color: #fff;font-weight: 500;font-size: 1.125rem;transition: all 0.250s linear}
+.visit-site-btn.lesser-focus{opacity: 0.65;font-size: 0.875rem;font-weight: 400;max-width: 180px;-webkit-animation: none !important;-moz-animation: none !important;animation: none !important}
+.visit-site-btn:hover{background: #519849;color: #fff;-webkit-animation-name: pulse;-webkit-animation-duration: 750ms;-webkit-animation-fill-mode: both;-webkit-animation-timing-function: linear;-webkit-animation-iteration-count: infinite;-moz-animation-name: pulse;-moz-animation-duration: 750ms;-moz-animation-fill-mode: both;-moz-animation-timing-function: linear;-moz-animation-iteration-count: infinite;animation-name: pulse;animation-duration: 750ms;animation-fill-mode: both;animation-timing-function: linear;animation-iteration-count: infinite}
+.visit-site-btn .fa{font-weight: 900}
+.btnbubble{max-width: 170px;margin: 0 auto 13px;position: relative;background: #e9525e;border: 1px solid #e9525e;-webkit-border-radius: 5px;-moz-border-radius: 5px;border-radius: 5px;font-size: 0.75rem;color: #fff;line-height: 1.4;padding: 5px;text-align: center;cursor: pointer}
+.arrow-downbbl{left: 0;right: 0;color: #e9525e;text-align: center;position: absolute;bottom: -15px;font-size: 1.125rem}
+.btnbubble:hover{-webkit-animation-name: jump;-webkit-animation-duration: 750ms;-webkit-animation-fill-mode: both;-webkit-animation-timing-function: linear;-moz-animation-name: jump;-moz-animation-duration: 750ms;-moz-animation-fill-mode: both;-moz-animation-timing-function: linear;animation-name: jump;animation-duration: 750ms;animation-fill-mode: both;animation-timing-function: linear}
+.most-popular{margin: 60px 0;transition: all 250ms ease-in}
+.most-popular:hover{-webkit-box-shadow: 0px 7px 30px -6px rgba(0, 0, 0, 0.75);-moz-box-shadow: 0px 7px 30px -6px rgba(0, 0, 0, 0.75);box-shadow: 0px 7px 30px -6px rgba(0, 0, 0, 0.75)}
+.most-popular .table{transition: all 250ms ease-in}
+.most-popular:hover .table{background: #fcfcfc}
+.most-popular h3{font-size: 2.5rem;background: #6497b2;text-shadow: 1px 1px #000;color: #fff;font-weight: 700;padding: 5px 10px;text-align: center;text-transform: uppercase}
+.most-popular .reviews-table{border-bottom: 0;margin-top: 0}
+.best-overall-box{background: #e8e8e8;padding: 10px 0;font-size: 0}
+.best-overall-box > div{display: inline-block;vertical-align: top;position: relative;padding: 15px 15px 15px 85px;width: 33.3333%}
+.best-overall-box > div img{width: 55px;height: 55px;display: block;position: absolute;top: 15px;left: 15px}
+.best-overall-title{text-transform: uppercase;font-weight: 700;font-size: 1.25rem;color: #f65b0f}
+.best-overall-text{margin-top: 5px;font-weight: 300;letter-spacing: 0.25px;font-size: 1rem}
+.load-more-btn-box{position: relative;margin-top: 20px}
+.load-more-btn-box:after{content: "";display: block;left: 0;top: 50%;position: absolute;margin-top: -2px;height: 4px;width: 100%;background: #e8e8e8}
+.load-more-btn{text-align: center;cursor: pointer;display: block;margin: 0 auto;z-index: 100;position: relative;width: 48px;height: 48px;line-height: 44px;border: 3px solid #e8e8e8;-webkit-border-radius: 50%;-moz-border-radius: 50%;border-radius: 50%;background: #f8f8f8;font-size: 1.5rem;color: #848484;transition: all 250ms linear}
+.load-more-btn:hover{color: #848484;box-shadow: 0 0 7px rgba(0,0,0,0.2)}
+.load-more-text{margin-top: 5px;text-align: center;font-size: 1.375rem;font-weight: 300}
+.entry-content *:last-child{margin-bottom: 0}
+.entry-content h1{font-size: 2.5rem;font-weight: 700;margin: 12px 0 20px}
+.img-container{display: block}
+.img-container img{display: block;margin: 0 auto;max-width: 100%;height: auto}
+.entry-content > p{margin-bottom: 20px}
+.entry-content > p a{color: #005a8c;font-weight: 500}
+.entry-content > p.quote{background: #d2e7f5;color: #03204c;font-size: 1.5rem;font-weight: 500;padding: 30px 20px;margin-top: 30px;position: relative}
+.entry-content > p.quote:after{content: "\f10e";font: normal normal normal 14px/1 FontAwesome;font-size: inherit;text-rendering: auto;-webkit-font-smoothing: antialiased;-moz-osx-font-smoothing: grayscale;font-size: 3.5rem;position: absolute;top: -25px;right: 20px;color: #03204c}
+.entry-content h2{font-size: 1.75rem;font-weight: 500;margin: 12px 0}
+.entry-content ol.small-list{padding-left: 40px;list-style: decimal;margin-bottom: 20px}
+.entry-content ol.small-list li{padding: 3px 0}
+.entry-content ol.small-list li a{color: #005a8c}
+.entry-important-information{border: 1px solid #c0a975;padding: 20px 15px;background: #f9ebb8;max-width: 768px;margin-bottom: 20px}
+.important-information-text{margin-bottom: 10px}
+.entry-important-information p a{color: #005a8c;font-weight: 700}
+.entry-btn-cta{display: block;background: #fca323;border-bottom: 5px solid #d4820c;color: #fff;-webkit-border-radius: 10px;-moz-border-radius: 10px;border-radius: 10px;width: 100%;padding: 15px 10px;text-align: center;max-width: 768px;font-weight: 700;font-size: 1.5rem;transition: all 250ms linear}
+.entry-btn-cta:hover{color: #fff;background: #d4820c}
+.page-reviewer{background: #f5f5f5;padding: 30px 0}
+.page-reviewer-inner{padding: 0 15px 0 180px;max-width: 1024px;margin: 0 auto;position: relative}
+.about-reviewer-img{position: absolute;top: 0;left: 15px;display: block;width: 140px;height: 140px;-webkit-border-radius: 0 14px 0 14px;-moz-border-radius: 0 14px 0 14px;border-radius: 0 14px 0 14px;border: 4px solid #fff;-webkit-box-shadow: -3px 2px 22px -11px rgba(0,0,0,0.5);-moz-box-shadow: -3px 2px 22px -11px rgba(0,0,0,0.5);box-shadow: -3px 2px 22px -11px rgba(0,0,0,0.5)}
+.about-reviewer{font-weight: 500;font-size: 1.25rem;position: relative;padding-bottom: 5px;margin-bottom: 10px}
+.about-reviewer:after{content: "";position: absolute;bottom: 0;left: 0;width: 50%;height: 1px;background: #d9d8d8}
+.about-reviewer-name{font-size: 1.375rem;font-weight: 300}
+.about-reviewer-text{margin-top: 5px;width: 80%;line-height: 1.8}
+.accordion-box{margin: 20px 0}
+.card{margin-bottom: 20px;border: 2px solid #e5e7eb}
+.card:last-child{margin-bottom: 0}
+.card p{font-size: 1rem;display: none;padding: 24px 12px}
+.card:first-child p{display: block}
+.card p a{color: #005a8c;font-weight: 500}
+.card button{line-height: 24px;position: relative;text-align: left;padding: 8px 40px 8px 8px;overflow: hidden;text-overflow: ellipsis;white-space: nowrap;width: 100%;background: transparent;border: 1px solid #fff;font-family: 'Roboto Condensed', sans-serif;font-weight: 600;font-size: 1.063rem;color: #4b5563;cursor: pointer}
+.card button svg{position: absolute;top: 50%;right: 8px;display: block;width: 11px;height: auto;margin-top: -6px;-webkit-transition: all 150ms cubic-bezier(0.4,0,0.2,1);-moz-transition: all 150ms cubic-bezier(0.4,0,0.2,1);transition: all 150ms cubic-bezier(0.4,0,0.2,1)}
+.card button.active svg{-webkit-transform: rotate(45deg);-moz-transform: rotate(45deg);transform: rotate(45deg)}
+.sale-popup{background: #fff;width: 310px;min-height: 74px;position: fixed;bottom: 20px;left: -360px;z-index: 200;border: 1px solid #bdbdbd;-webkit-border-radius: 50px;-moz-border-radius: 50px;border-radius: 50px;font-size: 0;-webkit-box-shadow: rgba(89, 89, 89, 0.24) 1px 1px 23px 1px;-moz-box-shadow: rgba(89, 89, 89, 0.24) 1px 1px 23px 1px;box-shadow: rgba(89, 89, 89, 0.24) 1px 1px 23px 1px}
+.sale-popup .sale-popup-close{font-size: 1rem;position: absolute;top: -10px;right: -3px;color: #dce1ed;visibility: hidden;opacity: 0;transition: all 250ms linear}
+.sale-popup:hover .sale-popup-close{color: #dce1ed;visibility: visible;opacity: 1}
+.sale-popup-div{overflow: hidden;width: 24%;display: inline-block;vertical-align: middle;height: 100%;padding: 10px 10px 10px 20px}
+.sale-popup-img{display: block;margin: 0 auto;max-width: 100%;max-height: 100%;height: auto;width:auto}
+.sale-popup-about{padding: 5px 20px 5px 5px;display: inline-block;vertical-align: middle;width: 76%;font-size: 0.875rem;position: relative}
+.sale-popup-who{color: #474e5d;font-weight: 700;font-size: 0.875rem;line-height: 1.4}
+.sale-popup-text{font-size: 0.75rem;color: #6d7484;line-height: 1.4}
+.sale-popup-date{color: #65759e;font-size: 0.625rem;line-height: 2}
+@-webkit-keyframes pulse{ 
+    0% {
+        -webkit-transform: scale(1);
+    } 
+    50% {
+        -webkit-transform: scale(1.1);
+    } 
+    100% {
+        -webkit-transform: scale(1);
+    } 
+}
+@-moz-keyframes pulse{ 
+    0% {
+        -moz-transform: scale(1);
+    } 
+    50% {
+        -moz-transform: scale(1.1);
+    } 
+    100% {
+        -moz-transform: scale(1);
+    } 
+}
+@keyframes pulse{ 
+    0% {
+        transform: scale(1);
+    } 
+    50% {
+        transform: scale(1.1);
+    } 
+    100% {
+        transform: scale(1);
+    } 
+}
+@-webkit-keyframes jump{ 
+    0% {
+        transform: translateY(-10px);
+        opacity: 0;
+    } 
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    } 
+}
+@-moz-keyframes jump{ 
+    0% {
+        transform: translateY(-10px);
+        opacity: 0;
+    } 
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    } 
+}
+@keyframes jump{ 
+    0% {
+        transform: translateY(-10px);
+        opacity: 0;
+    } 
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    } 
+}
+@media screen and (max-width: 1139px){
+.disclosure-box p{right: 0}
+body{padding-bottom: 48px}
+.sale-popup{bottom: 68px;width: 300px}
+}
+@media screen and (max-width: 1023px){
+.reviews-head{display: none}
+.reviews-table.table{font-size: 0;display: block}
+.cell-1,.cell-2{width: 50%;display: inline-block;vertical-align: middle;border-right: 0;padding: 27px 10px}
+.cell-3,.cell-4{width: 100%;display: block;border-right: 0}
+.cell-2{border-right: 0;border-left: 1px solid #e8e8e8}
+.cell-3{border-top: 1px solid #e8e8e8}
+.entry-content > p.quote{font-size: 1.375rem}
+}
+@media screen and (max-width: 767px){
+.review-content{padding: 20px 15px 40px}
+.page-header{padding: 25px 15px}
+.page-header .headline{line-height: 1.3;font-size: 1.875rem;margin-bottom: 5px}
+.load-more-text{font-size: 1.125rem}
+.most-popular{margin: 40px 0}
+.most-popular h3{font-size: 1.5rem}
+.best-overall-box > div{display: block;width: 100%;padding: 10px 20px;text-align: center}
+.best-overall-box > div img{position: relative;top: auto;left: auto;width: 90px;height: 90px;display: block;margin: 0 auto 20px}
+.entry-content h1{line-height: 1.3;font-size: 1.875rem}
+.entry-content > p.quote{font-size: 1.25rem;padding: 25px 10px}
+.entry-content h2{font-size: 1.5rem}
+.entry-btn-cta{font-size: 1.25rem}
+.page-reviewer-inner{padding: 0 15px;text-align: center}
+.about-reviewer-img{margin: 0 auto 15px;position: relative;top: auto;left: auto;max-width: 220px;width: 70%;height: auto}
+.about-reviewer:after{left: 50%;width: 100px;margin-left: -50px}
+.about-reviewer-text{width: 100%;margin-top: 15px}
+}
+.testimonial-slider{padding: 15px 35px;text-align: center}
+.testimonial-slider img{max-width: 240px;margin: 0 auto;-webkit-border-radius: 50%;-moz-border-radius: 50%;border-radius: 50%}
+span.testimonial-slider-name{font-style: italic;font-size: 1.188rem;display: block;margin-top: 10px}
+a.testimonial-slider-name{font-style: italic;font-size: 1.188rem;display: block;margin-top: 10px;color: #005a8c;text-decoration: underline}
+.testimonial-slider-headline{font-weight: 700;font-size: 1.125rem;margin-top: 5px}
+.testimonial-slider-text{font-size: 1.063rem;letter-spacing: 0.5px;max-width: 620px;margin: 10px auto 0;position: relative;padding-top: 10px}
+.testimonial-slider-text:before{content: "";display: block;width: 80px;height: 1px;background: #cbcbcb;position: absolute;top: 0;left: 50%;margin-left: -40px}
+.testimonial-slider-verified{font-size: 0.875rem;color: #00f;margin-top: 5px}
+.testimonial-slider-stars{margin-top: 10px;font-size: 0}
+.testimonial-slider-stars i{font-size: 1.25rem;color: #ffa500;margin: 0 2px}
+@media screen and (max-width: 767px){
+.testimonial-slider img{max-width: 200px}
+.testimonial-slider-text{font-size: 1rem;letter-spacing: 0.25}
+}
+.entry-content > .summary-box{padding: 15px !important;background: #fff0c7 !important}
+.checkbox-list{margin-bottom: 20px}
+.checkbox-list li{padding-left: 25px;margin-bottom: 10px;font-size: 1.125rem}
+.checkbox-list li i{margin-right: 5px;color: #0b7b09;font-size: 1.375rem;vertical-align: middle}
+.checkbox-list li span{vertical-align: middle}
+.checkbox-list li:last-child{margin-bottom: 0}
+/* --- template additions (not on the live site) --- */
+.tlogo{display:block;font-size:28px;font-weight:300;color:#000;text-transform:uppercase;letter-spacing:-.5px;line-height:50px;white-space:nowrap}
+.tlogo b{font-weight:900}
+.footer .tlogo{display:inline-block;margin:10px 0}
+.testimonial-slider>div{display:none}
+.testimonial-slider>div.on{display:block}
+.ts-dots{text-align:center;margin-top:15px;font-size:0}
+.ts-dots button{background:#ddd;border:0;padding:0;margin:0 3px;border-radius:50%;width:11px;height:11px;display:inline-block;cursor:pointer}
+.ts-dots button.on{background:#015fdb}
+</style>
+</head>
+<body class="review">
+	<div class="header">
+		<div class="inner">
+			<div class="header-logo-area">
+				<a href="#"><span class="tlogo">TopReview<b>King</b></span></a>
+			</div>
+			<div class="header-menu-area">
+				<button><i class="fa fa-bars" aria-hidden="true"></i></button>
+				<ul>
+					<li><a  href="#">Who We Are?</a></li>
+					<li><a  href="#">Get In Touch</a></li>
+					<li><a  href="#">Terms Of Use</a></li>
+					<li><a  href="#">Privacy Policy</a></li>
+									</ul>
+			</div>
+		</div>
+	</div>
+	<div class="review-top-bar">
+		<p class="js-today">October 12, 2026</p>
+	</div>
+
+	<div class="page-header" style="background-image: url(/SLUG/assets/header-bg.webp);">
+		<p class="headline">Top 5 Dash Cams In 2026 Based On Features, Video Quality, And Price</p>
+		<p class="update">
+			<img src="/SLUG/assets/ui/check.png" />
+			<span class="date">Updated: <span class="js-month">October 2026</span></span>
+		</p>
+	</div>
+
+	<div class="review-content">
+
+		<p class="top-txt">Having a car comes with a lot of risks, tickets, accusations of theft, and accidents.</p>
+		<p class="top-txt">There are a lot of bad drivers out there, no matter how good you are, they’ll think they’re better.</p>
+		<p class="top-txt">This results in a complicated situation when we have to prove who is guilty. So it's important to protect ourselves and have indisputable proof if something ever happens.</p>
+		<p class="top-txt">But all dash cameras aren't suitable for the job and there are a lot of important features to include if we’re ever going to depend on them for proof.</p>
+		<p class="top-txt">That's why we decided to buy 2025’s best-selling dash cameras to see how well they perform in our tests.</p>
+		<p class="top-txt">And it revealed that paying for expensive big brands can often be a waste of money. <span class="bold">To our surprise, the test winner was actually from a smaller company that managed to beat the big brands in both video quality, convenient features, design, and pricing.</span></p>
+		<p class="top-txt bold">Here are our Top 5 Picks this year, with a <a href="#our-test-process" class="scroll-down-entry">full review</a> at the bottom of the page:</p>
+
+		<div class="disclosure-box">
+			<span>Advertiser Disclosure</span>
+			<p>TopReviewKing is made up of our own views and opinions. The scoring is determined at our own discretion and should not be used for accuracy purposes. We are able to provide this service for free thanks to the referral fees we receive from a number of service providers. These referral fees may affect the rankings and score assigned to specific vendors. Furthermore, though many vendors appear on TopReviewKing, this DOES NOT imply endorsement of any kind. The information and vendors which appear on TopReviewKing is subject to change at any time.</p>
+		</div>
+
+		<div class="table reviews-head" id="our-top-5">
+			<div class="table-cell cell-1">
+				<p>Product</p>
+			</div>
+			<div class="table-cell cell-2">
+				<p>Our Score</p>
+			</div>
+			<div class="table-cell cell-3">
+				<p>Key Features</p>
+			</div>
+			<div class="table-cell cell-4"></div>
+		</div>
+
+		<div class="table reviews-table firstitem table-shadow">
+			<div class="table-cell review-cell cell-1">
+				<div class="item-order"><div class="most-pop">#1 BEST IN 2026</div></div>
+				<div class="item-logo">
+					<img src="/SLUG/assets/product-1.webp" />
+				</div>
+				<div class="review-link">
+					<a href="#our-test-process" class="scroll-down-entry">Read Full Review</a>
+				</div>
+			</div>
+			<div class="table-cell review-cell cell-2">
+				<span class="item-score">9.9</span>
+				<div class="my-rating">
+					<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+					<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+					<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+					<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+					<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+				</div>
+				<span class="score-sub">"Excellent"</span>
+			</div>
+			<div class="table-cell review-cell cell-3">
+				<div class="selling-price">
+					<p class="selling-price-text">Car Dash Camera</p>
+					<p class="selling-price-number">
+						<span>Price:</span>
+						<span class="selling-price-number-new">$49.99</span>
+						<span class="selling-price-number-old">&nbsp;$89.99&nbsp;</span>
+					</p>
+				</div>
+				<div class="selling-point">
+					<a class="selling-point-item" href="https://offer.dinosaurized.com/OFFER-SLUG">
+						<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+						<span class="selling-point-text bold">4K Camera</span>
+					</a>
+					<a class="selling-point-item" href="https://offer.dinosaurized.com/OFFER-SLUG">
+						<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+						<span class="selling-point-text bold">G-sensor</span>
+					</a>
+					<a class="selling-point-item" href="https://offer.dinosaurized.com/OFFER-SLUG">
+						<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+						<span class="selling-point-text">Loop Recording</span>
+					</a>
+					<a class="selling-point-item" href="https://offer.dinosaurized.com/OFFER-SLUG">
+						<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+						<span class="selling-point-text bold">170° Wide Angle</span>
+					</a>
+					<a class="selling-point-item" href="https://offer.dinosaurized.com/OFFER-SLUG">
+						<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+						<span class="selling-point-text">Motion Detection</span>
+					</a>
+				</div>
+			</div>
+			<div class="table-cell review-cell cell-4">
+				<div class="btnbubble">
+					<p>CURRENT SALE: 45% OFF<br />12,487 VISITORS BOUGHT DURING SALE</p>
+					<span class="arrow-downbbl">▼</span>
+				</div>
+				<a class="visit-site-btn" href="https://offer.dinosaurized.com/OFFER-SLUG">VISIT SITE <i class="fa fa-angle-right" aria-hidden="true"></i></a>
+			</div>
+		</div>
+
+		<div class="table reviews-table table-shadow">
+			<div class="table-cell review-cell cell-1">
+				<div class="item-order">#2</div>
+				<div class="item-logo">
+					<img src="/SLUG/assets/product-2.webp" />
+				</div>
+			</div>
+			<div class="table-cell review-cell cell-2">
+				<span class="item-score">9.2</span>
+				<div class="my-rating">
+					<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+					<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+					<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+					<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+					<div class="jq-star"><img src="/SLUG/assets/ui/star-half.svg" /></div>
+				</div>
+				<span class="score-sub">"Great"</span>
+			</div>
+			<div class="table-cell review-cell cell-3">
+				<div class="selling-price">
+					<p class="selling-price-text">RedTiger</p>
+					<p class="selling-price-number">
+						<span>Price:</span>
+						<span class="selling-price-number-new">$139.99</span>
+					</p>
+				</div>
+				<div class="selling-point">
+					<p class="selling-point-item">
+						<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+						<span class="selling-point-text">Built-in WiFi&amp;GPS</span>
+					</p>
+					<p class="selling-point-item">
+						<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+						<span class="selling-point-text">Sony Sensor&amp;Super Night Vision</span>
+					</p>
+					<p class="selling-point-item">
+						<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+						<span class="selling-point-text">24 Hours Parking Monitoring</span>
+					</p>
+					<p class="selling-point-item">
+						<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+						<span class="selling-point-text">Loop Recording</span>
+					</p>
+				</div>
+			</div>
+			<div class="table-cell review-cell cell-4">
+				<a class="visit-site-btn lesser-focus" href="https://www.amazon.com/dp/ASIN-2" target="_blank" rel="sponsored nofollow noopener">VIEW ON AMAZON <i class="fa fa-angle-right" aria-hidden="true"></i></a>
+			</div>
+		</div>
+
+		<div class="table reviews-table table-shadow">
+			<div class="table-cell review-cell cell-1">
+				<div class="item-order">#3</div>
+				<div class="item-logo">
+					<img src="/SLUG/assets/product-3.webp" />
+				</div>
+			</div>
+			<div class="table-cell review-cell cell-2">
+				<span class="item-score">9.1</span>
+				<div class="my-rating">
+					<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+					<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+					<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+					<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+					<div class="jq-star"><img src="/SLUG/assets/ui/star-half.svg" /></div>
+				</div>
+				<span class="score-sub">"Good"</span>
+			</div>
+			<div class="table-cell review-cell cell-3">
+				<div class="selling-price">
+					<p class="selling-price-text">Rove R2-4K</p>
+					<p class="selling-price-number">
+						<span>Price:</span>
+						<span class="selling-price-number-new">$119.99</span>
+					</p>
+				</div>
+				<div class="selling-point">
+					<p class="selling-point-item">
+						<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+						<span class="selling-point-text">Comes with an app</span>
+					</p>
+					<p class="selling-point-item">
+						<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+						<span class="selling-point-text">Built-in GPS</span>
+					</p>
+					<p class="selling-point-item">
+						<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+						<span class="selling-point-text">Records location and speed</span>
+					</p>
+					<p class="selling-point-item">
+						<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+						<span class="selling-point-text">150° wide angle</span>
+					</p>
+					<p class="selling-point-item">
+						<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+						<span class="selling-point-text">Voice Alerts &amp; Guidance</span>
+					</p>
+				</div>
+			</div>
+			<div class="table-cell review-cell cell-4">
+				<a class="visit-site-btn lesser-focus" href="https://www.amazon.com/dp/ASIN-3" target="_blank" rel="sponsored nofollow noopener">VIEW ON AMAZON <i class="fa fa-angle-right" aria-hidden="true"></i></a>
+			</div>
+		</div>
+
+		<div class="fadeToggle">
+			<div class="table reviews-table table-shadow">
+				<div class="table-cell review-cell cell-1">
+					<div class="item-order">#4</div>
+					<div class="item-logo">
+						<img src="/SLUG/assets/product-4.webp" />
+					</div>
+				</div>
+				<div class="table-cell review-cell cell-2">
+					<span class="item-score">8.5</span>
+					<div class="my-rating">
+						<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+						<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+						<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+						<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+						<div class="jq-star"><img src="/SLUG/assets/ui/star-half.svg" /></div>
+					</div>
+					<span class="score-sub">"Good"</span>
+				</div>
+				<div class="table-cell review-cell cell-3">
+					<div class="selling-price">
+						<p class="selling-price-text">Chortau</p>
+						<p class="selling-price-number">
+							<span>Price:</span>
+							<span class="selling-price-number-new">$99.99</span>
+						</p>
+					</div>
+					<div class="selling-point">
+						<p class="selling-point-item">
+							<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+							<span class="selling-point-text">Front and Rear camera</span>
+						</p>
+						<p class="selling-point-item">
+							<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+							<span class="selling-point-text">Emergency Accident Locks</span>
+						</p>
+						<p class="selling-point-item">
+							<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+							<span class="selling-point-text">Parking Mode</span>
+						</p>
+						<p class="selling-point-item">
+							<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+							<span class="selling-point-text">7/24 hours technical support</span>
+						</p>
+						<p class="selling-point-item">
+							<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+							<span class="selling-point-text">SD card not included</span>
+						</p>
+					</div>
+				</div>
+				<div class="table-cell review-cell cell-4">
+					<a class="visit-site-btn lesser-focus" href="https://www.amazon.com/dp/ASIN-4" target="_blank" rel="sponsored nofollow noopener">VIEW ON AMAZON <i class="fa fa-angle-right" aria-hidden="true"></i></a>
+				</div>
+			</div>
+		</div>
+
+		<div class="fadeToggle">
+			<div class="table reviews-table table-shadow">
+				<div class="table-cell review-cell cell-1">
+					<div class="item-order">#5</div>
+					<div class="item-logo">
+						<img src="/SLUG/assets/product-5.webp" />
+					</div>
+				</div>
+				<div class="table-cell review-cell cell-2">
+					<span class="item-score">7.8</span>
+					<div class="my-rating">
+						<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+						<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+						<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+						<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+						<div class="jq-star"><img src="/SLUG/assets/ui/star-empty.svg" /></div>
+					</div>
+					<span class="score-sub">"Good"</span>
+				</div>
+				<div class="table-cell review-cell cell-3">
+					<div class="selling-price">
+						<p class="selling-price-text">BIUONE</p>
+						<p class="selling-price-number">
+							<span>Price:</span>
+							<span class="selling-price-number-new">$69.99</span>
+						</p>
+					</div>
+					<div class="selling-point">
+						<p class="selling-point-item">
+							<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+							<span class="selling-point-text">170° front camera</span>
+						</p>
+						<p class="selling-point-item">
+							<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+							<span class="selling-point-text">140° rear camera</span>
+						</p>
+						<p class="selling-point-item">
+							<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+							<span class="selling-point-text">SD card inserted on delivery</span>
+						</p>
+						<p class="selling-point-item">
+							<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+							<span class="selling-point-text">Loop Recording function</span>
+						</p>
+						<p class="selling-point-item">
+							<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+							<span class="selling-point-text">USB SD card reader</span>
+						</p>
+					</div>
+				</div>
+				<div class="table-cell review-cell cell-4">
+					<a class="visit-site-btn lesser-focus" href="https://www.amazon.com/dp/ASIN-5" target="_blank" rel="sponsored nofollow noopener">VIEW ON AMAZON <i class="fa fa-angle-right" aria-hidden="true"></i></a>
+				</div>
+			</div>
+		</div>
+
+		<div class="load-more-btn-box">
+			<a href="#our-test-process" class="load-more-btn"><i class="fa fa-angle-double-down" aria-hidden="true"></i></a>
+		</div>
+		<p class="load-more-text">See the rest of the list</p>
+
+		<div class="most-popular" id="our-test-winner">
+			<h3>BEST OVERALL DASH CAMERA</h3>
+			<div class="table reviews-table firstitem">
+				<div class="table-cell review-cell cell-1">
+					<div class="item-order">#1</div>
+					<div class="item-logo">
+						<img src="/SLUG/assets/product-1.webp" />
+					</div>
+					<div class="review-link">
+						<a href="#our-test-process" class="scroll-down-entry">Read Full Review</a>
+					</div>
+				</div>
+				<div class="table-cell review-cell cell-2">
+					<span class="item-score">9.9</span>
+					<div class="my-rating">
+						<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+						<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+						<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+						<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+						<div class="jq-star"><img src="/SLUG/assets/ui/star.svg" /></div>
+					</div>
+					<span class="score-sub">"Excellent"</span>
+				</div>
+				<div class="table-cell review-cell cell-3">
+					<div class="selling-price">
+						<p class="selling-price-text">Car Dash Camera</p>
+						<p class="selling-price-number">
+							<span>Price:</span>
+							<span class="selling-price-number-new">$49.99</span>
+							<span class="selling-price-number-old">&nbsp;$89.99&nbsp;</span>
+						</p>
+					</div>
+					<div class="selling-point">
+						<a class="selling-point-item" href="https://offer.dinosaurized.com/OFFER-SLUG">
+							<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+							<span class="selling-point-text bold">4K Camera</span>
+						</a>
+						<a class="selling-point-item" href="https://offer.dinosaurized.com/OFFER-SLUG">
+							<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+							<span class="selling-point-text bold">G-sensor</span>
+						</a>
+						<a class="selling-point-item" href="https://offer.dinosaurized.com/OFFER-SLUG">
+							<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+							<span class="selling-point-text">Loop Recording</span>
+						</a>
+						<a class="selling-point-item" href="https://offer.dinosaurized.com/OFFER-SLUG">
+							<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+							<span class="selling-point-text bold">170° Wide Angle</span>
+						</a>
+						<a class="selling-point-item" href="https://offer.dinosaurized.com/OFFER-SLUG">
+							<img class="sellico" src="/SLUG/assets/ui/new-checkmark.png" />
+							<span class="selling-point-text">Motion Detection</span>
+						</a>
+					</div>
+				</div>
+				<div class="table-cell review-cell cell-4">
+					<div class="btnbubble">
+						<p>CURRENT SALE: 45% OFF<br />12,487 VISITORS BOUGHT DURING SALE</p>
+						<span class="arrow-downbbl">▼</span>
+					</div>
+					<a class="visit-site-btn" href="https://offer.dinosaurized.com/OFFER-SLUG">VISIT SITE <i class="fa fa-angle-right" aria-hidden="true"></i></a>
+				</div>
+			</div>
+			<div class="best-overall-box">
+				<div>
+					<img src="/SLUG/assets/icon-1.png" />
+					<p class="best-overall-title">IN-BUILT G-SENSOR FOR COLLISION DETECTION</p>
+					<p class="best-overall-text">The G-Sensor records the impact of a collision &amp; when it reaches a pre-set value, it records the footage &amp; locks it to prevent any overwriting, giving you indisputable proof!</p>
+				</div>
+				<div>
+					<img src="/SLUG/assets/icon-2.png" />
+					<p class="best-overall-title">IR ENABLED NIGHT VISION LENS</p>
+					<p class="best-overall-text">Automatic Night Vision ensures Car Dash Camera records the minutest details in ultra-low light during nighttime &amp; even in the darkest roads ahead of you.</p>
+				</div>
+				<div>
+					<img src="/SLUG/assets/icon-3.png" />
+					<p class="best-overall-title">LOOP RECORDING WITH EXTENDABLE STORAGE OPTION</p>
+					<p class="best-overall-text">Offers seamless loop recording that overwrites old footage (apart from locked footage) with new content when the card is full. You can also upgrade memory with an expandable memory slot.</p>
+				</div>
+			</div>
+		</div>
+
+		<div class="entry-content" id="our-test-process">
+			<h1>We Bought &amp; Tested The Most Popular Dash Cams, Here’s Why Car Dash Camera is #1</h1>
+			<p><a class="img-container" href="https://offer.dinosaurized.com/OFFER-SLUG"><img src="/SLUG/assets/pic-1.webp" /></a></p>
+			<p class="summary-box"><span class="bold">SUMMARY:</span> Specifically designed to document everything on the road in 4K with its ultra-wide 170° lens, and up to 32 GB of footage. Furthermore, it has a motion sensor and a G-force sensor. Finally, the camera automatically locks footage if you’ve been in an accident so it can’t be overwritten from the looping feature. In other words, you’re covered!</p>
+			<p>I made a u-turn from where I was parked next to my house. As I was halfway around, I saw a car coming in with extremely high speed around the corner ahead of me.</p>
+			<p>Seeing me like a barn on the road, the incoming car freaked and hit the breaks, causing him to swerve out of his lane, resulting in him hitting me head-on, swinging my car 190 degrees around. After the collision, I STILL had enough momentum to continue an additional 30 feet before he came to a stop.</p>
+			<p>Sure, I had made a questionable u-turn, but the incoming car was going WAY above the speed limit, and I thought there would be proof considering there were 60 feet long break tracks.</p>
+			<p>The first thing he said when he stepped out of his car was <span class="italic">“I’m gonna lose my license for sure now”</span>.</p>
+			<p>This might seem like a clear case, but in the end, it went on my insurance.</p>
+			<p>I had a dashcam but believe it or not, the 110-degree camera angle just missed the other car. And I couldn’t prove that my u-turn was safe and that he was speeding.</p>
+			<p class="quote">"Studies have shown that between scams and unreliable narratives, up to 40% of accidents are attributed to the wrong person."</p>
+			<p>I was so disappointed, had the dash camera just had a slightly wider angle, I would have won the case.</p>
+			<p>When looking for an upgrade I found a <a href="https://offer.dinosaurized.com/OFFER-SLUG">Car Dash Camera</a> from watchtheroads which specializes in dash cameras.</p>
+			<p>It has won the hearts of consumers all over the world with thousands of five-star reviews. I wanted the best, but surprisingly, it was also affordable, most of the big brands take a fee for the sake of the brand itself it seems. However, as the name implies, <a href="https://offer.dinosaurized.com/OFFER-SLUG">Car Dash Camera</a> focused only on reputation and performance.</p>
+			<p><a class="img-container" href="https://offer.dinosaurized.com/OFFER-SLUG"><img src="/SLUG/assets/pic-2.webp" /></a></p>
+			<h2>First Impression</h2>
+			<p>I got the <a href="https://offer.dinosaurized.com/OFFER-SLUG">Car Dash Camera</a> delivered to my door only two days after ordering it.</p>
+			<p>When I opened the box I immediately saw what I was looking for - not a GoPro or some kind of action camera that many seem to be using, but a camera specifically developed for capturing the world on the road.</p>
+			<p>Since dash cameras are supposed to work in the background, not needing your immediate attention, yet have to be accessible while driving, the UI must be simple, the mount agile, and the whole setup must be discrete yet visible enough to work as a deterrent. Quite the recipe.</p>
+			<p>The <a href="https://offer.dinosaurized.com/OFFER-SLUG">Car Dash Camera</a> has obviously done their homework! It captures everything around your car when you turn the ignition, and the easy-to-use design lets you go to “parking mode” with a click of a button.</p>
+			<h2>Features</h2>
+			<p>You can't compare the <a href="https://offer.dinosaurized.com/OFFER-SLUG">Car Dash Camera</a> with anything in its price class, this is why.</p>
+			<ul class="checkbox-list">
+				<li><i class="fa fa-check-square" aria-hidden="true"></i><span class="bold">24 x7 Motion-Detect Parking Monitor</span> - Just switch on the parking monitor &amp; the dash camera will automatically start recording when it detects motion in the car radius to record any theft/vandalism attempts.</li>
+				<li><i class="fa fa-check-square" aria-hidden="true"></i><span class="bold">1080P HD Camera</span> - High definition is extremely important as your video might be worthless if it can’t read a license plate from a car because it's not capturing video in high definition. Car Dash Camera on the other hand captures in 4K, the same quality as the ActionCamera used to film the blockbuster The Hobbit.</li>
+				<li><i class="fa fa-check-square" aria-hidden="true"></i><span class="bold">G-sensor</span> - Helps to prove what forces were applied in an accident. When a certain threshold is triggered Car Dash Camera locks the recording so it cant be overwritten.</li>
+				<li><i class="fa fa-check-square" aria-hidden="true"></i><span class="bold">Loop recording</span> - Record over and over and over again. Never worry about changing memory cards, or if the card is full. This feature makes sure you’re always backed with video proof.</li>
+				<li><i class="fa fa-check-square" aria-hidden="true"></i><span class="bold">Wide Angle Camera</span> - Car Dash Camera includes a Dual Channel Front &amp; Rear camera that records 1080P with a 170° field view for a crystal clear viewing experience.</li>
+				<li><i class="fa fa-check-square" aria-hidden="true"></i><span class="bold">IR Enabled Night Vision Lens</span> - Automatic Night Vision ensures Car Dash Camera records the minutest details in ultra-low light during nighttime &amp; even in the darkest roads ahead of you.</li>
+				<li><i class="fa fa-check-square" aria-hidden="true"></i><span class="bold">Flexible mounting options</span> - The camera rotates 360°, tilts 90°, and suctions to your vehicle for a strong, secure grip.</li>
+			</ul>
+			<p><a class="img-container" href="https://offer.dinosaurized.com/OFFER-SLUG"><img src="/SLUG/assets/pic-3.webp" /></a></p>
+			<h2>Testing</h2>
+			<p>I pressed the power button and the camera started as it came half charged ( convenient! )</p>
+			<p>I recorded while I walked around my house and went from dark to bright lit rooms to see how well the exposure would adjust to sudden changes of light conditions.</p>
+			<p>Just imagine how useless this would be if the headlight from a car at night would blind the aperture and render the whole video useless.</p>
+			<h2>Video Quality</h2>
+			<p>When I had enough material I checked the footage on my TV.</p>
+			<p>The video quality was amazing! It looked like a video from a modern DSLR camera!</p>
+			<p>It’s obvious that the <a href="https://offer.dinosaurized.com/OFFER-SLUG">Car Dash Camera</a> is made for conditions on the road as it comes with a really good and diverse aperture that has no problem adjusting from dark tunnels to suddenly being outside in the bright sun.</p>
+			<p>On most cameras, a sudden change in brightness makes the picture too dark or too bright for a couple of seconds while the camera adjusts or adapts.</p>
+			<p>But the <a href="https://offer.dinosaurized.com/OFFER-SLUG">Car Dash Camera</a> manages flawlessly, an important feature since you don’t want to have a problem with focus or bad exposure when you use the footage to prove your case.</p>
+			<p><a class="img-container" href="https://offer.dinosaurized.com/OFFER-SLUG"><img src="/SLUG/assets/pic-4.webp" /></a></p>
+			<h2>My Kids Got Hit By a Bus</h2>
+			<p>My kids got hit by a bus at an intersection.</p>
+			<p>She didn’t know she had to catch up with the bus or get the license plate or anything.</p>
+			<p>However thanks to the dashcam we could figure out the details for our insurance company.</p>
+			<p>This is a benefit I hadn’t thought about. When you lend your car to your kids or friends, you have additional security and backup. A really good feature.</p>
+			<p>Saves everyone from unnecessary anxiety!</p>
+			<ul class="checkbox-list">
+				<li><i class="fa fa-check-square" aria-hidden="true"></i><span class="bold">Encourage safe driving</span> - Dash cameras promote safe driving naturally. Bad habits seem to dissolve in the presence of a camera. You subconsciously know that you are observed, keeping you from making decisions motivated by “It doesn’t hurt if no one knows”.</li>
+				<li><i class="fa fa-check-square" aria-hidden="true"></i><span class="bold">Reduced insurance premiums</span> - Lastly, a dash cam can have cost-effective benefits for you as a driver. For example, lower insurance premiums.</li>
+			</ul>
+			<p><a class="img-container" href="https://offer.dinosaurized.com/OFFER-SLUG"><img src="/SLUG/assets/pic-5.webp" /></a></p>
+			<!-- OPTIONAL A (source: top5-drones): "What makes X different" accordion. Keep or delete the whole block. -->
+			<h2>What makes the QuadAir Drone different from other products?</h2>
+			<p>You can't compare the <a href="https://offer.dinosaurized.com/OFFER-SLUG">QuadAir Drone</a> with anything in its price class, this is why.</p>
+			<div class="accordion-box">
+				<div class="card">
+					<button class="active">BATTERY LIFE <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="plus" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="#d1d5db" d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z" class=""></path></svg></button>
+					<p>The <a href="https://offer.dinosaurized.com/OFFER-SLUG">QuadAir Drone</a> is so lightweight while also having a superior battery capacity, meaning it can easily stay airborne twice as long as its competition on one single charge.</p>
+				</div>
+				<div class="card">
+					<button>BEGINNER FRIENDLY <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="plus" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="#d1d5db" d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z" class=""></path></svg></button>
+					<p>The incorporated gravity sensor can detect the ground and other obstacles &amp; change the flying course automatically to avoid a collision, making a safe return or recovery possible with just a press of a button.</p>
+				</div>
+				<div class="card">
+					<button>SILENT <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="plus" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="#d1d5db" d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z" class=""></path></svg></button>
+					<p>A big difference between cheap and expensive drones is the noise level. The <a href="https://offer.dinosaurized.com/OFFER-SLUG">QuadAir Drone</a> is by far the most silent drone in its price class, it is almost as quiet as drones 5 times as expensive.</p>
+				</div>
+				<div class="card">
+					<button>MOBILE AND DURABLE <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="plus" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="#d1d5db" d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z" class=""></path></svg></button>
+					<p>With such a sturdy and compact design that is easy to fold and put in your pocket, along with its superior battery life, you are always able to bring the <a href="https://offer.dinosaurized.com/OFFER-SLUG">QuadAir Drone</a> with you.</p>
+				</div>
+				<div class="card">
+					<button>HD CAMERA AND PHOTO MODES <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="plus" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="#d1d5db" d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z" class=""></path></svg></button>
+					<p>The HD camera is impressive on its own, but with the pre-programmed camera modes, you will be able to capture every moment! With a press of a button, the drone can take slow-motion footage or do a full 360 capture of its environment, making it a perfect tool for exploration or visual inspection of any location.</p>
+				</div>
+				<div class="card">
+					<button>GO FURTHER &AMP; FASTER <svg aria-hidden="true" focusable="false" data-prefix="fas" data-icon="plus" role="img" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path fill="#d1d5db" d="M416 208H272V64c0-17.67-14.33-32-32-32h-32c-17.67 0-32 14.33-32 32v144H32c-17.67 0-32 14.33-32 32v32c0 17.67 14.33 32 32 32h144v144c0 17.67 14.33 32 32 32h32c17.67 0 32-14.33 32-32V304h144c17.67 0 32-14.33 32-32v-32c0-17.67-14.33-32-32-32z" class=""></path></svg></button>
+					<p>QuаdAіr Drоnе іѕ thе fаѕtеѕt drоnе of іtѕ ѕіzе, flуіng at a tор ѕрееd оf up tо 30 miles per hоur with a 2,5 transmission distance!</p>
+				</div>
+			</div>
+			<!-- /OPTIONAL A -->
+			<!-- OPTIONAL B (source: top5-dog-foods): customer reviews slider. Keep or delete the whole block. -->
+			<h2 id="reviews">What Do Customers Think?</h2>
+			<div class="testimonial-slider">
+				<div>
+					<img src="/SLUG/assets/review-1.webp" />
+					<span class="testimonial-slider-name">Lisa K.</span>
+					<span class="testimonial-slider-headline">Annabelle (12 year old Coonhound), Casper (8 year old Coonhound and Bloodhound mix)</span>
+					<p class="testimonial-slider-text">I now spend (more) on food but vet bills have dropped. All their vets attribute the pups’ improved health to your food!</p>
+					<p class="testimonial-slider-verified"><i class="fa fa-check"></i> Verified Review</p>
+					<p class="testimonial-slider-stars">
+						<i class="fa fa-star" aria-hidden="true"></i>
+						<i class="fa fa-star" aria-hidden="true"></i>
+						<i class="fa fa-star" aria-hidden="true"></i>
+						<i class="fa fa-star" aria-hidden="true"></i>
+						<i class="fa fa-star" aria-hidden="true"></i>
+					</p>
+				</div>
+				<div>
+					<img src="/SLUG/assets/review-2.webp" />
+					<span class="testimonial-slider-name">Alison G.</span>
+					<span class="testimonial-slider-headline">Max (3 year old Solf Coated Wheaten Terrier and Labrador Retriever mix)</span>
+					<p class="testimonial-slider-text">I cannot believe how fast my dog devourd his first meal! He is notorious for being a picky eater, but wow, what a turnaround. Thank you so much for helping me maintain my dog’s newfound clean eating routine. Absolutely remarkable!</p>
+					<p class="testimonial-slider-verified"><i class="fa fa-check"></i> Verified Review</p>
+					<p class="testimonial-slider-stars">
+						<i class="fa fa-star" aria-hidden="true"></i>
+						<i class="fa fa-star" aria-hidden="true"></i>
+						<i class="fa fa-star" aria-hidden="true"></i>
+						<i class="fa fa-star" aria-hidden="true"></i>
+						<i class="fa fa-star" aria-hidden="true"></i>
+					</p>
+				</div>
+				<div>
+					<img src="/SLUG/assets/review-3.webp" />
+					<span class="testimonial-slider-name">Ann G.</span>
+					<span class="testimonial-slider-headline">Sasha (12 year old Samoyed)</span>
+					<p class="testimonial-slider-text">Sasha is just thriving on her food. For the last two years, she has been slowing down quite a lot. After two weeks of being on her new food, she has more energy, looks a lot more interested in what is going around her and literally hops. I am so pleased with this food, it makes her happy!</p>
+					<p class="testimonial-slider-verified"><i class="fa fa-check"></i> Verified Review</p>
+					<p class="testimonial-slider-stars">
+						<i class="fa fa-star" aria-hidden="true"></i>
+						<i class="fa fa-star" aria-hidden="true"></i>
+						<i class="fa fa-star" aria-hidden="true"></i>
+						<i class="fa fa-star" aria-hidden="true"></i>
+						<i class="fa fa-star" aria-hidden="true"></i>
+					</p>
+				</div>
+				<div>
+					<img src="/SLUG/assets/review-4.webp" />
+					<span class="testimonial-slider-name">Tisa M.</span>
+					<span class="testimonial-slider-headline">Lizzie (10 year old Dachshund)</span>
+					<p class="testimonial-slider-text">I believe changing to your food has helped some dry patches Lizzie’s had on her hears. They seem softer. She already had a shiny coat, but wow! Her coat is feeling silkier. People tink that she’s much younger than she is. She’s a forever puppy, we like to call her. So, let me be clear: WE LOVE YOU!</p>
+					<p class="testimonial-slider-verified"><i class="fa fa-check"></i> Verified Review</p>
+					<p class="testimonial-slider-stars">
+						<i class="fa fa-star" aria-hidden="true"></i>
+						<i class="fa fa-star" aria-hidden="true"></i>
+						<i class="fa fa-star" aria-hidden="true"></i>
+						<i class="fa fa-star" aria-hidden="true"></i>
+						<i class="fa fa-star" aria-hidden="true"></i>
+					</p>
+				</div>
+			</div>
+			<!-- /OPTIONAL B -->
+			<h2>Verdict</h2>
+			<p>So there is no doubt in my mind, I am keeping the <a href="https://offer.dinosaurized.com/OFFER-SLUG">Car Dash Camera</a> for myself.</p>
+			<p>I even recommend it to the best, safest, and most professional drivers out there, because it’s not your driving that is the problem, It’s just that you need proof when someone else drives like a maniac.</p>
+			<p>With the <a href="https://offer.dinosaurized.com/OFFER-SLUG">Car Dash Camera</a>, you’ll have all the features, battery life, 4K HD video quality to prove your case.</p>
+			<p>And to offer some peace of mind to you and your loved ones.</p>
+			<h2>A Recent Problem Has Occurred</h2>
+			<p>The problem with <a href="https://offer.dinosaurized.com/OFFER-SLUG">Car Dash Camera</a> is that it has become so incredibly popular that the manufacturer has called out that they can barely keep up with demand.</p>
+			<p>On top of that, there is an ongoing campaign right now where they offer a 50% discount!</p>
+			<p>So it's just a matter of time before they run out of stock again.</p>
+			<p>Furthermore, there are a lot of scams and copycat versions from companies that try to leech off of the success of the <a href="https://offer.dinosaurized.com/OFFER-SLUG">Car Dash Camera</a>. So make sure you get yours from their official website and get it now before they run out of stock.</p>
+			<h2>How To Order A Car Dash Camera?</h2>
+			<ol class="small-list">
+				<li>Make sure to order from the official website <a href="https://offer.dinosaurized.com/OFFER-SLUG">linked here</a></li>
+				<li>Get the 50% Discount</li>
+				<li>Select the number of devices you want</li>
+				<li>Submit shipping information and payment method</li>
+				<li>Enjoy having a backseat lawyer in the car, even when you’re parked!</li>
+			</ol>
+			<p>If you’re still on the fence about it, we just want to let you know that the <a href="https://offer.dinosaurized.com/OFFER-SLUG">Car Dash Camera</a> comes with a 30-day money-back guarantee, no questions asked.</p>
+			<p>So if you’re not sure, you can always buy one and just return it later if you don’t like it.</p>
+			<h2>Common Questions &amp; Answers</h2>
+			<p class="bold">Q: Does Car Dash Camera require any installation?</p>
+			<p>No. All you need to do is unpack it, charge it, and press record!</p>
+			<p class="bold">Q: Do I need to buy batteries for it?</p>
+			<p>No, the <a href="https://offer.dinosaurized.com/OFFER-SLUG">Car Dash Camera</a> comes with a power cord that you connect with a cigarette lighter cable.</p>
+			<p class="bold">Q: How do I mount the camera?</p>
+			<p><a href="https://offer.dinosaurized.com/OFFER-SLUG">Car Dash Camera</a> can be installed on the dashboard or the windshield of your car within seconds, thanks to the included suction cup.</p>
+			<h2>How Much Does It Cost?</h2>
+			<p>Normally, high-quality 4K dash cameras with parking-mode recording can go for up to $500, so one would expect the <a href="https://offer.dinosaurized.com/OFFER-SLUG">Car Dash Camera</a> to be in this price range as well...</p>
+			<p>But actually, the Car Dash Camera sells for only <span style="color: #f00;text-decoration: line-through;">$89.99</span>, since the founders of the company are doing everything to keep prices low.</p>
+			<p>In fact, they are even running a 50% sale on their website right now, bringing the price down to just <span class="bold">$44.99</span>!</p>
+			<p><a href="https://offer.dinosaurized.com/OFFER-SLUG">Click here to claim a discounted Car Dash Camera (if it's still available) >></a></p>
+			<p>That’s a small price to pay to deter theft and vandals, claim your insurance faster and get out of wrongful allegations!</p>
+			<h2>How Can It Be So Affordable?</h2>
+			<p>Other brands spend billions and billions on advertising. Guess who pays for that in the end? The customer!</p>
+			<p><a href="https://offer.dinosaurized.com/OFFER-SLUG">Car Dash Camera</a> does very little advertising as they started on a very small scale and have managed to become what they are today by delivering quality to customers without an expensive flashy bonnet to seal the deal.</p>
+			<p>They also don’t sell in any retail stores, it’s strictly online. This lets them keep the prices down as they don’t need to rent big store warehouses that have tons of staff.</p>
+			<h2>Why Is It Discounted Right Now?</h2>
+			<p>As the founders of the <a href="https://offer.dinosaurized.com/OFFER-SLUG">Car Dash Camera</a> know that they have a superior product they only need the word to spread so that people can try it for themselves.</p>
+			<p>By getting their product in as many hands as possible, more buzz will be generated as well as more sales. And it seems to work because they are constantly running out of stock!</p>
+			<p>Get your Car Dash Camera from their <a href="https://offer.dinosaurized.com/OFFER-SLUG">official website here >>></a></p>
+			<div class="entry-important-information">
+				<p class="bold important-information-text">IMPORTANT INFORMATION!</p>
+				<p>As of <span class="js-today">October 12, 2026</span>, Ever since the <a href="https://offer.dinosaurized.com/OFFER-SLUG">Car Dash Camera</a> was on major international media, an incredible amount of buzz has been generated. Due to its popularity and positive reviews, the company is so confident in their product that they are now offering a one-time, <span class="bold">50% discount</span>.</p>
+			</div>
+			<a href="https://offer.dinosaurized.com/OFFER-SLUG" class="entry-btn-cta">CHECK AVAILABILITY <i class="fa fa-angle-double-right" aria-hidden="true"></i></a>
+		</div>
+
+	</div>
+
+<div class="page-reviewer">
+	<div class="page-reviewer-inner">
+		<img class="about-reviewer-img" src="/SLUG/assets/expert.webp" />
+		<p class="about-reviewer">Meet Our Expert</p>
+		<p class="about-reviewer-name">Jake Charleston</p>
+		<p class="about-reviewer-text">Jake has over 15 years of experience on our team, having a deep understanding of technology and design. Over the years he has helped thousands of people finding the right product for their needs. There’s nothing he loves more than to dig into a new product and start doing research to find if it meets his high standards. Jake lives with his wife and three children in Arizona.</p>
+	</div>
+</div>
+
+	<div class="sale-popup">
+		<a class="sale-popup-close" href="#our-test-process"><i class="fa fa-times" aria-hidden="true"></i></a>
+		<div class="sale-popup-div">
+			<img src="/SLUG/assets/product-1.webp" class="sale-popup-img" />
+		</div>
+		<div class="sale-popup-about">
+			<p class="sale-popup-who">Mark from Ohio</p>
+			<p class="sale-popup-text">just bought Car Dash Cam!</p>
+			<p class="sale-popup-date">16 seconds ago | TopReviewKing</p>
+		</div>
+	</div>
+
+	<div class="footer">
+		<div class="inner">
+			<button class="footer-menu-open"><i class="fa fa-bars" aria-hidden="true"></i> Menu</button>
+			<ul class="footer-menu">
+				<li><a href="#">Who We Are?</a></li>
+				<li><a href="#">Get In Touch</a></li>
+				<li><a href="#">Terms Of Use</a></li>
+				<li><a href="#">Privacy Policy</a></li>
+				<li><a href="#">Advertiser Disclosure</a></li>
+							</ul>
+			<span class="tlogo">TopReview<b>King</b></span>
+			<p class="copyright">&copy; All Rights Reserved! TopReviewKing <span class="js-year">2026</span></p>
+			<p class="copyright">As an Amazon Associate &amp; Affiliate of other partners TopReviewKing may earn a comission from qualifying purchases made as a result of our reviews.</p>
+		</div>
+	</div>
+	<p class="bottom-disclosure">This site is a free online resource that strives to offer helpful content and comparison features to its visitors. Please be advised that the operator of this site accepts advertising compensation from companies that appear on the site, and such compensation impacts the location and order in which the companies (and/or their products) are presented, and in some cases may also impact the rating that is assigned to them. To the extent that ratings appear on this site, such rating is determined by our subjective opinion and based on a methodology that aggregates our analysis of brand market share and reputation, each brand’s conversion rates, compensation paid to us and general consumer interest. Company listings on this page DO NOT imply endorsement. Except as expressly set forth in our <a href="#">Terms of Use</a>, all representations and warranties regarding the information presented on this page are disclaimed. The information, including pricing, which appears on this site is subject to change at any time.</p>
+
+<!-- Thay jQuery + owl.carousel cua trang goc bang JS thuan, cung hanh vi:
+     menu, "See the rest of the list", cuon toi bai review, accordion, slider review,
+     popup "X just bought", ngay hom nay (trang goc in ngay phia server). -->
+<script>
+(function(){
+  function all(s,r){return Array.prototype.slice.call((r||document).querySelectorAll(s));}
+  var d=new Date(),mo=d.toLocaleString('en-US',{month:'long'});
+  all('.js-today').forEach(function(e){e.textContent=mo+' '+d.getDate()+', '+d.getFullYear();});
+  all('.js-month').forEach(function(e){e.textContent=mo+' '+d.getFullYear();});
+  all('.js-year').forEach(function(e){e.textContent=d.getFullYear();});
+
+  all('.header-menu-area button, .footer-menu-open').forEach(function(b){
+    b.addEventListener('click',function(){var n=b.nextElementSibling;n.style.display=getComputedStyle(n).display==='none'?'block':'none';});
+  });
+
+  var more=document.querySelector('.load-more-btn'),moreTxt=document.querySelector('.load-more-text');
+  if(more)more.addEventListener('click',function(e){
+    e.preventDefault();
+    var open=moreTxt.textContent==='See the rest of the list',rows=all('.fadeToggle');
+    if(!open)rows.reverse();
+    rows.forEach(function(r,i){setTimeout(function(){r.style.display=open?'block':'none';},i*500);});
+    moreTxt.textContent=open?'Show top 3':'See the rest of the list';
+    more.innerHTML='<i class="fa fa-angle-double-'+(open?'up':'down')+'" aria-hidden="true"></i>';
+  });
+
+  all('.scroll-down-entry').forEach(function(a){
+    a.addEventListener('click',function(e){e.preventDefault();document.querySelector('.entry-content').scrollIntoView({behavior:'smooth'});});
+  });
+
+  all('.accordion-box').forEach(function(box){
+    all('.card button',box).forEach(function(b){
+      b.addEventListener('click',function(){
+        var was=b.classList.contains('active');
+        all('.card button',box).forEach(function(x){x.classList.remove('active');x.nextElementSibling.style.display='none';});
+        if(!was){b.classList.add('active');b.nextElementSibling.style.display='block';}
+      });
+    });
+  });
+
+  all('.testimonial-slider').forEach(function(sl){
+    var items=all(':scope > div',sl),cur=0,dots=document.createElement('div');
+    if(!items.length)return;
+    dots.className='ts-dots';
+    items.forEach(function(_,i){var b=document.createElement('button');b.type='button';b.setAttribute('aria-label','Review '+(i+1));b.onclick=function(){go(i);};dots.appendChild(b);});
+    sl.parentNode.insertBefore(dots,sl.nextSibling);
+    function go(i){items[cur].classList.remove('on');dots.children[cur].classList.remove('on');cur=(i+items.length)%items.length;items[cur].classList.add('on');dots.children[cur].classList.add('on');}
+    go(0);setInterval(function(){go(cur+1);},5000);
+  });
+
+  var pop=document.querySelector('.sale-popup');
+  if(pop){
+    var st=["California","Ohio","Florida","Texas","Michigan","Washington","Nevada","Arizona","Georgia","Pennsylvania","Virginia","Minnesota","New York","Wisconsin","New Jersey","Illinois","Oregon","Maine","Utah","Delaware"],
+        nm=["Mark","Olivia","Philip","Amelia","Declan","Khloe","Jay","Scarlett","Thomas","Isabella","Bradley","Madison","Zac","Sarah","Shawn","Jodie","Toby","Emilia","Isaac","Summer"],
+        site=pop.querySelector('.sale-popup-date').textContent.split('|').pop().trim();
+    function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+    pop.style.transition='left .5s';
+    (function cycle(){
+      setTimeout(function(){
+        pop.querySelector('.sale-popup-who').textContent=nm[rnd(0,nm.length-1)]+' from '+st[rnd(0,st.length-1)];
+        pop.querySelector('.sale-popup-date').textContent=rnd(5,59)+' '+(rnd(0,1)?'seconds':'minutes')+' ago | '+site;
+        pop.style.left='10px';
+        setTimeout(function(){pop.style.left='-360px';cycle();},4500);
+      },rnd(30000,55000));
+    })();
+    pop.querySelector('.sale-popup-close').addEventListener('click',function(e){e.preventDefault();pop.style.left='-360px';});
+  }
+})();
+</script>
+<!-- Noi click-ID sang trang ban. KHONG ban cta_click o day: tags.js da co mot
+     listener bat moi click vao offer.dinosaurized.com roi, ban them lan nua se
+     lam moi cu click dem thanh hai. -->
+<script>
+(function(){
+  var sp=new URLSearchParams(location.search),keep=new URLSearchParams();
+  ['gclid','gbraid','wbraid','fbclid','twclid','msclkid','ttclid','utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(function(k){if(sp.get(k))keep.set(k,sp.get(k));});
+  var extra=keep.toString();
+  function wire(){
+    document.querySelectorAll('a[href*="offer.dinosaurized.com"]').forEach(function(a){
+      if(extra)a.href+=(a.href.indexOf('?')>-1?'&':'?')+extra;
+    });
+  }
+  if(document.readyState!=='loading')wire();else document.addEventListener('DOMContentLoaded',wire);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,8 @@
+{
+  "name": "dino-funnel",
+  "owner": { "name": "Huy" },
+  "description": "Dinosaurized funnel tools, installed from a local folder",
+  "plugins": [
+    { "name": "dino-funnel", "source": "./plugins/dino-funnel", "description": "Dinosaurized funnel: pre-sale top 5, flip to win, sale page, checkout, bundle, FB ads" }
+  ]
+}

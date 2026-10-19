@@ -1,0 +1,138 @@
+<!-- Flip to Win, {{PRODUCT}}. Paste this whole file into one Funnelish Custom HTML block. -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+  .ftw { --brand:#0f2557; --orange:#E75300; --text:#222; --muted:#666; --front:#FFD9C2; --cream:#FFF1E6;
+    font-family: Poppins, Arial, Helvetica, sans-serif; color: var(--text); background: linear-gradient(180deg, #FFF1E6 0%, #fff 60%); min-height: 100dvh;
+    display: flex; flex-direction: column; align-items: center; padding: 24px 16px; box-sizing: border-box; overflow: hidden;
+    width: 100vw; margin-left: calc(50% - 50vw); } /* full-bleed out of Funnelish's 1170px row */
+  html, body { overflow-x: hidden; }
+  .ftw * { box-sizing: border-box; margin: 0; padding: 0; }
+  .ftw-logo img { width: 150px; height: auto; display: block; }
+  .ftw-head { text-align: center; margin: 14px 0 18px; }
+  .ftw-title { font-size: clamp(32px, 8.5vw, 44px); font-weight: 800; line-height: 1.1; color: var(--brand); text-transform: uppercase; letter-spacing: -0.01em; }
+  .ftw-sub { margin-top: 6px; font-size: 16px; font-weight: 700; color: var(--text); }
+  .ftw-congrats { display: none; margin-top: 6px; font-size: 18px; font-weight: 700; letter-spacing: .06em; color: var(--brand); text-transform: uppercase; }
+  .ftw[data-state="complete"] .ftw-sub { display: none; }
+  .ftw[data-state="complete"] .ftw-congrats { display: block; }
+
+  .ftw-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: min(90vw, 48dvh, 460px); aspect-ratio: 1 / 1; margin-bottom: 20px; }
+  .ftw-slot { perspective: 1000px; aspect-ratio: 1 / 1; }
+  .ftw-card { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform .6s ease; cursor: pointer; }
+  .ftw-card.flipped { transform: rotateY(180deg); }
+  .ftw-card.swivel { animation: ftw-swivel .65s ease-in-out; }
+  @keyframes ftw-swivel { 25% { transform: rotateY(-37deg); } 75% { transform: rotateY(37deg); } }
+  .ftw-face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 15px;
+    display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(231,83,0,.15); overflow: hidden; }
+  .ftw-front { background: #fff; border: 3px solid var(--front); padding: 10px; }
+  .ftw-front img { width: 90%; height: 90%; object-fit: contain; }
+  .ftw.done .ftw-front { border-color: #eee; background: #f4f4f4; box-shadow: none; }
+  .ftw.done .ftw-front img { filter: saturate(0); opacity: .45; }
+  .ftw-back { background: var(--cream); border: 3px solid var(--orange); transform: rotateY(180deg); flex-direction: column; padding: 5px; gap: 2px; text-align: center; }
+  .ftw-prize-img { height: 62%; width: 100%; display: flex; align-items: center; justify-content: center; }
+  .ftw-prize-img img { max-width: 100%; max-height: 100%; object-fit: contain; }
+  .ftw-prize-text { font-weight: 700; font-size: clamp(.6rem, 2.35vw, .85rem); line-height: 1.15; color: var(--brand); text-transform: uppercase; }
+
+  .ftw-btn { width: 100%; max-width: min(90vw, 360px); height: 52px; border: 0; border-radius: 30px; display: flex; align-items: center; justify-content: center; gap: 12px;
+    background: var(--orange); color: #fff; font: 700 17px Poppins, Arial, sans-serif; cursor: pointer; box-shadow: 0 4px 0 #a83c00; transition: transform .1s; }
+  .ftw-btn:active { transform: translateY(2px); box-shadow: 0 2px 0 #a83c00; }
+  .ftw-btn:disabled { background: #eef0f3; color: #9aa1ad; box-shadow: 0 4px 0 #c5c9d1; cursor: default; }
+  .ftw-next { display: none; text-decoration: none; }
+  .ftw.done .ftw-flip { display: none; }
+  .ftw.done .ftw-next { display: flex; animation: ftw-pulse 1.6s ease-in-out infinite; }
+  @keyframes ftw-pulse { 50% { transform: scale(1.04); } }
+  .ftw-count { margin-top: 16px; font-size: 16px; display: flex; align-items: center; gap: 8px; }
+  .ftw-count b { background: var(--brand); color: #fff; border-radius: 8px; padding: 4px 10px; font-weight: 800; }
+  .ftw-confetti { position: fixed; inset: 0; width: 100vw; height: 100vh; pointer-events: none; z-index: 999; }
+  @media (max-width: 480px) { .ftw-grid { gap: 7px; } }
+</style>
+
+<div class="ftw" data-state="initial">
+  <div class="ftw-logo"><img src="https://cdn.shopify.com/s/files/1/0267/4255/4668/files/dino-logo.webp?v=1791530641" alt="Dinosaurized" width="150" height="43"></div>
+  <div class="ftw-head">
+    <h1 class="ftw-title">Pick a Card</h1>
+    <p class="ftw-sub">for FREE GIFTS and DISCOUNTS</p>
+    <p class="ftw-congrats">Congratulations!</p>
+  </div>
+  <div class="ftw-grid"></div>
+  <button class="ftw-btn ftw-flip" type="button" disabled>Flip 4 More Cards</button>
+  <a class="ftw-btn ftw-next" href="#next-step"><span>&#127873;</span><span>Continue</span><svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+  <p class="ftw-count">You've collected <b>0/4</b> prizes!</p>
+  <canvas class="ftw-confetti"></canvas>
+</div>
+
+<script>
+(function () {
+  var CARD_IMG = "https://cdn.shopify.com/s/files/1/0267/4255/4668/files/flip-giftbox.png?v=1792125937";
+  // FILL: one entry per prize, in flip order. img = transparent PNG/WebP on the Dino Shopify CDN, text = 2-4 words.
+  // Keep exactly 4 entries (button "Flip 4 More Cards" and counter "0/4" are written for 4). Prize 2 FREE SHIPPING is a fixed Dino CDN icon.
+  var PRIZES = [
+    { img: "{{PRIZE_1_IMG}}", text: "{{PRIZE_1_TEXT}}" },
+    { img: "https://cdn.shopify.com/s/files/1/0267/4255/4668/files/flip-free-shipping.png?v=1792125553", text: "Free Shipping" },
+    { img: "{{PRIZE_3_IMG}}", text: "{{PRIZE_3_TEXT}}" },
+    { img: "{{PRIZE_4_IMG}}", text: "{{PRIZE_4_TEXT}}" }
+  ];
+  var MAX = PRIZES.length;
+
+  var root = document.querySelector(".ftw"), grid = root.querySelector(".ftw-grid"),
+      btn = root.querySelector(".ftw-flip"), next = root.querySelector(".ftw-next"), count = root.querySelector(".ftw-count b"),
+      canvas = root.querySelector(".ftw-confetti"), flipped = 0;
+
+  // Funnelish routes #next-step links to the next funnel step
+  function go() { next.click(); }
+
+  for (var i = 0; i < 9; i++) {
+    grid.insertAdjacentHTML("beforeend",
+      '<div class="ftw-slot"><div class="ftw-card"><div class="ftw-face ftw-front"><img src="' + CARD_IMG + '" alt="Mystery gift"></div><div class="ftw-face ftw-back"></div></div></div>');
+  }
+  var cards = [].slice.call(grid.querySelectorAll(".ftw-card"));
+  cards.forEach(function (c) { c.addEventListener("click", function () { flip(c); }); });
+  btn.addEventListener("click", function () {
+    cards.filter(function (c) { return !c.classList.contains("flipped"); })
+      .slice(0, MAX - flipped)
+      .forEach(function (c, i) { setTimeout(function () { flip(c); }, i * 200); });
+  });
+
+  function flip(card) {
+    if (root.dataset.state === "complete") return go();
+    if (card.classList.contains("flipped") || flipped >= MAX) return;
+    root.dataset.state = "in-progress";
+    var p = PRIZES[flipped];
+    card.querySelector(".ftw-back").innerHTML =
+      '<div class="ftw-prize-img">' + '<img src="' + p.img + '" alt="' + p.text + '">' + '</div><div class="ftw-prize-text">' + p.text + '</div>';
+    card.classList.add("flipped");
+    flipped++;
+    count.textContent = flipped + "/" + MAX;
+    var left = MAX - flipped;
+    btn.disabled = false;
+    btn.textContent = left === 1 ? "Flip 1 More Card" : "Flip " + left + " More Cards";
+    if (!left) setTimeout(finish, 650);
+  }
+
+  function finish() {
+    root.dataset.state = "complete";
+    root.classList.add("done");
+    confetti();
+  }
+
+  (function swivel() {
+    if (root.dataset.state !== "initial") return;
+    var c = cards[Math.floor(Math.random() * cards.length)];
+    c.classList.add("swivel");
+    setTimeout(function () { c.classList.remove("swivel"); }, 800);
+    setTimeout(swivel, 1800);
+  })();
+
+  function confetti() {
+    var ctx = canvas.getContext("2d"), W = canvas.width = innerWidth, H = canvas.height = innerHeight, end = Date.now() + 6000;
+    var bits = Array.from({ length: 120 }, function () {
+      return { x: Math.random() * W, y: -20 - Math.random() * H * .5, r: Math.random() * 6 + 4, d: Math.random() * 4 + 2, t: Math.random() * 10, c: "hsl(" + Math.random() * 360 + ",100%,50%)" };
+    });
+    (function draw() {
+      ctx.clearRect(0, 0, W, H);
+      if (Date.now() > end) return;
+      bits.forEach(function (b) { b.y += b.d; b.t += .1; ctx.beginPath(); ctx.fillStyle = b.c; ctx.ellipse(b.x, b.y, b.r, b.r / 2, b.t, 0, 2 * Math.PI); ctx.fill(); });
+      requestAnimationFrame(draw);
+    })();
+  }
+})();
+</script>

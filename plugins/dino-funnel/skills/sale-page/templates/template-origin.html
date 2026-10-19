@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<!-- template-origin: clone 1-1 of offer.dinosaurized.com/matt-6-26-bird-feeder-2-1791173375647585
+     Media = <div class="m"> placeholders. To fill one: put <img src alt> inside it and delete the label text.
+     The box keeps the exact size, so the layout never moves. -->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Hummingbird Feeder</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root{--orange:#E75300;--green:#00B67A;--text:#303030;--olive:#505041;--btn-text:#F6F9FE}
+*{box-sizing:border-box}
+body{margin:0;background:#fff;font-family:Roboto,sans-serif;font-size:14px;color:var(--text)}
+p,h1,h2,h3,ul{margin:0;padding:0;font:inherit}
+/* Funnelish text blocks: spaces at line end take width, so wrapping matches the live page */
+p,h1,h2,h3,li{white-space:break-spaces;word-break:break-word}
+a{color:inherit;text-decoration:none}
+s{text-decoration:line-through}
+/* flex column = no margin collapsing between sections (same as Funnelish) */
+.page{display:flex;flex-direction:column;padding:10px}
+.row{width:100%;max-width:1170px;margin:0 auto}
+
+/* media placeholder: same box for placeholder and real image */
+.m{display:flex;align-items:center;justify-content:center;width:100%;overflow:hidden;background:#e9e9e9;border:1px dashed #b5b5b5;color:#888;font-size:12px;line-height:1.2;text-align:center}
+.m:has(img){background:none;border:0}
+.m>img{display:block;width:100%;height:100%;object-fit:contain}
+.sq{aspect-ratio:1/1}
+.sq>img{object-fit:cover}
+
+/* buttons (every CTA goes to the next funnel step) */
+.cta-bar,.cta-sm,.cta-big,.sticky a{color:var(--btn-text);background:var(--green);font-weight:700;line-height:1.2;letter-spacing:.28px;text-align:center}
+.cta-bar{display:block;margin-top:10px;padding:15px 10px;border-radius:10px;font-size:18px}
+.cta-wrap{display:flex;justify-content:center}
+.cta-sm{display:block;margin-top:10px;padding:10px;border-radius:10px;font-size:18px}
+.cta-big{display:block;margin:20px 5px;padding:15px;border-radius:4px;font-size:22px}
+.risk{margin-top:10px;padding:10px;font-size:18px;line-height:1;text-align:center}
+.risk span{font-size:15px;color:#000;background:#fff}
+
+/* accordion (native details, no JS) */
+.acc{margin-top:10px}
+.acc summary{display:flex;padding:10px;border-radius:5px;font-size:16px;font-weight:700;text-align:left;cursor:pointer;list-style:none}
+.acc summary::-webkit-details-marker{display:none}
+.acc summary:hover,.acc[open] summary{background:#f5f5f5}
+.acc[open] summary{border-bottom:1px solid silver}
+.acc summary span{flex:1;max-width:calc(100% - 30px)}
+.acc summary svg{flex:none;margin:auto 5px;transition:transform .2s ease-out}
+.acc[open] summary svg{transform:rotate(180deg)}
+.acc-body{padding:20px 10px}
+.acc-body>div{margin-top:10px;padding:10px;font-size:18px;text-align:left}
+
+/* 1. top bar + logo bar (hidden on mobile) */
+.topbar{display:flex;align-items:center;background:var(--orange);color:#fff;font-weight:700;text-align:center}
+.tb-side{flex:1;padding:10px;font-size:12px}
+.tb-side.r{line-height:1}
+.tb-mid{width:45%;flex:none;padding:10px;border-left:3px solid #fff;border-right:3px solid #fff;font-size:18px;line-height:1}
+.tb-mid b{font-size:12px}
+.logobar{display:flex;align-items:center;background:#fff;text-align:center}
+.lb-side{width:35%;padding:5px;font-size:18px;line-height:1}
+.lb-side h3{font-weight:700}
+.lb-side span{font-size:10px}
+.lb-logo{width:30%;height:50px}
+
+/* 2. hero */
+.hero{display:flex;align-items:flex-start}
+.hero-l,.hero-r{flex:1;min-width:0}
+.gap{width:2%;flex:none}
+.gal{position:relative;margin-top:10px}
+.gal-main{height:500px}
+.gal-prev,.gal-next{position:absolute;top:50%;left:0;margin-top:-22px;padding:16px;color:#fff;font-size:18px;font-weight:700;border-radius:0 3px 3px 0;cursor:pointer;user-select:none;transition:.6s ease}
+.gal-next{left:auto;right:0;border-radius:3px 0 0 3px}
+.gal-prev:hover,.gal-next:hover{background:rgba(0,0,0,.8)}
+.thumbs{display:block;width:100%;overflow-y:scroll}
+.thumbs-in{display:flex;width:fit-content;overflow:hidden}
+.th{width:60px;height:60px;flex:none;margin:10px 5px;border:0;border-radius:2px;box-shadow:0 0 0 1px #b3b3b3;cursor:pointer}
+.th>img{object-fit:scale-down;opacity:.7}
+.th.sel{box-shadow:0 0 0 3px #708090}
+.th.sel>img,.th:hover>img{opacity:1}
+.th:hover:not(.sel){box-shadow:0 0 0 2px #708090}
+.hero-h1{margin-top:10px;padding:5px;font-size:34px;line-height:1.2;font-weight:700;text-align:left}
+.rating{margin-top:10px;aspect-ratio:782/44}
+.hero-lede{margin-top:10px;padding:10px;font-size:18px;line-height:1.5;color:#000;text-align:left}
+.hero-list{padding:10px 10px 10px 18px;font-size:18px;line-height:1.5;color:#000;text-align:left;list-style:none}
+.hero-list li::before{content:"\2022";display:inline-block;margin-right:5px}
+.pay{margin-top:10px;aspect-ratio:1563/159}
+.testi{display:flex;align-items:flex-start;margin-top:10px}
+.testi-av{width:20%;flex:none;display:flex;justify-content:center}
+.av{width:80px;height:80px;flex:none;margin-top:10px;border:2px solid var(--orange);border-radius:100px}
+.av:has(img){border:2px solid var(--orange)}
+.testi p{flex:1;margin-top:10px;padding:10px;font-size:18px;line-height:1.2;font-style:italic;text-align:left}
+.ship p{line-height:1.5}
+
+/* 3. feature rows */
+.feats{margin-top:10px;margin-bottom:10px}
+.feat{display:flex;align-items:center;margin-top:30px}
+.feat-txt,.feat-img{flex:1;min-width:0}
+.feat-img .m{margin-top:10px}
+.feat h2{margin-top:10px;padding:5px;font-size:30px;line-height:1.3;font-weight:700;color:var(--orange);text-align:left}
+.rule{border-top:2px solid var(--orange)}
+.txt{margin-top:10px;padding:10px;font-size:18px;line-height:1.5;text-align:left}
+.txt p+p{margin-top:1.5em}
+
+/* 4. who it's for */
+.sec-h{margin-top:20px;padding:5px;font-size:30px;line-height:1;font-weight:700;color:var(--orange);text-align:center}
+.cards{display:flex}
+.cards>div{width:33.3333%;flex:none}
+.card{display:flow-root;margin:10px 10px 0;background:#fff;border-radius:8px}
+.card .m{width:auto;margin:20px}
+.card-t{padding:10px;font-size:18px;line-height:1.5;font-weight:700;color:var(--orange);text-align:left}
+.card-p{padding:10px;font-size:18px;line-height:1.5;color:#000;text-align:left}
+
+/* 5. offer box */
+.offer{display:flex;align-items:flex-start;margin-top:50px}
+.offer>div{flex:1;min-width:0}
+.offer>div,.bonus-list{display:flex;flex-direction:column}
+.off-name{margin-top:10px;padding:10px;background:var(--orange);color:#fff;font-size:36px;line-height:1.3;font-weight:700;text-align:center}
+.off-img{width:auto;height:450px;margin:20px}
+.bonus-h{margin-top:10px;padding:10px;color:#fff;font-size:36px;line-height:1;font-weight:700;text-align:center}
+.bonus-h span,.bonus-sub span{background:var(--orange)}
+.bonus-sub{padding:10px;color:#fff;font-size:18px;line-height:1.3;font-weight:700;text-align:center}
+.bonus-list{padding:10px}
+.bonus{display:flex;align-items:center}
+.bonus+.bonus{margin-top:10px}
+.bonus-img{width:180px;flex:none;margin-top:10px}
+.bonus-txt{flex:1;min-width:0}
+.bonus-t{padding:10px;color:#000;font-size:21px;line-height:1;font-weight:700;text-align:left}
+.bonus-t.lh{line-height:1.3}
+.bonus-p{padding:0 10px 10px;font-size:24px;line-height:1;font-weight:700;text-align:left}
+.bonus-p b{color:var(--orange)}
+.stock{margin:10px;padding:10px;font-size:18px;line-height:1;text-align:center}
+.stock span{font-size:16px;color:#2f2f2f;background:#fff}
+.stock b{color:#cc3300}
+
+/* 6. guarantee */
+.guar-bg{background:var(--olive)}
+.guar{display:flex}
+.g-side{width:15%;flex:none}
+.g-side.r{width:16.6666%}
+.g-mid{width:68.3334%;flex:none}
+.g-h{margin-top:10px;padding:5px;color:#fff;font-size:26px;line-height:1.5;font-weight:700;text-align:center}
+.g-box{display:flex;align-items:center;padding:20px}
+.g-badge{width:200px;flex:none}
+.g-badge .m{height:200px;margin-top:10px}
+.g-txt{flex:1;min-width:0}
+.g-t{margin-top:10px;padding:10px;color:#fff;font-size:26px;line-height:1.3;font-weight:700;text-align:left}
+.g-p{padding:10px;color:#fff;font-size:16px;line-height:1.5;text-align:left}
+
+/* 7. faq */
+.faq-h{margin-top:10px;padding:5px;color:var(--orange);font-size:22px;font-weight:700;text-align:center}
+
+/* 8. reviews */
+.rv-head{display:flex;flex-direction:column;align-items:center;padding:20px;background:#fff;border-radius:18px}
+.rv-head>*{width:90%}
+.rv-h{margin-top:10px;padding:5px 5px 37.5px;color:var(--orange);font-size:26px;font-weight:700;text-align:center}
+.rv-stars{width:200px;height:37.5px}
+.rv-score{margin-top:10px;padding:5px;font-size:18px;line-height:1;text-align:center}
+.rvs{display:flex}
+.rvs>div{width:33.3333%;flex:none}
+.rv{display:flow-root;margin:10px 10px 0;background:#fff;border-radius:8px}
+.rv-img{border-radius:8px 8px 0 0}
+.rv-who{display:flex;align-items:center;margin-left:10px}
+.rv-st{width:80px;height:15px;flex:none}
+.rv-who p{flex:1;padding:10px;font-size:18px;line-height:1;font-weight:700;text-align:left}
+.rv-txt{padding:10px;color:#000;font-size:16px;text-align:left}
+.rv-src{display:flex;align-items:flex-start;margin-bottom:30px}
+.rv-src p{width:67px;flex:none;margin-right:10px;font-size:18px;line-height:1;text-align:right}
+.rv-src span{color:#b6b6b6;font-size:12px}
+.rv-tp{width:80px;aspect-ratio:109/36;flex:none}
+
+/* 9. footer + sticky bar */
+.foot{display:flex;margin-top:10px}
+.foot p{flex:1;margin-top:10px;padding:10px;font-size:12px;line-height:1;text-align:center}
+.sticky{position:sticky;bottom:0;z-index:10;background:var(--green)}
+.sticky a{display:block;max-width:1170px;margin:0 auto;padding:10px;border-radius:4px;font-size:20px}
+
+@media (max-width:600px){
+  .desk-only{display:none}
+  .hero,.cards,.offer,.guar,.g-box,.rvs{flex-direction:column}
+  .feat{flex-direction:column-reverse}
+  .feat.flip{flex-direction:column}
+  .hero>div,.feat>div,.cards>div,.offer>div,.guar>div,.rvs>div{width:100%;flex:none}
+  .gap{width:2%!important}
+  .g-txt{width:100%}
+  .hero-h1{font-size:28px}
+  .sec-h{font-size:26px}
+  .off-name{font-size:23px}
+  .bonus-sub{font-size:16px}
+  .bonus-t{font-size:20px}
+  .bonus-p{font-size:18px}
+  .g-t{font-size:24px;text-align:center}
+  .foot p{font-size:9px}
+}
+</style>
+</head>
+<body>
+<div class="page">
+
+<!-- 1. TOP BAR + LOGO BAR (desktop/tablet only) -->
+<div class="desk-only">
+  <div class="row topbar">
+    <div class="tb-side"><p>FREE SHIPPING</p><p>4-12 DAYS</p></div>
+    <div class="tb-mid"><p><b>&#9733;&#9733;&#9733;&#9733;&#9733;</b></p><p><b>TRUSTED BY THOUSANDS</b></p></div>
+    <div class="tb-side r"><p>EASY RETURN</p></div>
+  </div>
+  <div class="row logobar">
+    <div class="lb-side"><h3>SECURED CHECKOUT</h3></div>
+    <div class="m lb-logo">LOGO (height 50)</div>
+    <div class="lb-side"><h3>CONTACT</h3><p><span>support@dinosaurized.com</span></p></div>
+  </div>
+</div>
+
+<!-- 2. HERO -->
+<div class="row hero">
+  <div class="hero-l">
+    <div class="gal">
+      <div class="m gal-main">GALLERY MAIN (height 500, = thumb 1)</div>
+      <a class="gal-prev">&#10094;</a><a class="gal-next">&#10095;</a>
+    </div>
+    <div class="thumbs"><div class="thumbs-in">
+      <div class="m th sel">1</div><div class="m th">2</div><div class="m th">3</div><div class="m th">4</div><div class="m th">5</div><div class="m th">6</div>
+    </div></div>
+  </div>
+  <div class="gap"></div>
+  <div class="hero-r">
+    <h1 class="hero-h1">The Feeder That Keeps Seed Dry And Bullies Off The Tray</h1>
+    <div class="m rating">RATING BAR 782:44 (4.8/5 Rated by 18,736+ Happy Customers)</div>
+    <p class="hero-lede">The Matt 6:26 Bird Feeder. 47 oz of seed, a clear body you can read from the kitchen window, and a roof that flips open with one push.</p>
+    <ul class="hero-list">
+      <li>Holds 47 oz, nearly 3 lb of seed</li>
+      <li>Wide roof and drain holes keep the seed dry through heavy rain</li>
+      <li>Roof flips up on a hinge and stays attached, so filling takes seconds</li>
+      <li>Clear body shows the seed level from across the yard</li>
+      <li>Twist lock keeps squirrels from popping the lid open</li>
+      <li>120-Day 100% Money-Back Guarantee</li>
+    </ul>
+    <a class="cta-bar" href="#next-step">&#128073; REVEAL OFFER</a>
+    <div class="m pay">PAYMENT ICONS 1563:159</div>
+    <div class="testi">
+      <div class="testi-av"><div class="m av">AVATAR</div></div>
+      <p><em>"Such a pretty design, easy to fill, and sturdy. No squirrels have gotten to mine, and I have a ton of squirrels. The railing is on the small side though, so it is the little birds that use it."&mdash; </em><b><em>Peggy A.</em></b><em> &#11088;&#11088;&#11088;&#11088;&#11088;</em></p>
+    </div>
+    <details class="acc">
+      <summary><span>Shipping Detail</span><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.0581 4.55812L12.9419 5.44187L7.50001 10.8837L2.05814 5.44187L2.94189 4.55812L7.50001 9.11625L12.0581 4.55812Z" fill="currentColor"/></svg></summary>
+      <div class="acc-body"><div class="ship">
+        <p>We ship worldwide, however, <b>American customers will always be priorized</b>, both regarding shipping time, handling, customer service or anything customer-related. <b>AMERICAN FIRST</b></p>
+        <p><br></p>
+        <p>Shipping is free worldwide.</p>
+        <p><br></p>
+        <p><b>United States</b>: Shipping takes 7-12 business days (usually much less).</p>
+        <p><b>Non-US countries</b>: 8-14 business days</p>
+        <p>All orders are shipped with a tracking number.</p>
+        <p><br></p>
+        <p><b>Freeshipping </b>is available for 1+more-than-1-product orders.</p>
+      </div></div>
+    </details>
+    <details class="acc">
+      <summary><span>Guarantee</span><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.0581 4.55812L12.9419 5.44187L7.50001 10.8837L2.05814 5.44187L2.94189 4.55812L7.50001 9.11625L12.0581 4.55812Z" fill="currentColor"/></svg></summary>
+      <div class="acc-body"><div class="ship">
+        <p>Hang it for a full 120 days. Fill it in the rain, wash it at the sink, leave it out in the wind.</p>
+        <p>If the birds do not take to it, or the seed does not stay dry, email <a href="mailto:support@dinosaurized.com">support@dinosaurized.com</a> and we refund you. Used, weathered, no restocking fee, no questions.</p>
+      </div></div>
+    </details>
+  </div>
+</div>
+
+<!-- 3. FEATURE ROWS (desktop: text/image alternate; mobile: image on top) -->
+<div class="row feats">
+  <div class="feat">
+    <div class="feat-txt">
+      <h2>Rain Runs Off. The Seed Stays Dry.</h2>
+      <div class="rule"></div>
+      <div class="txt">
+        <p>Most feeders go quiet for one reason: the seed at the bottom got wet, clumped, and turned. Birds will not touch it, and you end up dumping the bag.</p>
+        <p>The roof on this one is wider than the tray, so rain runs off past the perch instead of onto the seed. What does get through drains out of the holes in the tray instead of sitting under the seed.</p>
+        <p>One owner put it plainly after a storm: the food survived a hard rain, "not soggy at all."</p>
+      </div>
+      <div class="cta-wrap"><a class="cta-sm" href="#next-step">&#128073; REVEAL OFFER</a></div>
+      <p class="risk"><span>Try Now Risk Free &bull; 100% Money Back Guarantee</span></p>
+    </div>
+    <div class="gap"></div>
+    <div class="feat-img"><div class="m sq">FEATURE 1 IMAGE 1:1</div></div>
+  </div>
+
+  <div class="feat flip">
+    <div class="feat-img"><div class="m sq">FEATURE 2 IMAGE 1:1</div></div>
+    <div class="gap"></div>
+    <div class="feat-txt">
+      <h2>Filling It Stops Being A Chore</h2>
+      <div class="rule"></div>
+      <div class="txt">
+        <p>A feeder you dread filling is a feeder that sits empty.</p>
+        <p>No cap to unscrew. No lid to set down in the grass and lose. Push the clip, the roof flips up on its hinge and stays attached, you pour, you snap it shut. It is a ten second job on the way back from the mailbox.</p>
+        <p>The clear body means you know when it is low from the kitchen window, so you are not walking out to check.</p>
+        <p>Washing is the same story. The base comes off, the opening takes your hand and a bottle brush, and every surface faces you. Two minutes at the sink, once every couple of weeks, which is exactly what Project FeederWatch recommends.</p>
+      </div>
+      <div class="cta-wrap"><a class="cta-sm" href="#next-step">&#128073; REVEAL OFFER</a></div>
+      <p class="risk"><span>Try Now Risk Free &bull; 100% Money Back Guarantee</span></p>
+    </div>
+  </div>
+
+  <div class="feat">
+    <div class="feat-txt">
+      <h2 style="line-height:1">The Little Birds Finally Get A Turn</h2>
+      <div class="rule"></div>
+      <div class="txt">
+        <p>An open tray is an invitation. Grackles and blackbirds land, spread out, and clear it in an afternoon. The chickadees and finches you hung it for sit on the fence and wait.</p>
+        <p>The perch ring here is narrow and it sits under the roof. Small birds hop straight on. The heavy ones flap, scrabble, and give up.</p>
+        <p>Squirrels get the same treatment. The lid locks down with a twist, so there is nothing to pop open and tip out. Hang it clear of the fence and the branches and they run out of ideas.</p>
+      </div>
+      <div class="cta-wrap"><a class="cta-sm" href="#next-step">&#128073; REVEAL OFFER</a></div>
+      <p class="risk"><span>Try Now Risk Free &bull; 100% Money Back Guarantee</span></p>
+    </div>
+    <div class="gap"></div>
+    <div class="feat-img"><div class="m sq">FEATURE 3 IMAGE 1:1</div></div>
+  </div>
+</div>
+
+<!-- 4. WHO IT'S FOR -->
+<div class="row"><h2 class="sec-h">The Matt 6:26 Bird Feeder Is Perfect For</h2></div>
+<div class="row cards">
+  <div><div class="card">
+    <div class="m sq">WHO 1 IMAGE 1:1</div>
+    <p class="card-t">The one who gave up on the last feeder.</p>
+    <p class="card-p">You bought the bag, you filled the thing, and two weeks later you were scraping wet clumps into the trash while the birds ate somewhere else. You do not want another feeder. You want the seed to still be dry on Sunday. That is the whole point of this one.</p>
+  </div></div>
+  <div><div class="card">
+    <div class="m sq">WHO 2 IMAGE 1:1</div>
+    <p class="card-t">The gift that actually gets used.</p>
+    <p class="card-p">Read any feeder review section and it is grown children buying for a parent who is on the patio every morning with a coffee. It hangs straight out of the box, fills in seconds, and there is nothing to assemble on a kitchen table. Two come in the box, so one can be the gift and one stays home.</p>
+  </div></div>
+  <div><div class="card">
+    <div class="m sq">WHO 3 IMAGE 1:1</div>
+    <p class="card-t">The yard where the bullies eat first.</p>
+    <p class="card-p" style="color:var(--text)">You want chickadees, finches and titmice, and what you get is a crowd of grackles emptying the tray by noon. The narrow ring under the roof sorts that out without you standing at the window waving a dish towel.</p>
+  </div></div>
+</div>
+
+<!-- 5. OFFER BOX -->
+<div class="row offer">
+  <div>
+    <p class="off-name">The Matt 6:26 Bird Feeder</p>
+    <div class="m off-img">OFFER PRODUCT IMAGE (height 450)</div>
+    <a class="cta-big" href="#next-step">BUY 1 GET 1 FREE</a>
+  </div>
+  <div>
+    <p class="bonus-h"><span>BONUS TODAY</span></p>
+    <p class="bonus-sub"><span>PLUS $80 WORTH OF FREE GIFTS INCLUDED</span></p>
+    <div class="bonus-list">
+      <div class="bonus">
+        <div class="m bonus-img" style="height:150px">BONUS 1 (h 150)</div>
+        <div class="bonus-txt">
+          <p class="bonus-t lh">"Which Seed Brings Which Bird" Guide</p>
+          <p class="bonus-p"><s>$29.97</s> <b>FREE TODAY</b></p>
+        </div>
+      </div>
+      <div class="bonus">
+        <div class="m bonus-img" style="height:120px">FREE SHIPPING BADGE (h 120)</div>
+        <div class="bonus-txt">
+          <p class="bonus-t">Free Shipping On Pack 2 Or More</p>
+          <p class="bonus-p"><s>$9.97</s> <b>FREE TODAY</b></p>
+        </div>
+      </div>
+      <div class="bonus">
+        <div class="m bonus-img" style="height:180px">SPECIAL OFFER BADGE (h 180)</div>
+        <div class="bonus-txt">
+          <p class="bonus-t">Special Discount</p>
+          <p class="bonus-p"><s>$100</s> <b>$30/ea TODAY ONLY</b></p>
+        </div>
+      </div>
+      <p class="stock"><span>Order now&hellip; only&nbsp;</span><b>15</b><span>&nbsp;left in stock</span></p>
+      <a class="cta-big" href="#next-step">BUY 1 GET 1 FREE</a>
+    </div>
+  </div>
+</div>
+
+<!-- 6. GUARANTEE -->
+<div class="guar-bg"><div class="row guar">
+  <div class="g-side"></div>
+  <div class="g-mid">
+    <h2 class="g-h">Our rig, Your Confidence - Guaranteed!</h2>
+    <div class="g-box">
+      <div class="g-badge"><div class="m">120-DAY BADGE 200x200</div></div>
+      <div class="g-txt">
+        <p class="g-t">Try it RISK-FREE for 120 days.</p>
+        <div class="g-p">
+          <p>Clip it on, load the belt like always, and drag it through four months of real work. If you don't reach for it every single morning over going bare-belt, send it back and we refund you &mdash; used, dusty, no restocking fee, no interrogation.</p>
+          <p>We're comfortable saying that because guys who buy this one tend to come back for a second &mdash; for the son-in-law, or the crew.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="g-side r"></div>
+</div></div>
+
+<!-- 7. FAQ -->
+<div class="row"><h2 class="faq-h">Ready to Order, but Have Questions?<br>We got you covered.</h2></div>
+<div class="row">
+  <details class="acc">
+    <summary><span>Will the ants and bees really stay out?</span><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.0581 4.55812L12.9419 5.44187L7.50001 10.8837L2.05814 5.44187L2.94189 4.55812L7.50001 9.11625L12.0581 4.55812Z" fill="currentColor"/></svg></summary>
+    <div class="acc-body"><div><p>They are two different mechanisms. Ants are stopped by the moat: fill the cup on top with plain water and they will not cross it, because ants will not swim. Top it up whenever you refill the nectar, roughly once a week in hot weather, because a dry cup stops nothing. Bees are stopped by the ports: the nectar sits below the flower, far enough down that a bee cannot reach it but well within reach of a hummingbird's tongue. Keep the outside of the feeder clean and dry and the bees lose interest, because what actually draws them is spilled nectar on the shell, not what is inside.</p></div></div>
+  </details>
+  <details class="acc">
+    <summary><span>Does it leak?</span><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.0581 4.55812L12.9419 5.44187L7.50001 10.8837L2.05814 5.44187L2.94189 4.55812L7.50001 9.11625L12.0581 4.55812Z" fill="currentColor"/></svg></summary>
+    <div class="acc-body"><div style="color:#000"><p>It seals without a rubber washer, which is the part that perishes and starts the drip on most feeders. Twist the base on firmly and hang it level. If yours does drip, that is exactly what the 120 day guarantee is for.</p></div></div>
+  </details>
+  <details class="acc">
+    <summary><span>How do I clean it, and how often?</span><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.0581 4.55812L12.9419 5.44187L7.50001 10.8837L2.05814 5.44187L2.94189 4.55812L7.50001 9.11625L12.0581 4.55812Z" fill="currentColor"/></svg></summary>
+    <div class="acc-body"><div><p>By hand, and it takes about two minutes. The base comes all the way off and the mouth takes your hand and a bottle brush. It is not dishwasher safe. Hot water and a brush is enough, no soap needed. In hot weather, every four or five days.</p></div></div>
+  </details>
+  <details class="acc">
+    <summary><span>What do I put in it?</span><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><path fill-rule="evenodd" clip-rule="evenodd" d="M12.0581 4.55812L12.9419 5.44187L7.50001 10.8837L2.05814 5.44187L2.94189 4.55812L7.50001 9.11625L12.0581 4.55812Z" fill="currentColor"/></svg></summary>
+    <div class="acc-body"><div style="color:#000"><p>Four parts water to one part plain white sugar, stirred until it dissolves. Nothing else. No red dye, no honey, no brown sugar, no store bought mix. The feeder itself is already red, and red is the part the birds are looking for.</p></div></div>
+  </details>
+</div>
+
+<!-- 8. REVIEWS -->
+<div class="row rv-head">
+  <h2 class="rv-h">Everyone Loves The Matthew 6:26 Hummingbird Feeder</h2>
+  <div class="m rv-stars">STARS 512:96</div>
+  <p class="rv-score">4.8 | Based on<b> 18,736 reviews</b></p>
+</div>
+<div class="row rvs">
+  <div><div class="rv">
+    <div class="m sq rv-img">REVIEW 1 PHOTO 1:1</div>
+    <div class="rv-who"><div class="m rv-st">&#9733;</div><p>Emma Janes</p></div>
+    <p class="rv-txt">I&rsquo;ve had this cute bird feeder for about a month and I&rsquo;m so happy I bought it. It took about 2 days for the birds to find it and now there is a steady flow of goldfinches and purple finches that visit. It&rsquo;s such an easy feeder to fill taking only a couple of minutes. If your considering buying it you won&rsquo;t be disappointed.</p>
+    <div class="rv-src"><p><span>Posted on</span></p><div class="m rv-tp">TRUSTPILOT</div></div>
+  </div></div>
+  <div><div class="rv">
+    <div class="m sq rv-img">REVIEW 2 PHOTO 1:1</div>
+    <div class="rv-who"><div class="m rv-st">&#9733;</div><p>Viviane</p></div>
+    <p class="rv-txt">Located on a second-floor apartment patio in Central Texas, I bought this feeder to replace a large hanging mesh tray that soaked seeds in the rain, was a pain to clean, and attracted squirrels and five territorial White-Winged Doves that bullied away smaller birds. This feeder solved every problem: the squirrels ignore it completely, the plastic construction is durable and easy to assemble, and seeds stay bone-dry even in heavy downpours. It's effortless to clean and refill, and my patio is constantly visited by chickadees, titmice, finches, sparrows, and cardinals&mdash;with just one dove making awkward visits from time to time. (I keep ground feeders elsewhere so my jays and doves still get fed.) I love it so much I bought two so I'll have a replacement ready to go when needed. Happy birds, happy buyer!</p>
+    <div class="rv-src"><p><span>Posted on</span></p><div class="m rv-tp">TRUSTPILOT</div></div>
+  </div></div>
+  <div><div class="rv">
+    <div class="m sq rv-img">REVIEW 3 PHOTO 1:1</div>
+    <div class="rv-who"><div class="m rv-st">&#9733;</div><p>Amanda H.</p></div>
+    <p class="rv-txt">My son wanted to feed the birds at home, so I went looking for a simple and attractive bird feeder that wouldn&rsquo;t break the bank. This fit the bill perfectly and the birds have been flocking to our yard since the first week it went up.</p>
+    <div class="rv-src"><p><span>Posted on</span></p><div class="m rv-tp">TRUSTPILOT</div></div>
+  </div></div>
+</div>
+
+<!-- 9. FOOTER -->
+<div class="row foot">
+  <p><a href="https://dinosaurized.com/pages/contact">Privacy policy</a></p>
+  <p><a href="https://dinosaurized.com/policies/refund-policy">Refund policy</a></p>
+  <p><a href="https://dinosaurized.com/policies/terms-of-service" target="_blank">Terms of service</a></p>
+  <p><a href="https://dinosaurized.com/pages/shipping-handling" target="_blank">Shipping policy</a></p>
+</div>
+
+<!-- STICKY BAR -->
+<div class="sticky"><a href="#next-step">&#128073; REVEAL OFFER</a></div>
+
+</div>
+<script>
+/* gallery: thumbs + arrows swap the main image (works once real <img> are inside .th and .gal-main) */
+(function(){
+  var t=[].slice.call(document.querySelectorAll('.th')),m=document.querySelector('.gal-main'),i=0;
+  function go(n){
+    i=(n+t.length)%t.length;
+    t.forEach(function(e,k){e.classList.toggle('sel',k===i)});
+    var s=t[i].querySelector('img'),d=m.querySelector('img');
+    if(s&&d)d.src=s.src;
+  }
+  t.forEach(function(e,k){e.onclick=function(){go(k)}});
+  document.querySelector('.gal-prev').onclick=function(){go(i-1)};
+  document.querySelector('.gal-next').onclick=function(){go(i+1)};
+})();
+</script>
+</body>
+</html>

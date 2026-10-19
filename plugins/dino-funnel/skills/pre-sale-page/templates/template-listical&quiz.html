@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<!--
+# Template: listical&quiz
+
+Source: live page `https://offers.hike-footwear.com/l/li12` (Hike Footwear, HF Stride barefoot shoe; Webflow + Aeroflows), cloned 2026-10-09.
+Format: first-person **quiz-style listicle** ("I Tried 7 Different 'Comfort' Shoes. Only One Actually Worked."). 11 steps, ONE visible at a time: intro → 4 failed competitors (one per step) → ours → why ours is different → recap of all five → "the only pair I still wear" → fit/guarantee objection → result page with the offer. Sticky bottom bar = Next/Back, progress bar + `01 / 11` counter in the sticky header, countdown bar from step 6.
+
+How it was built (code, not visuals): the server HTML (pre-JS) of the live page, cart drawer / tracking / Webflow + Aeroflows runtime removed. CSS = the site's shared Webflow stylesheet + every inline `<style>` + the `lq-fade-styles` block the quiz script injects, pruned to selectors that match this DOM (227 rules). Verified against the live page in Chrome at 390px and 1280px on all 11 steps: every element's box within 2px except one 3px flex split in step 5 (placeholder vs image intrinsic size).
+
+## Placeholders to replace globally
+
+| Token | Replace with |
+|---|---|
+| `/SLUG/` | `/<slug>/` (fonts + any asset paths you add) |
+| `https://offer.dinosaurized.com/OFFER-SLUG` | offer URL (7 places: commit bar x5 in steps 6-10, result-page button, SUMMER SALE badge) |
+| `FOOT` / `INSIDER` (`.nav-foots h1`: `<strong>FOOT</strong>-<strong>INSIDER</strong>`, renders FOOT-INSIDER) | publication name for the site (TopReviewKing / Queen, or a niche "insider" name) |
+
+## Fonts (self-hosted, `public/<slug>/assets/fonts/`)
+
+Only the faces the live page actually loads across all 11 steps (Barlow, Gilroy, Circular Std, Inter Display, Figtree). `D=public/<slug>/assets/fonts; mkdir -p $D` then:
+
+```
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/InterDisplay-Bold.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/683f59f83bf92662dad61b1b_InterDisplay-Bold.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Barlow-Medium.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/683f5bd70a0ddd54d30124a9_Barlow-Medium.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Barlow-Regular.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/683f5bd79d49e0448d6f5185_Barlow-Regular.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Barlow-Black.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/683f5bd7e9136178590d39bd_Barlow-Black.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Barlow-ExtraBold.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/683f5bd793f1101a776da641_Barlow-ExtraBold.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Barlow-Light.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/683f5bd7bbeb6397c01b9c98_Barlow-Light.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Gilroy-Bold.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6a1dfe16218b61c0e3507aa8_Gilroy-Bold.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Gilroy-ExtraBold.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6a1dfe16945274efe59f3deb_Gilroy-ExtraBold.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Gilroy-Medium.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6a1dfe16626ad4377417632d_Gilroy-Medium.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Gilroy-SemiBold.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6a1dfe16353650911b965260_Gilroy-SemiBold.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/CircularStd-MediumItalic.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6a47b55ee4b45210ac07c5df_CircularStd-MediumItalic.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/CircularStd-Book.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6a47b55eaf2d21272c1d7c3d_CircularStd-Book.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/CircularStd-Bold.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6a47b55edb0895002185ace1_CircularStd-Bold.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/CircularStd-BoldItalic.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6a47b55edb0895002185acf0_CircularStd-BoldItalic.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/CircularStd-Medium.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6a47b55edb0895002185acfc_CircularStd-Medium.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Figtree-400.woff2" "https://fonts.gstatic.com/s/figtree/v9/_Xmz-HUzqDCFdgfMsYiV_F7wfS-Bs_d_QG5ZyEA25WTzVOw.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Figtree-500.woff2" "https://fonts.gstatic.com/s/figtree/v9/_Xmz-HUzqDCFdgfMsYiV_F7wfS-Bs_dNQG5ZyEA25WTzVOw.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Figtree-600.woff2" "https://fonts.gstatic.com/s/figtree/v9/_Xmz-HUzqDCFdgfMsYiV_F7wfS-Bs_ehR25ZyEA25WTzVOw.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Figtree-700.woff2" "https://fonts.gstatic.com/s/figtree/v9/_Xmz-HUzqDCFdgfMsYiV_F7wfS-Bs_eYR25ZyEA25WTzVOw.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Figtree-800.woff2" "https://fonts.gstatic.com/s/figtree/v9/_Xmz-HUzqDCFdgfMsYiV_F7wfS-Bs_f_R25ZyEA25WTzVOw.woff2"
+```
+
+(offers.hike-footwear.com sits behind Cloudflare: a plain curl gets a 403 page, the Chrome UA above passes. Check `file $D/*` says "Web Open Font Format".)
+
+## Slot map (in page order)
+
+Copy style: first person, a real-sounding woman ~60 ("three of us tried"), short paragraphs separated by `<br><br>`, `<strong>` on the punch phrase of each paragraph, each step ends on a bold one-line verdict. Each `p.p-listicle-2` is one `<p>` with `<br><br>` between paragraphs (keep that, not separate `<p>`s). Some paragraphs start with a zero-width joiner `‍` after `<br><br>` (Webflow artifact, invisible): harmless, keep or drop.
+
+| Block (selector) | What to write | Original size |
+|---|---|---|
+| `<title>` | same as the step-1 headline | |
+| `.nav-foots h1` | publication name, 2 `<strong>` (white + green) | 1-2 words |
+| `.countdown_timer .adv.af_countdown_text` | offer line, e.g. `Save 49% +&nbsp;Free Shipping` (shows from step 6) | 4 words |
+| Step 1 `.label__text` / `.text-span-223` | `FEATURED` / `Posted on [date]` | |
+| Step 1 `h3.display-xl-2` | `<strong>` claim + `<span class="text-span-221 af"><strong>` green payoff ("I Tried N Different X. / Only One Actually Worked.") | 10 words |
+| Step 1 `.blogpost1_author-text` | `Words by <strong>[Name]</strong>` + role badge (`Barefoot Shoe Enthusiast`) | |
+| Step 1 `p.p-listicle-2` | hook ("Let me save you the time and money I wasted."), the lineup with prices, "Four failures. One winner." + total spent | 3 paras, 80 words |
+| Steps 2-5 `h3` | `N. The $[price] [Competitor angle]` | 6-9 words |
+| Steps 2-5 `p.p-listicle-2` | why that competitor failed: what it promised, what happened by week 2 / hour 3, bold one-line verdict | 3 paras, 75-105 words |
+| Step 6 (`data-reason-index="6"`) | `5. The One I'd Never Heard Of`: discovery of ours + first feeling, then commit bar | 110 words |
+| Step 7 | `6. Why [Ours] Was Different`: hour-by-hour proof, each paragraph = one pain from steps 2-5 solved | 120 words |
+| Step 8 `ul.list-dd > li` x4 + closing `p` | `7. How the Five Compared`: one `<li>` per competitor (`<strong>name:</strong>` + 1 line), then ours with price, then "cost us $X combined. The one that worked costs less than any of them." | 135 words |
+| Step 9 | `8. The Only Pair I Still Wear`: months later, old pairs in the trash, price `$X (normally $Y)` | 75 words |
+| Step 10 | `9. But Will It Fit My Feet?`: sizing objection + guarantee ("30 days ... Worn.") + the deeper reason | 145 words |
+| `a.af-commit-bar` (steps 6-10) | `.af-commit-title` kicker + `<strong class="bold-text-1915">` CTA line ("See the shoe that won", "The keeper is $69.95", "30 days to prove it, risk-free"); `.af-commit-sub` `Low Stock · Free Shipping`; `.af-commit-cta` `Try Risk-Free →`. Both `.af-commit-sub` copies (desktop/mobile) say the same | |
+| Step 11 (`data-lq-result-page`) `h3` | "Reaching #10 means one thing: you're truly serious about" + `span.text-span-226` the goal | 12 words |
+| Step 11 `.adv_cta_heading-2` | `<span class="span-red">Up To 49% off</span> For A Limited Time Only` (offer from the offer page) | |
+| Step 11 `.adv_cta_subtitle_text` / `.text-block-580` / `.bot_cta_badge_div` / `.text-size-tiny` | reassurance line, button `Try Them Risk-Free`, `Sell-Out Risk: High | FREE shipping`, guarantee line | |
+| Step 11 `.listicle-banner-sale-badge` | sale name (`SUMMER SALE`), links to the offer | 2 words |
+| `#sticky_bar .listicle-holder-1 .text-block-934` | step-1 button text `See which one worked` | 4 words |
+| `#sticky_bar .listicle-holder` | `Back` / `Next Reason` (shown from step 2, whole bar hidden on step 11) | |
+
+**Dinosaurized guarantee is 120 days**, not 30: step 10 copy, step 11 subtitle, `.text-size-tiny`, commit-bar line in step 10.
+
+## Media placeholders (`.ph`)
+
+Every image/video is a `<div class="… ph" data-ph="image|video|avatar|lottie">` that keeps the original element's classes (images) or inline style (videos), so the box is already the right size. Inside it:
+- `.ph-ref` = the **original media, hotlinked** from the source page (images from offers.hike-footwear.com, videos from cdn.shopify.com) so you can SEE what goes in each slot. Reference only: they are a competitor's files and can disappear any day. Never ship them.
+- `.ph-t` = type + displayed ratio, `.ph-d` = the slot's role, product-agnostic (works for any product). If a hotlink dies, these two still say what belongs there.
+- The commit-bar thumb (`.af-commit-img-placeholder-2`) shows the original through the `.ph` CSS block, not an `.ph-ref` tag.
+
+Swap each `.ph` (with its `.ph-ref` and labels) for the real element, then delete the `.ph` CSS block at the end of `<style>` once none are left:
+
+- **image**: `<img src="/<slug>/assets/<file>.webp" loading="eager" alt="" class="image-content-2" width="W" height="H">` (same class the `.ph` div has, minus `ph`; drop the inline `aspect-ratio`).
+- **video**: `<video autoplay muted loop playsinline webkit-playsinline preload="metadata" style="<the .ph inline style>;object-fit:cover;"><source src="/<slug>/assets/<file>.mp4" type="video/mp4"></video>` (put `object-fit:cover;` back, the placeholder dropped it).
+- **avatar** (`.blogpost1_author-image`, 56px circle): `<img … class="blogpost1_author-image">`, square source.
+- **lottie** (countdown flame): any 18x22 flame icon (inline SVG or the Lottie player). Or delete it.
+- **commit-bar thumb** (`.af-commit-img-placeholder-2`, 80px circle, 5 copies): it is a CSS background, not an `<img>`. Set it in the main rule: `background-image: url("/<slug>/assets/thumb.webp")` (currently `none`), drop `ph`/`data-ph`/`title` and the inner span from the 5 divs.
+
+| Step | Slot | `.ph-t` | `.ph-d` (role) |
+|---|---|---|---|
+| 1 | author | IMG 1:1 | Author avatar |
+| 1 | hero | IMG 3:2 | All 5 products compared side by side |
+| 2 | pair | VIDEO 7:8 x2 | Author living with the problem (UGC) / Competitor 1 failing, close-up |
+| 3 | pair | IMG + VIDEO 7:8 | Competitor 2 packshot / Competitor 2 failing, hands-on demo |
+| 4 | pair | IMG + VIDEO 7:8 | Competitor 3 packshot / The pain the problem causes (UGC) |
+| 5 | pair | IMG + VIDEO 7:8 | Competitor 4 packshot / Frustrated, ditching competitor 4 (UGC) |
+| 6 | pair | VIDEO 7:8 x2 | Our product in use, close-up / Author presenting our product, selfie (UGC) |
+| 7 | pair | VIDEO 7:8 x2 | Author happy with our product (UGC) / Key feature of our product, close-up demo |
+| 8 | pair | IMG 7:8 x2 | Our product in real use (POV) / Our product, close-up |
+| 9 | pair | IMG + VIDEO 7:8 | Our product, lifestyle shot / Old products thrown away (UGC) |
+| 10 | full width | VIDEO 2:1 | How our product works (feature animation) |
+| 11 | offer card | IMG 1:1 | Our product packshot, transparent cut-out |
+| 6-10 | commit-bar thumb x5 | IMG 1:1 (80px circle) | Our product thumbnail |
+| header | countdown | LOTTIE | Small animated icon (flame) |
+
+## Do not touch
+
+- `data-quiz-step` / `data-reason-index` on each step, `data-quiz="next-reason|prev-reason"`, `data-quiz-progress-*`, `data-lq-show-on|show-from|hide-on|hide-from`: the quiz script at the end of `<body>` reads them. Step count and progress segments go together: 11 steps, 10 `.afp-seg-v2` (the last step completes the bar), counter total = step count.
+- `id="js-clock"` + the countdown script inside it (counts down to local midnight).
+- `<head>`: `/tags.js`, favicons, `noindex, nofollow`. The click-ID passthrough script at the end (selector `a[href*="offer.dinosaurized.com"]`).
+- The CSS is pruned to this DOM. A NEW class added to the HTML has no rule: reuse the classes already on the page.
+
+## Leftover grep
+
+grep -inE 'hike|cdn\.shopify|ph-ref|HF Stride|Mary Thompson|Hoka|Nike|Skechers|New Balance|barefoot|summer sale|\$555|\$69\.95|30.day|>FOOT<|OFFER-SLUG|/SLUG/' index.html   # must be empty
+grep -c 'data-ph=' index.html                                                                                          # 0 when all media are in
+
+## Template-specific traps
+
+| Trap | Fix |
+|---|---|
+| Steps share `id="overview"` (10 duplicates, from the source) | harmless (nothing targets it); keep or drop, never add a link to `#overview` |
+| Adding/removing a step | renumber `data-reason-index`, keep one `.afp-seg-v2` per step minus one, change `data-lq-hide-from` on `#sticky_bar` and `data-lq-show-from` on `.countdown_timer` if they should move |
+| Competitor names are real brands on a public page | every failure must trace to a real spec or recurring complaint (pre-sale-page skill rules) |
+| Step-8 recap and step-1 lineup list the same products and prices | change both together, the total ("$555") appears in steps 1, 8 and 9 |
+| Step-1 hero (`IMG 3:2`, all 5 products) | NEVER a products-only lineup reused from another page. Generate it per SKILL.md *Steps* 2 option A: the author (same face as the avatar, avatar URL as input) behind all 5 products in a fitting real setting, each product exactly once (describe every competitor's look in the prompt or the model duplicates ours), plus option B, the user picks (hummingbird-feeder-review-hw1: A) |
+| Video slots (Kling 3.0 on Kie, 5s ~70 credits) | The user wants constant, heavy motion. (1) First gen a STRONG still with the action already in it (a swarm, a dozen drips), not a calm one. (2) Image + motion prompt only; never lock last frame = first frame (the clip barely moves). (3) Check motion before showing: `ffmpeg -i v.mp4 -vf "tblend=all_mode=difference,signalstats,metadata=print:key=lavfi.signalstats.YAVG:file=-" -f null -` mean YAVG: <1 = static (rejected), ~2+ ok, 7-9 strong. Kling may cut into 2-3 shots, fine. Compress `-vf scale=720:-2 -crf 28`, first frame as poster (hummingbird-feeder-review-hw1 s2b/s3b) |
+| Competitor prices from Amazon | NEVER the real Amazon price (the user: that's the floor price, far too low). Write a high but believable price per competitor, every one above our per-unit price, so "costs less than any of them" stays true (bird-feeder-review-2: $45-90, total $270, ours $30) |
+| `.listicle-holder-1.lq-show` is 500px wide on desktop | step-1 button text must fit (~25 chars) |
+
+## Changes vs the live page
+
+- Removed: Shopify cart drawer (`pageblock-cart`: every CTA now links to the offer page instead of opening it), Aeroflows/Klaviyo/GTM/pixels, Webflow runtime, hidden "New Flavors Just Released" blocks, Swiper, WebFont loader (fonts self-hosted).
+- Quiz script rewritten (the original `li11-p` is obfuscated and served behind a token): same attributes, same behavior (fade-in 0.2s, scroll to top, progress, counter, show/hide rules).
+- All media → `.ph` placeholders with the original hotlinked inside as a reference (above).
+
+This comment is template notes only: drop it from the built index.html (it would ship to a public page).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light">
+<title>I Tried 7 Different 'Comfort' Shoes. Only One Actually Worked.</title>
+<script src="/tags.js?v=8d6afa76" defer></script>
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>
+@font-face { font-family: Interdisplay; src: url("/SLUG/assets/fonts/InterDisplay-Bold.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: Barlow; src: url("/SLUG/assets/fonts/Barlow-Medium.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: Barlow; src: url("/SLUG/assets/fonts/Barlow-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: Barlow; src: url("/SLUG/assets/fonts/Barlow-Black.woff2") format("woff2"); font-weight: 900; font-style: normal; font-display: swap; }
+@font-face { font-family: Barlow; src: url("/SLUG/assets/fonts/Barlow-ExtraBold.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: Barlow; src: url("/SLUG/assets/fonts/Barlow-Light.woff2") format("woff2"); font-weight: 300; font-style: normal; font-display: swap; }
+@font-face { font-family: Gilroy; src: url("/SLUG/assets/fonts/Gilroy-Bold.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: Gilroy; src: url("/SLUG/assets/fonts/Gilroy-ExtraBold.woff2") format("woff2"); font-weight: 800; font-style: normal; font-display: swap; }
+@font-face { font-family: Gilroy; src: url("/SLUG/assets/fonts/Gilroy-Medium.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: Gilroy; src: url("/SLUG/assets/fonts/Gilroy-SemiBold.woff2") format("woff2"); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: "Circular Std"; src: url("/SLUG/assets/fonts/CircularStd-MediumItalic.woff2") format("woff2"); font-weight: 500; font-style: italic; font-display: swap; }
+@font-face { font-family: "Circular Std"; src: url("/SLUG/assets/fonts/CircularStd-Book.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Circular Std"; src: url("/SLUG/assets/fonts/CircularStd-Bold.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: "Circular Std"; src: url("/SLUG/assets/fonts/CircularStd-BoldItalic.woff2") format("woff2"); font-weight: 700; font-style: italic; font-display: swap; }
+@font-face { font-family: "Circular Std"; src: url("/SLUG/assets/fonts/CircularStd-Medium.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: Figtree; src: url("/SLUG/assets/fonts/Figtree-400.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: Figtree; src: url("/SLUG/assets/fonts/Figtree-500.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: Figtree; src: url("/SLUG/assets/fonts/Figtree-600.woff2") format("woff2"); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: Figtree; src: url("/SLUG/assets/fonts/Figtree-700.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: Figtree; src: url("/SLUG/assets/fonts/Figtree-800.woff2") format("woff2"); font-weight: 800; font-style: normal; font-display: swap; }
+@keyframes spinner-dash { 
+  0% { stroke-dasharray: 1, 150; stroke-dashoffset: 0; }
+  50% { stroke-dasharray: 90, 150; stroke-dashoffset: -35; }
+  100% { stroke-dasharray: 90, 150; stroke-dashoffset: -124; }
+}
+html { text-size-adjust: 100%; font-family: sans-serif; }
+body { margin: 0px; }
+section { display: block; }
+a { background-color: rgba(0, 0, 0, 0); }
+a:active, a:hover { outline: 0px; }
+strong { font-weight: 700; }
+h1 { margin: 0.67em 0px; font-size: 2em; }
+svg:not(:root) { overflow: hidden; }
+* { box-sizing: border-box; }
+html { height: 100%; }
+body { color: rgb(51, 51, 51); background-color: rgb(255, 255, 255); min-height: 100%; margin: 0px; font-family: Arial, sans-serif; font-size: 14px; line-height: 20px; }
+.w-inline-block { max-width: 100%; display: inline-block; }
+h1, h3 { margin-bottom: 10px; font-weight: 700; }
+h1 { margin-top: 20px; font-size: 38px; line-height: 44px; }
+h3 { margin-top: 20px; font-size: 24px; line-height: 30px; }
+p { margin-top: 0px; margin-bottom: 10px; }
+ul { margin-top: 0px; margin-bottom: 10px; padding-left: 40px; }
+.w-embed::before, .w-embed::after { content: " "; grid-area: 1 / 1 / 2 / 2; display: table; }
+.w-embed::after { clear: both; }
+.w-container { max-width: 940px; margin-left: auto; margin-right: auto; }
+.w-container::before, .w-container::after { content: " "; grid-area: 1 / 1 / 2 / 2; display: table; }
+.w-container::after { clear: both; }
+@media screen and (max-width: 991px) {
+  .w-container { max-width: 728px; }
+}
+@media screen and (max-width: 479px) {
+  .w-container { max-width: none; }
+}
+:root { --aeroflows-library---os--color--rating: #ffa600; --aeroflows-library---os--border--radius: var(--aeroflows-library---os--radius--md); --aeroflows-library---os--color--neutral-50: #f1f1f1; --aeroflows-library---os--state--selected-border: #31392b; --aeroflows-library---os--state--focus-ring: #50008a21; --brand--color--background: white; --_text---font-family--primary: Barlow,Arial,sans-serif; --brand--color--secondary: #273c17; --_text---font-family--heading: Barlow,Arial,sans-serif; --text-color--text-primary\<deleted\|relume-variable-text-color-1\>: var(--brand--25\<deleted\|relume-variable-color-neutral-1\>); --_text---font-family--secondary: Barlow,Arial,sans-serif; --brand--color--text-inverse: white; --brand--color--primary-foreground: white; --brand--25\<deleted\|relume-variable-color-neutral-1\>: #f8f8f8; --neutral--25: #fcfcfd; --background-color--background-error\<deleted\|relume-variable-background-color-8\>: var(--base-color-system--error-red-light\<deleted\|relume-variable-system-color-6\>); --text-color--text-error\<deleted\|relume-variable-text-color-5\>: var(--system-color--error\<deleted\|relume-variable-system-color-5\>); --spacing--4: 2rem; --spacing--3: 3rem; --spacing--2: 2rem; --radius--image: var(--radius-size--md); --radius-size--sm: 4px; --brand--color--border: #eee; --brand--color--primary: #4b7826; --radius-size--md: 8px; --brand--color--accent: #3d3d3d; --brand--color--rating-star: #ffb700; --brand--color--complementary-1: #fff5de; --brand--color--cta-primary: var(--brand--color--primary); --radius--button: var(--radius-size--buttons); --brand--color--primary-light: #f8faf8; --brand--color--text-primary: var(--_labels---brand--color--label-status); --brand--color--tertiary: #da6d00; --brand--color--surface: #f8f8f8; --brand--color--tertiary-light: #fff0e0; --neutral--300: #d0d5dd; --aeroflows-library---os--color--primary: #303030; --aeroflows-library---os--color--primary-foreground: white; --aeroflows-library---os--color--primary-hover: #3f006e; --aeroflows-library---os--color--primary-light: #f3e6ff; --aeroflows-library---os--color--primary-lighter: #fdfaff; --aeroflows-library---os--color--primary-dark: #2d004d; --aeroflows-library---os--color--secondary: #00bfa5; --aeroflows-library---os--color--secondary-foreground: white; --aeroflows-library---os--color--secondary-hover: #00a08a; --aeroflows-library---os--color--secondary-light: #ccf5ed; --aeroflows-library---os--color--secondary-dark: #007a65; --aeroflows-library---os--color--secondary-lighter: #e2f6f3; --aeroflows-library---os--color--tertiary: #ff6b6b; --aeroflows-library---os--color--tertiary-foreground: white; --aeroflows-library---os--color--tertiary-hover: #ff5252; --aeroflows-library---os--color--tertiary-dark: #c55; --aeroflows-library---os--color--tertiary-light: #ffe0e0; --aeroflows-library---os--color--tertiary-lighter: #fff1f1; --aeroflows-library---os--color--accent: #ce1f22; --aeroflows-library---os--color--accent-foreground: white; --aeroflows-library---os--color--accent-hover: #ff8c1a; --aeroflows-library---os--color--accent-light: #fff3e0; --aeroflows-library---os--color--neutral-100: #f4f3f6; --aeroflows-library---os--color--neutral-200: #e8e6eb; --aeroflows-library---os--color--neutral-300: #d4d1d9; --aeroflows-library---os--color--neutral-400: #a39bb0; --aeroflows-library---os--color--neutral-500: #746b84; --aeroflows-library---os--color--neutral-600: #564e65; --aeroflows-library---os--color--neutral-700: #3e3749; --aeroflows-library---os--color--neutral-800: #292330; --aeroflows-library---os--color--neutral-900: #1a161f; --aeroflows-library---os--color--neutral-950: #2c3839; --aeroflows-library---os--color--radio: var(--aeroflows-library---os--color--primary); --aeroflows-library---os--color--error: #ff4757; --aeroflows-library---os--color--error-foreground: #ffe9ed; --aeroflows-library---os--color--error-light: #ffe0e3; --aeroflows-library---os--color--error-dark: #cc3945; --aeroflows-library---os--color--warning: #fa0; --aeroflows-library---os--color--warning-light: #fff5cc; --aeroflows-library---os--color--warning-dark: #c80; --aeroflows-library---os--color--warning-foreground: #fffaea; --aeroflows-library---os--color--success: #00c896; --aeroflows-library---os--color--success-foreground: white; --aeroflows-library---os--card--padding: 1rem; --aeroflows-library---os--state--hover: var(--aeroflows-library---os--color--primary-light); --aeroflows-library---os--text--primary: var(--aeroflows-library---os--color--neutral-900); --aeroflows-library---os--surface--base: white; --aeroflows-library---os--card--padding-mobile: .75rem; --aeroflows-library---os--card--gap: .75rem; --aeroflows-library---os--card--gap-mobile: .5rem; --aeroflows-library---os--card--radius: var(--aeroflows-library---os--radius--base); --aeroflows-library---os--card--border-width: 1px; --aeroflows-library---os--card--border-color: #e2e8f0; --aeroflows-library---os--card--selected-border-width: 2px; --aeroflows-library---os--card--selected-border-color: var(--aeroflows-library---os--color--primary); --aeroflows-library---os--card--selected-background: var(--aeroflows-library---os--color--primary-lighter); --aeroflows-library---os--card--radio-color: var(--aeroflows-library---os--color--primary); --aeroflows-library---os--state--selected: var(--aeroflows-library---os--color--primary-light); --aeroflows-library---os--state--focus: var(--aeroflows-library---os--color--primary); --aeroflows-library---os--state--disabled: var(--aeroflows-library---os--color--neutral-300); --aeroflows-library---os--state--disabled-text: var(--aeroflows-library---os--color--neutral-500); --aeroflows-library---os--space--0: 0px; --aeroflows-library---os--space--1: .25rem; --aeroflows-library---os--space--2: .5rem; --aeroflows-library---os--space--3: .75rem; --aeroflows-library---os--space--4: 1rem; --aeroflows-library---os--space--5: 1.25rem; --aeroflows-library---os--space--6: 1.5rem; --aeroflows-library---os--space--8: 2rem; --aeroflows-library---os--space--10: 2.5rem; --aeroflows-library---os--space--12: 3rem; --aeroflows-library---os--text--secondary: var(--aeroflows-library---os--color--neutral-600); --aeroflows-library---os--text--muted: var(--aeroflows-library---os--color--neutral-500); --aeroflows-library---os--text--success: var(--aeroflows-library---os--color--success); --aeroflows-library---os--text--error: var(--aeroflows-library---os--color--error); --aeroflows-library---os--text--link: var(--aeroflows-library---os--color--primary); --aeroflows-library---os--text--link-hover: var(--aeroflows-library---os--color--primary-hover); --aeroflows-library---os--surface--base-foreground: var(--aeroflows-library---os--color--neutral-900); --aeroflows-library---os--surface--subtle: #faf9fc; --aeroflows-library---os--surface--subtle-foreground: var(--aeroflows-library---os--color--neutral-900); --aeroflows-library---os--surface--muted: var(--aeroflows-library---os--color--neutral-100); --aeroflows-library---os--surface--muted-foreground: var(--aeroflows-library---os--color--neutral-700); --aeroflows-library---os--surface--elevated: white; --aeroflows-library---os--surface--elevated-foreground: var(--aeroflows-library---os--color--neutral-900); --aeroflows-library---os--surface--overlay: #50008a1a; --aeroflows-library---os--surface--overlay-foreground: #1a161fb3; --aeroflows-library---os--color--success-light: #ccf7ec; --aeroflows-library---os--color--success-dark: #00a078; --aeroflows-library---os--color--info: #5f7fff; --aeroflows-library---os--color--info-foreground: white; --aeroflows-library---os--color--info-light: #e6ebff; --aeroflows-library---os--color--info-dark: #4c66cc; --aeroflows-library---os--size: 0px; --_text---size: 0px; --_text---scale--min: .8; --_text---scale--max: 1.15; --_text---scale--viewport: 2; --_sizes---container--max-width: 80rem; --_sizes---container--padding: 2.5rem; --_labels---brand--color--label-status: black; --aeroflows-library---os--card-radius: .25rem; --aeroflows-library---os--card-gap: .75rem; --aeroflows-library---os--gap-vertical: 1rem; --aeroflows-library---os--gap-horizontal: 1rem; --aeroflows-library---os--border: 1px; --aeroflows-library---os--border-active: 2px; --aeroflows-library---os--card-padding: 1rem; --brand--color--accent-foreground: white; --brand--color--foreground: #1a1a1a; --brand--color--secondary-light: #636363; --brand--color--complementary-2: var(--brand--color--surface); --brand--color--text-secondary: #4a5568; --brand--color--text-muted: #718096; --brand--color--cta-primary-hover: #7b55d3; --brand--color--link: var(--brand--color--accent); --brand--color--link-hover: var(--brand--color--complementary-1); --brand--color--icons: var(--brand--color--primary); --brand--color--icons-inverse: white; --_labels---brand--color--label-status-background: white; --_labels---brand--color--label-status-border: #e2e8f0; --_labels---brand--color--label-urgency: #6b46c1; --_labels---brand--color--label-urgency-background: #f7f1ff; --_labels---brand--color--label-stock-warning: #f44; --_labels---brand--color--label-stock-warning-background: #fff2f2; --_labels---brand--color--label-savings: white; --_labels---brand--color--label-savings-background: #6b46c1; --_labels---brand--color--label-best-deal: black; --_labels---brand--color--label-best-deal-text: white; --_labels---brand--color--label-discount: #15803d; --_labels---brand--color--label-discount-background: #dcfce7; --_labels---brand--color--label-discount-text: #166534; --_labels---brand--color--label-new: #6b46c1; --_labels---brand--color--label-new-background: #f7f1ff; --_labels---brand--color--label-soldout: #718096; --_labels---brand--color--label-soldout-background: #edf2f7; --_labels---brand--color--label-preorder: white; --_labels---brand--color--label-preorder-background: white; --component--color--swiper-buttons-background: var(--brand--color--primary); --component--color--swiper-button-text: #fff; --component--color--swiper-thumbnail-border: #000; --component--color--outline: var(--brand--color--primary); --component--color--radio: var(--brand--color--primary); --component--color--label-background: #000; --component--color--label: white; --radius--radius: 0px; --radius--selector: var(--radius-size--sm); --radius--label: var(--radius-size--sm); --borders--current-option: 2px; --aeroflows-library---os--border--width: 2px; --aeroflows-library---os--border--color: var(--aeroflows-library---os--color--neutral-200); --radius-size--base: 8px; --aeroflows-library---os--radius--sm: .25rem; --aeroflows-library---os--radius--base: .375rem; --aeroflows-library---os--radius--md: .5rem; --aeroflows-library---os--radius--lg: .75rem; --aeroflows-library---os--radius--xl: 1rem; --aeroflows-library---os--radius--full: 9999px; --radius-size--buttons: 8px; --aeroflows-library---os--radius--buttons: 8px; --radius--cards: var(--radius-size--base); --system-colors--success-text: #074d31; --system-colors--success: #ecfdf3; --system-colors--destructive-text: #8f0000; --system-colors--destructive: #ffe4e4; --system-colors--white: white; --system-colors--attention: #fff7d9; --system-colors--attention-text: #93370d; --system-colors--info: #e4f9fd; --system-colors--info-text: #00586b; --system-colors--glass: #fff9; --system-colors--transparent: transparent; --system-colors--transparent-white: #fff0; --brand--font-display: Interdisplay,Arial,sans-serif; --aeroflows-library---os--font--display: Interdisplay,Arial,sans-serif; --brand--font-text: Inter,Arial,sans-serif; --aeroflows-library---os--font--text: "Circular Std",Arial,sans-serif; --brand--color-destructive: #ffd0d0; --brand--color-destructive-foreground: #ac0000; --brand--size-radius: 8px; --brand--color-success: #eee; --brand--color-success-foreground: #000; --container-max-width--width-s: 0px; --aeroflows-library---container-max-width--width-s: 0px; --container-max-width--width-m: 0px; --aeroflows-library---container-max-width--width-m: 0px; --container-max-width--width-l: 70rem; --aeroflows-library---container-max-width--width-l: 70rem; --container-max-width--size: 0px; --aeroflows-library---container-max-width--size: 0px; --container-max-width--width-xl: 82rem; --aeroflows-library---container-max-width--width-xl: 82rem; --container-padding--desktop: 2.5rem; --aeroflows-library---container-padding--desktop: 2.5rem; --container-padding--mobile: 1.25rem; --aeroflows-library---container-padding--mobile: 1.25rem; --font-size--paragraph: 1rem; --font-size--heading-xxl: 4rem; --font-size--heading-xl: 3rem; --font-size--heading-l: 2rem; --font-size--heading-m: 1.5rem; --font-size--heading-s: 1rem; --font-size--paragraph-s: .75rem; --font-size--paragraph-l: 1.125rem; --font-size--paragraph-xl: 1.5rem; --font-size--paragraph-m: .875rem; --neutral--50: #f9fafb; --neutral--100: #f2f4f7; --neutral--200: #eaecf0; --neutral--400: #98a2b3; --neutral--500: #667085; --neutral--600: #475467; --neutral--700: #344054; --neutral--800: #182230; --neutral--900: #101828; --neutral--950: #0c111d; --pb-component--color-error: #ffe4e4; --pb-component--color-error-foreground: #8f0000; --pb-component--color-success: #f6fef9; --pb-component--color-success-foreground: #053321; --pb-component--border-radius: 4px; --pb-component--border-size: 1px; --spacing--max-width-small: 70rem; --spacing--0-25: .25rem; --spacing--0-5: .5rem; --spacing--0-75: .75rem; --spacing--1: 1rem; --spacing--1-5: 0rem; --spacing--5: 5rem; --spacing--6: 6rem; --spacing--8: 8rem; --spacing--none: 0px; --section--padding: var(--spacing--2); --aeroflows-library---section--padding: 2rem; --section--padding-tablet: var(--spacing--1-5); --aeroflows-library---section--padding-tablet: 1.5rem; --section--padding-mobile: var(--spacing--1); --aeroflows-library---section--padding-mobile: 1rem; --spacing-new--unit: 4px; --site--gutter: 4rem; --aeroflows-library---site--gutter: 4rem; --site--width: 67.5rem; --aeroflows-library---site--width: 67.5rem; --site--margin: 0px; --aeroflows-library---site--margin: 0px; --site--gutter-mobile: 2rem; --aeroflows-library---site--gutter-mobile: 2rem; --base-color-system--error-red-light\<deleted\|relume-variable-system-color-6\>: #fef3f2; --system-color--error\<deleted\|relume-variable-system-color-5\>: #f04438; }
+body { background-color: var(--brand--color--background); font-family: var(--_text---font-family--primary); color: var(--brand--color--secondary); letter-spacing: -0.28px; overscroll-behavior: none; font-size: 1rem; line-height: 1.5; }
+h1 { font-family: var(--_text---font-family--heading); letter-spacing: -0.04em; margin-top: 0px; margin-bottom: 0px; font-size: 3.5rem; font-weight: 700; line-height: 1.2; }
+h3 { font-family: var(--_text---font-family--heading); margin-top: 0px; margin-bottom: 0px; font-size: 2.5rem; font-weight: 700; line-height: 1.2; }
+p { margin-bottom: 0px; }
+a { color: rgb(0, 0, 0); text-decoration: none; }
+ul { margin-top: 1rem; margin-bottom: 1rem; padding-left: 1.25rem; }
+li { margin-top: 0.25rem; margin-bottom: 0.25rem; padding-left: 0.5rem; }
+.hide { display: none; }
+.page-wrapper { overflow: clip; }
+.button { width: 100%; min-height: 4.5rem; font-family: var(--_text---font-family--secondary); color: var(--brand--color--text-inverse); text-align: center; letter-spacing: 0px; background-color: rgb(84, 129, 37); border: 2px solid rgba(83, 116, 57, 0.8); border-radius: 10px; justify-content: center; align-items: center; padding: 0.75rem 2rem 1rem; font-size: 1.25rem; font-weight: 700; text-decoration: none; transition: border 0.12s; display: flex; position: relative; }
+.button:hover { background-color: rgb(87, 125, 56); }
+.image { aspect-ratio: auto; vertical-align: baseline; object-fit: cover; border-radius: 10px; width: 100%; max-width: none; height: auto; display: block; }
+.button_spinner { width: 100%; height: 100%; transition: opacity 0.2s; position: absolute; }
+.button_content { column-gap: 0.5rem; justify-content: center; align-items: center; width: 100%; height: 100%; transition: opacity 0.2s; display: flex; }
+.label__wrapper { gap: 0.25rem; pointer-events: none; letter-spacing: 0px; justify-content: center; align-items: center; padding: 0.3rem 0.5rem; font-size: 0.75rem; line-height: 1; display: flex; }
+.label__text { pointer-events: auto; flex: 0 0 auto; font-family: Gilroy, Arial, sans-serif; font-size: 0.8rem; font-weight: 800; line-height: 1.2; }
+.padding-bottom, .padding-bottom.padding-xsmall, .padding-bottom.padding-xsmall { padding-top: 0px; padding-left: 0px; padding-right: 0px; }
+.button-holder.is-sticky.is-active.new { justify-content: center; align-items: center; display: block; }
+.button_icon { flex-direction: column; justify-content: center; align-items: center; width: 1.5rem; height: 1.5rem; display: block; position: absolute; inset: auto 1.5rem auto auto; }
+.button_icon.af { display: flex; position: static; }
+.display-col { column-gap: 0.5rem; text-align: left; align-items: center; padding-top: 2px; padding-bottom: 2px; display: flex; }
+.display-col.nl { width: 100%; }
+.faq2__accordion-item--content.is-active-accordion { display: block; }
+.sticky-headers { z-index: 800; position: sticky; top: 0px; }
+.navbar-smaller { gap: 1rem; color: rgb(255, 255, 255); justify-content: center; align-items: center; font-weight: 400; display: flex; }
+.navbar-smaller.af { gap: 0.4rem; color: rgb(57, 65, 51); background-color: rgb(242, 243, 241); border-radius: 8px; margin-top: 1px; margin-bottom: 4px; padding: 0.25rem 0.4rem; font-family: "Circular Std", Arial, sans-serif; font-size: 0.9rem; }
+.holiday-clock { color: rgb(0, 0, 0); background-color: rgb(149, 90, 188); border-radius: 7px; justify-content: center; align-items: center; padding: 0.25rem 0.5rem; display: flex; }
+.holiday-clock.os-green { background-color: rgba(255, 255, 255, 0.07); }
+.holiday-clock.os-green.af { background-color: rgb(57, 65, 51); padding-left: 0.25rem; padding-right: 0.25rem; }
+.box-hrs-2 { gap: 0.15rem; outline-offset: 0px; color: rgb(0, 0, 0); background-color: rgba(255, 255, 255, 0); border-radius: 0px; outline: rgba(255, 255, 255, 0.08) 3px; flex-flow: column; justify-content: center; align-items: center; width: auto; height: auto; min-height: auto; margin-left: 2px; margin-right: 2px; padding: 0.25rem; font-size: 1rem; line-height: 20px; display: flex; }
+.box-hrs-2.af { padding-top: 0px; padding-bottom: 0px; }
+.pair-circle.is-active { color: rgb(255, 255, 255); background-color: rgb(52, 74, 35); flex: 0 0 auto; }
+.step-number.is-active { font-family: Figtree, sans-serif; display: flex; }
+.step-check.is-active { display: flex; }
+.blogpost1_author-wrapper { background-color: rgb(255, 255, 255); border: 1px solid rgb(208, 213, 221); border-radius: 9px; align-items: center; margin-top: 10px; padding: 5px 40px 5px 15px; display: flex; box-shadow: rgba(20, 35, 8, 0.08) 0px 1px 0.2px; }
+.blogpost1_author-wrapper.eis { box-shadow: none; background-color: rgba(255, 255, 255, 0); border-style: none; margin-top: 0px; padding-bottom: 10px; padding-left: 0px; padding-right: 0px; }
+.blogpost1_author-image-wrapper { margin-right: 1rem; }
+.blogpost1_author-image { object-fit: cover; border-radius: 100%; width: 3.5rem; min-width: 3.5rem; height: 3.5rem; min-height: 3.5rem; }
+.blogpost1_author-text { font-size: 0.85rem; }
+.blogpost1_date-wrapper { font-size: 0.75rem; display: flex; }
+.blogpost1_date-wrapper.eis, .blogpost1_date-wrapper.eis { justify-content: flex-start; align-items: center; }
+.text-size-small-copy-2 { color: rgba(51, 51, 51, 0.89); margin-top: 5px; font-size: 1rem; }
+.text-size-small-copy-2.eis { color: rgb(45, 75, 69); letter-spacing: 0px; background-color: rgb(221, 238, 234); border-radius: 6px; padding: 2px 6px; font-family: "Circular Std", Arial, sans-serif; font-size: 0.875rem; font-weight: 700; }
+.text-size-small-copy-2.eis.native { color: rgb(37, 51, 25); background-color: rgb(215, 229, 203); font-family: Intervariable, Arial, sans-serif; font-size: 0.85rem; }
+.text-size-small-copy-2.eis.native.nl { font-family: Gilroy, Arial, sans-serif; }
+.text-size-small-copy-2.eis.native.nl.af { background-color: rgb(238, 243, 234); margin-top: 2px; font-family: "Circular Std", Arial, sans-serif; font-weight: 700; }
+.blog-sides { z-index: 4; width: 100%; display: flex; position: relative; }
+.image-content-2 { object-fit: fill; border: 1px rgb(170, 170, 170); border-radius: 12px; width: 100%; max-width: none; height: 100%; }
+.text-align-center-5 { text-align: center; }
+.health-dscvry-nav-10 { color: rgb(255, 255, 255); margin-top: 0px; margin-bottom: 0px; font-size: 50px; line-height: 50px; }
+.health-dscvry-nav-10.hf { color: rgb(248, 250, 248); font-family: Barlow, Arial, sans-serif; font-size: 30px; font-weight: 700; display: flex; }
+.div-block-900 { justify-content: center; align-items: center; width: 80%; height: 40px; margin-left: auto; margin-right: auto; display: flex; position: absolute; inset: -1.5rem 0% auto; }
+.div-block-2 { align-items: baseline; display: flex; }
+.text-block { font-family: Gilroy, Arial, sans-serif; font-weight: 500; line-height: 18px; }
+.text-block.nl { font-size: 0.8rem; }
+.cta-content-2 { border: 1px dashed rgba(37, 64, 15, 0.21); border-radius: 6px; flex-direction: column; align-items: center; display: flex; position: relative; }
+.cta-content-2.nl { margin-top: 24px; margin-bottom: 2rem; }
+.div-block-764 { align-items: baseline; display: flex; }
+.div-block-766 { margin-left: 8px; }
+.text-block-4 { font-size: 18px; font-weight: 200; }
+.image-89 { width: 100%; max-width: none; height: auto; display: block; }
+.image-89.baresandals.nl { width: 80%; }
+.text-size-tiny { color: rgb(37, 51, 25); font-size: 0.75rem; }
+.text-size-tiny.text-align-center { color: rgba(12, 32, 22, 0.9); font-family: Gilroy, Arial, sans-serif; font-weight: 500; }
+.adv_cta_div { text-align: left; background-color: rgb(255, 255, 255); border: 2px rgb(255, 255, 255); border-radius: 8px; justify-content: space-between; display: flex; position: relative; overflow: hidden; box-shadow: rgba(0, 0, 0, 0.06) 0px 4px 12px; }
+.text-span-6 { color: rgb(200, 32, 47); font-weight: 800; }
+.adv_cta_right_div { gap: 0.5rem; text-align: center; flex-flow: column; width: 50%; padding: 3rem; display: flex; }
+.adv_cta_right_div.nl { padding-left: 1rem; padding-right: 1rem; }
+.adv_cta_subtitle_text { color: rgb(30, 46, 32); text-align: center; font-family: Gilroy, Arial, sans-serif; font-size: 14px; font-weight: 500; line-height: 18px; }
+.adv_cta_subtitle_text.nl { color: rgb(49, 57, 43); padding-bottom: 4px; font-family: "Circular Std", Arial, sans-serif; font-size: 15px; line-height: 26px; }
+.div-block-767 { margin-left: 8px; }
+.adv_cta_top_div { gap: 0.25rem; flex-direction: column; align-items: center; display: flex; }
+.span-red { color: rgb(82, 117, 53); }
+.text-block-279 { font-family: Gilroy, Arial, sans-serif; font-weight: 500; line-height: 18px; }
+.text-block-279.nl { font-size: 0.8rem; }
+.photo-wrappers { background-color: rgb(244, 244, 244); justify-content: center; align-items: center; width: 50%; display: flex; position: relative; }
+.photo-wrappers.dark-grey { background-color: rgb(241, 247, 240); }
+.div-block-765 { margin-left: 13px; margin-right: 13px; }
+.max-width-medium-2 { flex-flow: column; justify-content: center; align-items: center; max-width: 73rem; display: flex; }
+.bot_cta_badge_div { width: 100%; font-family: var(--_text---font-family--heading); color: rgba(12, 32, 22, 0.9); background-color: rgb(245, 247, 242); border: 1px rgb(215, 255, 224); border-radius: 4px; justify-content: center; align-items: center; padding: 0.5rem 1rem; font-size: 0.75rem; display: flex; }
+.text-span-7 { font-weight: 800; }
+.adv_cta_heading-2 { color: rgb(37, 51, 25); text-align: center; font-family: Gilroy, Arial, sans-serif; font-size: 2.1rem; font-weight: 800; line-height: 1.2; }
+.adv_cta_heading-2.rp { text-transform: uppercase; font-size: 1.9rem; }
+.listicle-banner-sale-badge { color: rgb(255, 255, 255); text-transform: uppercase; background-color: rgb(149, 90, 188); border-radius: 7px; padding: 0.44rem 1rem; font-family: Gilroy, Arial, sans-serif; font-weight: 800; }
+.nav-foots { background-color: rgb(44, 57, 33); padding-top: 10px; padding-bottom: 10px; position: static; top: 0px; overflow: clip; }
+.nav-foots.publisher.authority { background-color: rgb(37, 51, 25); border-width: 1px; border-style: none none solid; border-color: rgba(10, 10, 10, 0.1); border-image: none; border-radius: 0px; padding-top: 10px; padding-bottom: 10px; box-shadow: rgba(0, 0, 0, 0.07) 0px 4px 4px; }
+.nav-foots.publisher.authority { color: rgb(0, 93, 86); font-family: Figtree, sans-serif; }
+.nav-foots.publisher { background-color: rgb(37, 51, 25); }
+.nav-foots.publisher.authority { box-shadow: none; background-color: rgb(37, 51, 25); border-width: 1px; border-style: none none solid; border-color: rgba(10, 10, 10, 0.1); border-image: none; border-radius: 0px; padding-top: 4px; padding-bottom: 4px; }
+.gift_image.is-active { opacity: 1; object-fit: cover; background-color: rgba(0, 0, 0, 0); display: block; }
+.gift_image.is-active.bar { display: none; }
+.listicle-holder { flex-direction: column; display: flex; position: sticky; bottom: 0px; }
+.listicle-holder.af { gap: 53px; flex-flow: row; width: 500px; }
+.sticky_bar { gap: 16px; grid-template-rows: auto auto; grid-template-columns: 1fr 1fr; grid-auto-columns: 1fr; padding-top: 1rem; padding-bottom: 0.2rem; display: none; }
+.sticky_bar.af { z-index: 50; background-color: rgb(255, 255, 255); border-top-left-radius: 12px; border-top-right-radius: 12px; padding-top: 0.6rem; padding-bottom: 0.4rem; display: block; position: fixed; inset: auto 0% 0%; box-shadow: rgba(54, 62, 54, 0.15) 0px -8px 20px; }
+.progressss.is-active { display: flex; }
+.list-dd { color: rgb(52, 74, 35); margin-top: 0px; margin-bottom: 0px; padding-left: 20px; font-size: 18px; }
+.publisher { color: rgb(48, 99, 54); font-weight: 800; }
+.publisher.wl { color: rgb(74, 99, 48); font-weight: 800; }
+.accordion__item-wrapper.is-active-accordion { display: block; }
+.pair-circle-2.is-active { color: rgb(255, 255, 255); background-color: rgb(63, 99, 26); flex: 0 0 auto; }
+.step-number-2.is-active { display: flex; }
+.container-1737 { z-index: 1; width: 100%; max-width: 80rem; margin-left: auto; margin-right: auto; padding-left: 2.5rem; padding-right: 2.5rem; display: block; position: relative; }
+.container-1737.cc-small { gap: 17px; flex-flow: row; justify-content: center; align-items: center; max-width: 58rem; display: flex; }
+.text-block-580 { font-family: Gilroy, Arial, sans-serif; font-size: 1.2rem; font-weight: 800; }
+.text-block-580.rp { padding-top: 2px; font-size: 1.14rem; line-height: 1.8; }
+.video-s { gap: 16px; grid-template-rows: auto; grid-template-columns: 1fr 1fr; grid-auto-columns: 1fr; justify-items: stretch; height: auto; min-height: auto; margin-top: 10px; margin-bottom: 10px; display: grid; }
+.video-s.af._1vd { grid-template-columns: 1fr; }
+.image-wrapper-3 { aspect-ratio: auto; position: relative; }
+.divider-article { background-color: rgb(235, 235, 235); height: 1px; }
+.divider-article.af { background-color: rgb(225, 230, 223); }
+.afp-wrap-v2 { box-sizing: border-box; background-color: rgb(252, 254, 252); width: 100%; padding: 8px 16px; box-shadow: rgba(0, 0, 0, 0.06) 0px 4px 12px; }
+.afp-container-v2 { gap: 12px; align-items: center; max-width: 720px; margin: 0px auto; display: flex; }
+.afp-track-v2 { gap: 12px; flex: 1 1 0%; align-items: center; display: flex; }
+.afp-seg-v2 { background-color: rgb(228, 234, 224); border-radius: 60px; flex: 1 1 0%; height: 7px; position: relative; overflow: hidden; }
+.afp-count-v2 { color: rgb(134, 133, 129); letter-spacing: 0.02em; white-space: nowrap; background-color: rgb(252, 254, 252); border: 1px solid rgb(234, 238, 230); border-radius: 999px; flex: 0 0 auto; padding: 3px 10px; font-family: "Circular Std", Arial, sans-serif; font-size: 13px; font-weight: 500; }
+.af-section { background-color: rgba(253, 255, 252, 0); padding-top: 1rem; padding-bottom: 1rem; }
+.af-commit-cta { gap: 10px; color: rgb(255, 255, 255); white-space: nowrap; background-color: rgb(87, 125, 56); border: 2px solid rgba(83, 116, 57, 0.8); border-radius: 9px; flex: 0 0 auto; justify-content: center; align-items: center; width: 200px; padding: 16px 14px; font-family: "Circular Std", Arial, sans-serif; font-size: 17px; font-weight: 700; text-decoration: none; display: inline-flex; }
+.af-commit-cta-arrow { background-color: rgba(255, 255, 255, 0.18); border-radius: 50%; justify-content: center; align-items: center; width: 24px; height: 24px; font-family: Interdisplay, Arial, sans-serif; font-size: 14px; line-height: 1; display: inline-flex; }
+.af-commit-img { background-color: rgba(240, 237, 230, 0); border-radius: 50%; flex: 0 1 auto; justify-content: center; align-items: center; width: 80px; height: 80px; display: flex; overflow: hidden; }
+.af-commit-body { flex-flow: column; flex: 1 1 0%; justify-content: center; align-items: flex-start; min-width: 0px; display: flex; }
+.af-commit-title { color: rgba(49, 57, 43, 0.94); margin: 0px 0px 4px; font-family: "Circular Std", Arial, sans-serif; font-size: 16px; font-weight: 500; line-height: 1.3; }
+.af-commit-sub { color: rgba(49, 57, 43, 0.94); margin: 0px; font-family: "Circular Std", Arial, sans-serif; font-size: 14px; font-weight: 600; line-height: 1.4; display: flex; }
+.af-commit-sub.mb { display: none; }
+.af-commit-bar { gap: 12px; cursor: pointer; color: inherit; background-color: rgb(252, 254, 252); border: 1.6px dashed rgb(216, 210, 195); border-radius: 12px; align-items: center; margin-bottom: 24px; padding: 4px 12px; text-decoration: none; display: flex; }
+.af-arrow { background-color: rgba(255, 255, 255, 0.04); border-radius: 100px; justify-content: center; align-items: center; width: 40px; height: 40px; padding: 4px; display: flex; position: absolute; right: 14px; }
+.afq-step { gap: 10px; flex-flow: column; padding-top: 0.4rem; padding-bottom: 4rem; display: flex; }
+.listicle-holder-1.lq-show { width: 500px; }
+.countdown_timer { z-index: 500; gap: 11px; background-color: rgb(253, 254, 252); border-top: 1px dashed rgb(210, 215, 209); border-bottom-right-radius: 12px; border-bottom-left-radius: 12px; justify-content: center; align-items: center; width: 324px; height: 48px; transition: opacity 0.2s; display: flex; position: relative; left: 50%; transform: translate(-50%); box-shadow: rgba(23, 24, 22, 0.16) 0px 9px 16px; }
+.countdown_timer.v2 { width: 360px; }
+.af_countdown_text { gap: 5px; color: rgb(57, 65, 51); letter-spacing: -0.1px; width: 100%; font-family: "Circular Std", Arial, sans-serif; font-weight: 700; display: flex; }
+.button-104 { color: rgb(255, 255, 255); text-align: center; letter-spacing: 0px; background-color: rgb(87, 125, 56); border: 2px solid rgba(83, 116, 57, 0.8); border-radius: 10px; justify-content: center; align-items: center; width: 100%; min-height: 4.5rem; padding: 0.75rem 2rem 1rem; font-family: Barlow, Arial, sans-serif; font-size: 1.25rem; font-weight: 700; text-decoration: none; transition: border 0.12s; display: flex; position: relative; }
+.button-104:hover { background-color: rgb(87, 125, 56); }
+.button-104.af { background-color: rgb(57, 65, 51); border-style: none; border-radius: 60px; min-height: 3rem; }
+.button-104.af.bck { background-color: rgba(57, 65, 51, 0); border: 1.5px solid rgb(243, 246, 240); }
+.button-104.af.nxt { padding-right: 3.4rem; }
+.p-listicle-2 { color: rgb(37, 51, 25); letter-spacing: 0px; font-family: Gilroy, Arial, sans-serif; font-size: 1.1rem; font-weight: 500; line-height: 1.7; }
+.p-listicle-2.publisher { color: rgb(49, 57, 43); letter-spacing: 0px; font-family: "Circular Std", Arial, sans-serif; font-size: 1.1rem; font-weight: 400; }
+.p-listicle-2.publisher.rp { text-align: center; }
+.text-block-932 { color: rgb(255, 255, 255); padding-left: 0.15rem; padding-right: 0.15rem; font-weight: 700; }
+.text-block-932.af { color: rgba(255, 255, 255, 0.4); font-family: Gilroy, Arial, sans-serif; }
+.text-span-220 { color: rgba(49, 57, 43, 0.56); font-size: 13px; font-weight: 700; }
+.bold-text-1915 { color: rgb(49, 57, 43); font-family: "Circular Std", Arial, sans-serif; }
+.container-small-6 { width: 100%; max-width: 54rem; margin-left: auto; margin-right: auto; }
+.container-small-6.af { flex-flow: column; justify-content: center; align-items: center; display: flex; }
+.text-span-221 { color: rgb(82, 117, 53); }
+.af-commit-img-placeholder-2 { background-image: none; background-position: 50% center; background-size: cover; border-radius: 50%; width: 80px; height: 80px; position: relative; }
+.text-block-934 { padding-top: 4px; font-family: Gilroy, Arial, sans-serif; font-size: 1.1rem; font-weight: 800; }
+.text-block-934.bk { color: rgb(101, 106, 96); padding-top: 4px; }
+.text-span-223 { color: rgb(36, 36, 36); letter-spacing: 0.2px; font-family: "Circular Std", Arial, sans-serif; font-size: 14px; font-weight: 500; line-height: 10px; }
+.padding-global-21 { padding-left: 2.5rem; padding-right: 2.5rem; }
+.bold-text-1916 { color: rgb(37, 51, 25); text-align: center; font-weight: 800; }
+.text-span-225 { color: rgb(176, 83, 74); font-weight: 700; }
+.clock-number-5 { color: rgb(255, 255, 255); font-family: Gilroy, Arial, sans-serif; font-size: 0.94rem; font-weight: 700; line-height: 1; }
+.clock-number-5.af { font-size: 0.84rem; font-weight: 800; }
+.container-1747 { flex-direction: column; justify-content: flex-start; align-items: flex-start; padding-right: 10px; text-decoration: none; display: flex; }
+.container-1747.review_container { margin-top: 0px; padding-left: 0px; padding-right: 2rem; position: static; }
+.container-1747.review_container.af { justify-content: center; align-items: center; max-width: 720px; padding-right: 0px; }
+.text-span-226 { color: rgb(74, 99, 48); font-weight: 800; }
+.bold-text-1917 { color: rgb(49, 57, 43); font-size: 13px; font-weight: 700; }
+.lottie-animation-4 { width: 18px; }
+.div-block-2598 { gap: 16px; justify-content: flex-start; width: 100%; padding-right: 0px; display: flex; }
+.display-xl-2 { color: rgb(47, 53, 35); letter-spacing: -0.02em; text-transform: capitalize; margin-top: 0px; margin-bottom: 0px; font-family: Gilroy, Arial, sans-serif; font-size: 2.25rem; font-weight: 700; line-height: 1.3; }
+.display-xl-2.nl.af { color: rgb(49, 57, 43); font-size: 2.2rem; }
+.display-xl-2.nl.af.rp { text-align: center; font-size: 2.1rem; }
+.label-2 { color: rgb(255, 255, 255); background-color: rgb(0, 0, 0); border-radius: 4px; font-weight: 500; }
+.label-2.eis { background-color: rgb(0, 93, 86); padding: 1px; font-family: "Circular Std", Arial, sans-serif; font-size: 14px; }
+.label-2.eis.native { background-color: rgb(70, 90, 53); }
+.title { color: rgb(37, 51, 25); font-family: Gilroy, Arial, sans-serif; font-size: 0.9rem; font-weight: 600; }
+.progressss-4.is-active { display: flex; }
+.step-number-4.is-active { display: flex; }
+.pair-circle-4.is-active { color: rgb(255, 255, 255); background-color: rgb(63, 99, 26); flex: 0 0 auto; }
+.step-number-5.is-active { display: flex; }
+.step-number-6.is-active { font-family: Figtree, sans-serif; display: flex; }
+.step-number-7.is-active { font-family: Figtree, sans-serif; display: flex; }
+.list-item-3 { color: rgb(20, 44, 42); margin-top: 0px; margin-bottom: 0px; padding-top: 6px; padding-bottom: 6px; padding-left: 0px; font-size: 1.1rem; font-weight: 500; line-height: 20px; }
+.bold-text-2015, .bold-text-2016 { font-weight: 700; }
+@media screen and (min-width: 1440px) {
+  .button { background-color: rgb(87, 125, 56); }
+  .image { width: 100%; }
+  .step-number.is-active { font-family: Figtree, sans-serif; font-weight: 600; }
+  .health-dscvry-nav-10.hf { font-family: Barlow, Arial, sans-serif; font-weight: 800; }
+  .adv_cta_heading-2.rp { text-transform: uppercase; }
+  .pair-circle-2.is-active { background-color: rgb(87, 125, 56); }
+  .button-104 { background-color: rgb(87, 125, 56); }
+  .p-listicle-2.publisher { font-family: "Circular Std", Arial, sans-serif; }
+  .clock-number-5 { font-family: Gilroy, Arial, sans-serif; }
+  .pair-circle-4.is-active { background-color: rgb(87, 125, 56); }
+  .step-number-6.is-active { font-family: Figtree, sans-serif; font-weight: 600; }
+  .step-number-7.is-active { font-family: Figtree, sans-serif; font-weight: 600; }
+}
+@media screen and (max-width: 991px) {
+  body { --_sizes---container--max-width: 80rem; --_sizes---container--padding: 2.5rem; --_text---font-family--primary: Barlow,Arial,sans-serif; --_text---font-family--heading: Barlow,Arial,sans-serif; --_text---font-family--secondary: Barlow,Arial,sans-serif; --_text---size: 0px; --_text---scale--min: .8; --_text---scale--max: 1.15; --_text---scale--viewport: 2; }
+  h1 { font-size: 3.25rem; }
+  h3 { font-size: 2.25rem; }
+  .padding-bottom { padding-top: 0px; padding-left: 0px; padding-right: 0px; }
+  .button-holder.is-sticky.is-active { transform: translate(0px); }
+  .button-holder.is-sticky.is-active.new { box-shadow: none; padding-top: 0px; padding-left: 0px; padding-right: 0px; }
+  .navbar-smaller { flex-direction: row; justify-content: center; }
+  .blog-sides { flex-wrap: wrap; }
+  .health-dscvry-nav-10 { text-align: left; }
+  .adv_cta_right_div { padding-top: 2rem; padding-left: 2rem; padding-right: 2rem; }
+  .nav-foots { max-width: 100%; }
+  .sticky_bar { z-index: 50; background-color: rgb(255, 255, 255); width: 100%; padding-bottom: 1rem; display: none; position: fixed; inset: auto 0% 0%; transform: translateY(100%); }
+  .sticky_bar.is-active { z-index: 5; width: 100%; transition: transform 0.2s; display: block; position: fixed; transform: none; box-shadow: rgba(0, 0, 0, 0.12) 0px -2px 10px; }
+  .sticky_bar.af { transform: none; }
+  .container-1737 { padding-left: 1.25rem; padding-right: 1.25rem; }
+  .padding-global-21.m-1 { padding-left: 1rem; padding-right: 1rem; }
+  .container-1747.review_container { margin-top: 0px; }
+  .display-xl-2 { color: rgba(37, 64, 15, 0.9); font-size: 2.25rem; }
+}
+@media screen and (max-width: 767px) {
+  body { --_sizes---container--max-width: 80rem; --_sizes---container--padding: 1.25rem; --_text---font-family--primary: Barlow,Arial,sans-serif; --_text---font-family--heading: Barlow,Arial,sans-serif; --_text---font-family--secondary: Barlow,Arial,sans-serif; --_text---size: 0px; --_text---scale--min: .8; --_text---scale--max: 1.1; --_text---scale--viewport: 2; }
+  h1 { font-size: 2.5rem; }
+  h3 { font-size: 2rem; }
+  .padding-bottom { padding-top: 0px; padding-left: 0px; padding-right: 0px; }
+  .health-dscvry-nav-10 { font-size: 40px; display: flex; }
+  .text-size-tiny.text-align-center { font-size: 0.8rem; }
+  .adv_cta_div { flex-direction: column; }
+  .adv_cta_right_div { width: 100%; }
+  .photo-wrappers { width: 100%; }
+  .af-commit-cta { width: 29%; }
+  .af-commit-title { font-size: 15px; }
+  .padding-global-21 { padding-left: 2rem; padding-right: 2rem; }
+  .container-1747.review_container { padding-right: 0px; }
+  .container-1747.review_container.af { max-width: none; padding-left: 1rem; padding-right: 1rem; }
+  .display-xl-2 { font-size: 2rem; }
+}
+@media screen and (max-width: 479px) {
+  body { --_sizes---container--max-width: 80rem; --_sizes---container--padding: 1.25rem; --_text---font-family--primary: Barlow,Arial,sans-serif; --_text---font-family--heading: Barlow,Arial,sans-serif; --_text---font-family--secondary: Barlow,Arial,sans-serif; --_text---size: 0px; --_text---scale--min: .8; --_text---scale--max: 1.05; --_text---scale--viewport: 2; }
+  h1 { font-size: 2.5rem; }
+  .button { min-height: 4rem; padding: 1.2rem 1.5rem; font-size: 1.15rem; }
+  .image { width: 100%; }
+  .button_content.af { column-gap: 0.4rem; justify-content: center; align-items: center; width: 100%; height: auto; padding-right: 0px; }
+  .label__text { font-size: 0.7rem; }
+  .padding-bottom { padding-top: 0px; padding-left: 0px; padding-right: 0px; }
+  .button-holder.is-sticky.is-active.new { border-top: 1px rgba(0, 0, 0, 0.12); border-top-left-radius: 12px; border-top-right-radius: 12px; padding: 0px 0px 0.1rem; box-shadow: rgba(0, 0, 0, 0.12) 0px -2px 10px; }
+  .button_icon { position: absolute; right: 1rem; }
+  .button_icon.af { width: 1.8rem; height: 1.8rem; display: flex; position: static; }
+  .navbar-smaller { gap: 1rem; text-align: center; justify-content: center; padding-left: 0.5rem; padding-right: 0.5rem; }
+  .navbar-smaller.af { width: auto; }
+  .holiday-clock { z-index: 1; flex-wrap: wrap; position: relative; }
+  .step-number.is-active { font-family: Gilroy, Arial, sans-serif; font-weight: 600; }
+  .blogpost1_author-wrapper { gap: 0px; justify-content: flex-start; align-items: center; width: 100%; height: 100%; padding: 10px 5px 10px 10px; }
+  .blogpost1_author-wrapper.eis { padding-top: 0px; padding-bottom: 0px; }
+  .blogpost1_author-text { width: 100%; }
+  .blogpost1_date-wrapper { gap: 10px; justify-content: flex-start; align-items: center; margin-top: 2px; }
+  .text-size-small-copy-2 { margin-top: 5px; font-family: Barlow, Arial, sans-serif; font-size: 1rem; font-weight: 500; }
+  .text-size-small-copy-2.eis { padding-top: 4px; padding-bottom: 4px; font-size: 0.9rem; }
+  .text-size-small-copy-2.eis.native { margin-top: 0px; font-size: 0.85rem; }
+  .image-content-2 { object-fit: fill; width: 100%; height: 100%; }
+  .health-dscvry-nav-10 { text-align: left; flex-flow: wrap; justify-content: space-between; align-items: center; font-family: Barlow, Arial, sans-serif; font-size: 30px; line-height: 40px; display: block; }
+  .health-dscvry-nav-10.hf { padding-left: 0px; font-size: 26px; }
+  .div-block-900 { width: 100%; }
+  .cta-content-2 { width: 100%; padding-top: 0px; padding-bottom: 0px; }
+  .text-size-tiny.text-align-center { font-size: 0.9rem; }
+  .adv_cta_div { border-style: none; border-radius: 8px; flex-direction: column; }
+  .adv_cta_right_div { width: 100%; padding: 1rem; }
+  .adv_cta_subtitle_text { text-align: center; }
+  .photo-wrappers { background-color: rgb(255, 255, 255); }
+  .adv_cta_heading-2 { text-align: center; font-size: 2rem; }
+  .adv_cta_heading-2.rp { font-size: 1.75rem; }
+  .listicle-banner-sale-badge { border-radius: 8px; font-size: 4vw; }
+  .nav-foots, .nav-foots.publisher.authority { padding-top: 10px; padding-bottom: 10px; }
+  .nav-foots.publisher.authority { padding-top: 10px; padding-bottom: 10px; }
+  .listicle-holder.af { gap: 18px; flex-flow: row; width: 100%; padding-top: 0px; display: flex; position: static; }
+  .sticky_bar { --_sizes---container--max-width: 80rem; --_sizes---container--padding: 1.25rem; --_text---font-family--primary: Barlow,Arial,sans-serif; --_text---font-family--heading: Barlow,Arial,sans-serif; --_text---font-family--secondary: Barlow,Arial,sans-serif; --_text---size: 0px; --_text---scale--min: .8; --_text---scale--max: 1.05; --_text---scale--viewport: 2; padding-bottom: 1rem; display: none; bottom: 0px; transform: none; box-shadow: rgba(0, 0, 0, 0.12) 0px -4px 10px; }
+  .sticky_bar.is-active { border-top: 1px solid rgba(0, 0, 0, 0.09); display: block; transform: none; box-shadow: rgba(0, 0, 0, 0.12) 0px -2px 10px; }
+  .sticky_bar.af { border-top-left-radius: 8px; border-top-right-radius: 8px; padding-top: 0.7rem; padding-bottom: 0.4rem; transform: none; box-shadow: rgba(54, 62, 54, 0.2) 0px -10px 16px; }
+  .progressss.is-active { color: rgb(255, 255, 255); }
+  .pair-circle-2.is-active { background-color: rgb(63, 99, 26); }
+  .step-number-2.is-active { font-family: Figtree, sans-serif; font-weight: 700; }
+  .video-s { min-height: auto; }
+  .afp-track-v2 { gap: 7px; }
+  .af-section { padding-bottom: 4rem; }
+  .af-commit-cta { width: 100%; padding-top: 18px; padding-bottom: 18px; font-size: 18px; }
+  .af-commit-cta-arrow { display: flex; }
+  .af-commit-img { width: 80px; height: auto; }
+  .af-commit-body { justify-content: center; align-items: flex-start; display: flex; }
+  .af-commit-title { font-size: 16.5px; line-height: 1.7; }
+  .af-commit-sub { color: rgba(49, 57, 43, 0.94); display: none; }
+  .af-commit-sub.mb { display: flex; }
+  .af-commit-bar { gap: 8px; flex-flow: column; margin-top: 14px; padding-top: 4px; padding-bottom: 12px; }
+  .af-arrow { background-color: rgba(255, 255, 255, 0.04); border-radius: 100px; justify-content: center; align-items: center; width: 40px; height: 40px; padding: 4px; display: flex; position: absolute; right: 14px; }
+  .af-arrow.next { right: 8px; }
+  .listicle-holder-1.lq-show { width: 100%; }
+  .countdown_timer { gap: 1px; width: 314px; box-shadow: rgba(54, 62, 54, 0.2) 0px 9px 12px; }
+  .countdown_timer.v2 { width: 350px; }
+  .af_countdown_text { width: auto; }
+  .button-104 { min-height: 4rem; padding: 1.244rem 1.5rem; font-size: 1.15rem; }
+  .button-104.af { background-color: rgb(57, 65, 51); border-style: none; border-radius: 60px; min-height: 3.5rem; padding-top: 1rem; padding-bottom: 1rem; }
+  .button-104.af.bck { background-color: rgba(57, 65, 51, 0); border: 1.5px solid rgb(243, 246, 240); width: 40%; height: 3.4rem; min-height: 3.4rem; max-height: 3.2rem; padding-left: 0.5rem; padding-right: 0.5rem; }
+  .button-104.af.nxt { gap: 0px; width: 100%; height: 3.4rem; min-height: 3.4rem; max-height: 3.4rem; padding-left: 1rem; padding-right: 2rem; }
+  .p-listicle-2 { font-size: 1.1rem; }
+  .p-listicle-2.publisher { font-family: "Circular Std", Arial, sans-serif; }
+  .text-block-932 { padding-left: 0px; padding-right: 0px; }
+  .bold-text-1915 { color: rgba(49, 57, 43, 0.94); }
+  .container-small-6.af { flex-flow: column; width: auto; max-width: none; margin-left: 0px; margin-right: 0px; }
+  .af-commit-img-placeholder-2 { width: 80px; height: 80px; }
+  .text-block-934 { padding-top: 2px; }
+  .text-block-934.bk { color: rgba(49, 57, 43, 0.75); padding-top: 2px; font-size: 16px; font-weight: 700; }
+  .text-span-223 { font-size: 12px; line-height: 8px; }
+  .padding-global-21.m-1 { padding-left: 1rem; padding-right: 1rem; }
+  .clock-number-5 { font-family: Gilroy, Arial, sans-serif; font-size: 0.85rem; }
+  .container-1747.review_container { padding-right: 0px; }
+  .container-1747.review_container.af { max-width: none; padding-left: 1rem; padding-right: 1rem; }
+  .div-block-2598 { gap: 0px; grid-template-rows: auto; grid-template-columns: 0.5fr 1fr; grid-auto-columns: 1fr; grid-auto-flow: dense; display: grid; }
+  .display-xl-2 { color: rgb(47, 53, 35); font-size: 1.75rem; }
+  .display-xl-2.nl { font-size: 1.7rem; }
+  .display-xl-2.nl.af { font-size: 1.75rem; }
+  .display-xl-2.nl.af.rp { font-size: 1.7rem; }
+  .progressss-4.is-active { color: rgb(255, 255, 255); }
+  .step-number-4.is-active { font-family: Figtree, sans-serif; font-weight: 700; }
+  .pair-circle-4.is-active { background-color: rgb(63, 99, 26); }
+  .step-number-5.is-active { font-family: Figtree, sans-serif; font-weight: 700; }
+  .step-number-6.is-active { font-family: Gilroy, Arial, sans-serif; font-weight: 600; }
+  .step-number-7.is-active { font-family: Gilroy, Arial, sans-serif; font-weight: 600; }
+  .list-item-3 { font-size: 1.1rem; font-weight: 500; }
+}
+@media screen and (max-width: 479px) {
+  #w-node-_947274c5-ff86-9af7-b192-c964623e0c88-85e78146, #w-node-_947274c5-ff86-9af7-b192-c964623e0cbf-85e78146, #w-node-_947274c5-ff86-9af7-b192-c964623e0d08-85e78146, #w-node-_947274c5-ff86-9af7-b192-c964623e0d3d-85e78146, #w-node-_947274c5-ff86-9af7-b192-c964623e0d73-85e78146 { grid-area: span 1 / span 1 / span 1 / span 1; }
+}
+body { -webkit-font-smoothing: antialiased; }
+::selection { background: rgb(209, 68, 36); color: rgb(255, 255, 255); }
+body { -webkit-font-smoothing: antialiased; text-rendering: optimizelegibility; }
+html { font-size: 1rem; }
+html:not(.wf-design-mode) ::selection { background: rgb(0, 0, 0); color: rgb(255, 255, 255); }
+body * { text-decoration-thickness: clamp(0.75px, 0.075em, 0.25rem); }
+.padding-bottom { padding-top: 0rem !important; padding-right: 0rem !important; padding-left: 0rem !important; }
+.hide { display: none !important; }
+@media screen and (max-width: 991px) {
+  .hide { display: none !important; }
+}
+.af-commit-bar { border-radius: 10px !important; border-width: medium !important; border-style: none !important; border-color: currentcolor !important; border-image: none !important; background-color: rgb(255, 255, 255) !important; background-image: url("data:image/svg+xml,%3csvg width='100%25' height='100%25' xmlns='http://www.w3.org/2000/svg'%3e%3crect width='100%25' height='100%25' fill='none' stroke='%23D7E0CF' stroke-width='3' stroke-dasharray='4 4' rx='10' ry='10'/%3e%3c/svg%3e") !important; background-position: 0px 0px !important; background-repeat: no-repeat !important; background-size: 100% 100% !important; }
+.afp-seg-v2.is-active, .afp-seg-v2.is-complete { background: rgb(87, 125, 56) !important; }
+.afp-seg-v2 { transition: background-color 0.3s ease-out; }
+[data-lq-show-on]:not(.lq-show), [data-lq-show-from]:not(.lq-show) { display: none !important; }
+:root { --modal-animation-duration: 0.3s; --modal-animation-easing: cubic-bezier(0.22, 1, 0.36, 1); --modal-overlay-bg: rgba(0, 0, 0, 0.35); --modal-bg: #fff; --modal-shadow: 0 10px 40px rgba(0, 0, 0, 0.12), 0 0 10px rgba(0, 0, 0, 0.08); --modal-border-radius: 16px; --modal-max-width: 900px; --cart-animation-duration: 0.35s; --cart-animation-easing: cubic-bezier(0.22, 1, 0.36, 1); --cart-overlay-bg: rgba(0, 0, 0, 0.35); --cart-drawer-shadow: -5px 0 30px rgba(0, 0, 0, 0.15); }
+[data-button="spinner"] { width: 1.2em; display: block; height: 1.2em; opacity: 0; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); transform-origin: center center; pointer-events: none; }
+[data-button="spinner"] .path { stroke: currentcolor; stroke-linecap: round; animation: 1.5s ease-in-out 0s infinite normal none running spinner-dash; }
+[data-quiz-step="reason"] { transition: opacity 0.2s ease-out; }
+[data-lq-cta-reason], [data-quiz="prev-reason"] { transition: opacity 0.2s ease-out; }
+[data-lq-show-on], [data-lq-show-from] { transition: opacity 0.2s ease-out; }
+.afp-seg-v2 { transition: background-color 0.3s ease-out; }
+/* ---- media placeholders: template only. .ph = the slot (right size), .ph-ref = the ORIGINAL media
+   hotlinked from the source page as a visual reference, .ph-t/.ph-d = what goes there. Swap every .ph for
+   your real <img>/<video> and delete this block (see notes). Hover/tap a slot for its full caption. ---- */
+.ph { position: relative; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 6px; padding: 8px; box-sizing: border-box; overflow: hidden; background: repeating-linear-gradient(45deg, #eef1ea 0 12px, #e3e8dd 12px 24px); outline: 2px dashed #9aa58f; outline-offset: -2px; color: #3d4a33; font: 11px/1.35 ui-monospace, Menlo, monospace; letter-spacing: 0; text-align: left; }
+.ph-ref { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+.ph:has(.ph-ref) { background: none; }
+.ph-t, .ph-d { position: absolute; z-index: 1; left: 8px; transition: opacity .2s; }
+.ph-t { top: 8px; right: 8px; width: fit-content; max-width: calc(100% - 16px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 10px; font-weight: 700; background: #2b3920; color: #fff; padding: 2px 6px; border-radius: 4px; }
+.ph-d { right: 8px; bottom: 8px; font-size: 10px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; box-sizing: content-box; max-height: 2.7em; overflow: hidden; background: rgba(255, 255, 255, .9) padding-box; padding: 0 6px; border: 4px solid rgba(255, 255, 255, .9); border-width: 4px 0; border-radius: 6px; }
+.ph:hover .ph-t { white-space: normal; }
+.ph:hover .ph-d { -webkit-line-clamp: unset; max-height: none; }
+.lottie-animation-4.ph { width: 18px; height: 22px; }
+.lottie-animation-4.ph, .blogpost1_author-image.ph, .af-commit-img-placeholder-2.ph { padding: 0; gap: 0; }
+.af-commit-img-placeholder-2.ph { background: url("https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6a1c7981a8018a51048775cc_HF%20Stride%20New.webp") 50% / cover no-repeat; outline: none; }
+.lottie-animation-4.ph .ph-t, .blogpost1_author-image.ph .ph-t, .af-commit-img-placeholder-2.ph .ph-t, .lottie-animation-4.ph .ph-d, .blogpost1_author-image.ph .ph-d { display: none; }
+</style>
+</head>
+<body>
+<div class="page-wrapper">
+  <div class="main-wrapper publisher">
+    <div class="sticky-headers">
+      <div class="sticky-headers">
+        <section class="nav-foots publisher authority">
+          <div class="container-1737 cc-small">
+            <h1 class="health-dscvry-nav-10 hf"><strong class="bold-text-2016">FOOT</strong>-<strong class="bold-text-2015">INSIDER</strong><br></h1>
+          </div>
+        </section>
+        <div class="afp-wrap-v2">
+          <div class="afp-container-v2">
+            <div class="afp-track-v2">
+              <div data-quiz-progress-seg="" class="afp-seg-v2"></div>
+              <div data-quiz-progress-seg="" class="afp-seg-v2"></div>
+              <div data-quiz-progress-seg="" class="afp-seg-v2"></div>
+              <div data-quiz-progress-seg="" class="afp-seg-v2"></div>
+              <div data-quiz-progress-seg="" class="afp-seg-v2"></div>
+              <div data-quiz-progress-seg="" class="afp-seg-v2"></div>
+              <div data-quiz-progress-seg="" class="afp-seg-v2"></div>
+              <div data-quiz-progress-seg="" class="afp-seg-v2"></div>
+              <div data-quiz-progress-seg="" class="afp-seg-v2"></div>
+              <div data-quiz-progress-seg="" class="afp-seg-v2"></div>
+            </div>
+            <div class="afp-count-v2"><strong data-quiz-progress-current-display="" class="bold-text-1917">01</strong> / <span data-quiz-progress-total-display="" class="text-span-220">11</span></div>
+          </div>
+        </div>
+        <div data-lq-show-from="6" class="countdown_timer v2">
+          <div class="navbar-smaller af v2">
+            <div class="af_countdown_text">
+              <div class="lottie-animation-4 ph" data-ph="lottie"><span class="ph-t">LOTTIE</span><span class="ph-d">Small animated icon</span></div>
+              <div class="adv af_countdown_text">Save 49% +&nbsp;Free Shipping</div>
+            </div>
+            <div id="js-clock" class="holiday-clock os-green af">
+              <div class="box-hrs-2 af">
+                <div id="js-clock-hours" class="clock-number-5 af">00h</div>
+              </div>
+              <div class="text-block-932 af">:</div>
+              <div class="box-hrs-2 af">
+                <div id="js-clock-minutes" class="clock-number-5 af">00m</div>
+              </div>
+              <div class="text-block-932 af">:</div>
+              <div class="box-hrs-2 af">
+                <div id="js-clock-seconds" class="clock-number-5 af">00s</div>
+              </div>
+              <div class="hide w-embed w-script"><script>
+(function () {
+    function getNextMidnight() {
+        var midnight = new Date();
+        midnight.setHours(24,0,0,0);
+        return midnight;
+    }
+    var deadline = getNextMidnight();
+    function pad(num) {
+        var s = "0" + num;
+        return s.substr(s.length - 2);
+    }
+    function getTimeRemaining(endtime) {
+        var total = Date.parse(endtime) - Date.parse(new Date());
+        var seconds = Math.floor((total / 1000) % 60);
+        var minutes = Math.floor((total / 1000 / 60) % 60);
+        var hours = Math.floor((total / (1000 * 60 * 60)) % 24);
+        return { total, hours, minutes, seconds };
+    }
+    function clock(id, endtime) {
+        var hours = document.getElementById(id + '-hours');
+        var minutes = document.getElementById(id + '-minutes');
+        var seconds = document.getElementById(id + '-seconds');
+        var timeinterval = setInterval(function () {
+            var time = getTimeRemaining(endtime);
+            if (time.total <= 0) {
+                clearInterval(timeinterval);
+                deadline = getNextMidnight();
+                clock(id, deadline);
+            } else {
+                hours.innerHTML = pad(time.hours) + 'h';
+                minutes.innerHTML = pad(time.minutes) + 'm';
+                seconds.innerHTML = pad(time.seconds) + 's';
+            }
+        }, 1000);
+    }
+    clock('js-clock', deadline);
+})();
+</script></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <section class="authority adv af-section">
+      <div class="container-1747 review_container af w-container">
+        <div class="blog-sides af">
+          <div class="container-wrapper">
+            <div data-reason-index="1" data-quiz-step="reason" class="afq-step">
+              <div class="display-col nl">
+                <div class="label-2 adv eis native">
+                  <div class="label__wrapper">
+                    <div class="label__text">FEATURED</div>
+                  </div>
+                </div>
+                <div><span class="text-span-223">Posted on March 25, 2026</span></div>
+              </div>
+              <h3 class="display-xl-2"><strong class="bold-text-1916">I Tried 7 Different 'Comfort' Shoes. </strong><span class="text-span-221 af"><strong class="publisher wl">Only One Actually Worked.</strong></span></h3>
+              <div class="blogpost1_author-wrapper eis">
+                <div class="blogpost1_author-image-wrapper">
+                  <div class="blogpost1_author-image ph" data-ph="avatar" style="aspect-ratio:1/1"><img class="ph-ref" src="https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6a1c7981a8018a51048775e4_474234037_952607770270208_6822920961915126815_n.webp" alt="" loading="lazy"><span class="ph-t">IMG 1:1</span><span class="ph-d">Author avatar</span></div>
+                </div>
+                <div class="blogpost1_author-text">
+                  <div class="blogpost1_date-wrapper eis">
+                    <div class="title"><span class="title">Words by </span><strong>Mary Thompson</strong><br></div>
+                  </div>
+                  <div class="blogpost1_date-wrapper">
+                    <div class="text-size-small-copy-2 eis native nl af">Barefoot Shoe Enthusiast</div>
+                  </div>
+                </div>
+              </div>
+              <div class="video-s authority af _1vd">
+                <div class="image-wrapper-3">
+                  <div class="image-content-2 ph" data-ph="image" style="aspect-ratio:1710/1138"><img class="ph-ref" src="https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6a2bd400177f3a2908eb7d4c_5%20different%20shoes%20hike.webp" alt="" loading="lazy"><span class="ph-t">IMG 3:2</span><span class="ph-d">All 5 products compared side by side</span></div>
+                </div>
+              </div>
+              <p class="p-listicle-2 publisher">Let me save you the time and money I wasted.<br><br>Over the past 30 days, three of us tried my trusty New Balances with <strong>$140 insoles</strong>, the $170 Hoka Bondi everyone raves about, the $110 Nikes my daughter swears by, those $135 Skechers Slip-ins with comfort as their entire sales pitch, and finally, a shoe none of us had ever heard of.<br><br><strong>Four failures. One winner. </strong>Here's the difference. And what I wish someone had told me before I spent<strong> $555.</strong><br></p>
+            </div>
+            <div id="overview" data-quiz-step="reason" data-reason-index="2" class="afq-step">
+              <h3 class="display-xl-2 nl af"><strong class="bold-text-1916">1. The $140 Insoles I Put in My Trusty New Balances</strong></h3>
+              <div class="video-s authority">
+                <div class="image-wrapper-3">
+                  <div class="image w-embed">
+                    <div class="ph" data-ph="video" style="width:100%;max-width:766px;aspect-ratio:766/883;border-radius:12px;display:block;"><video class="ph-ref" src="https://cdn.shopify.com/videos/c/o/v/b72df2d15a8d435a802c10bcc9b640d9.mp4" autoplay muted loop playsinline preload="metadata"></video><span class="ph-t">VIDEO 7:8</span><span class="ph-d">Author living with the problem (UGC)</span></div>
+                  </div>
+                </div>
+                <div class="image-wrapper-3">
+                  <div class="image w-embed">
+                    <div class="ph" data-ph="video" style="width:100%;max-width:766px;aspect-ratio:766/883;border-radius:12px;display:block;"><video class="ph-ref" src="https://cdn.shopify.com/videos/c/o/v/ac4f12f50871485db6358aecb5b7d581.mp4" autoplay muted loop playsinline preload="metadata"></video><span class="ph-t">VIDEO 7:8</span><span class="ph-d">Competitor 1 failing, close-up</span></div>
+                  </div>
+                </div>
+              </div>
+              <p class="p-listicle-2 publisher">Before I bought a single new shoe, I tried to save the ones I had. $140 worth of podiatrist-recommended insoles, straight into my old New Balances. I wore them every day for three months, because a doctor told me to.<br><br>Then I pulled them out and actually looked at them. The heel pad had <strong>compressed completely flat.</strong> I could pinch it between two fingers like a pancake. Meanwhile my knees still ached by mid-afternoon, and my toes were still pressed together like they were standing in line.<br><br>‍<strong>Three months. $140. Nothing changed.</strong><br></p>
+            </div>
+            <div id="overview" data-quiz-step="reason" data-reason-index="3" class="afq-step">
+              <h3 class="display-xl-2 nl af"><strong class="bold-text-1916">2. The $170 Cushioned Ones Everyone Raves About</strong></h3>
+              <div class="video-s authority">
+                <div class="image-wrapper-3">
+                  <div class="image-content-2 ph" data-ph="image" style="aspect-ratio:1710/1968"><img class="ph-ref" src="https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6a2bd55fb437a9e85b3c5750_Hoka%20Shoes.webp" alt="" loading="lazy"><span class="ph-t">IMG 7:8</span><span class="ph-d">Competitor 2 packshot</span></div>
+                </div>
+                <div class="image-wrapper-3">
+                  <div class="image w-embed">
+                    <div class="ph" data-ph="video" style="width:100%;max-width:766px;aspect-ratio:766/883;border-radius:12px;display:block;"><video class="ph-ref" src="https://cdn.shopify.com/videos/c/o/v/9fd89a84c8584c6da96f8c8fdef48013.mp4" autoplay muted loop playsinline preload="metadata"></video><span class="ph-t">VIDEO 7:8</span><span class="ph-d">Competitor 2 failing, hands-on demo</span></div>
+                  </div>
+                </div>
+              </div>
+              <p class="p-listicle-2 publisher">The Hoka Bondi. And I'll be honest: <strong>the first hour is wonderful.</strong> Stepping into that cushion feels like a hotel mattress for your feet. Then something shifts.<br><br>That thick sole <strong>raises your heel well above your toes</strong>, and your knees quietly pay for it. By lunchtime I had that familiar dull ache creeping back in, and on uneven sidewalks I felt like I was balancing on a pillow. <strong>Soft isn't the same as stable.<br><br>‍</strong>Beautiful for an hour. A problem by noon.<br></p>
+            </div>
+            <div id="overview" data-quiz-step="reason" data-reason-index="4" class="afq-step">
+              <h3 class="display-xl-2 nl af"><strong class="bold-text-1916">3. The $110 Nikes My Daughter Swears By</strong></h3>
+              <div class="video-s authority">
+                <div class="image-wrapper-3">
+                  <div class="image-content-2 ph" data-ph="image" style="aspect-ratio:337/388"><img class="ph-ref" src="https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6a2bda9824cd0988b1e7e73c_Nike%20Shoes.webp" alt="" loading="lazy"><span class="ph-t">IMG 7:8</span><span class="ph-d">Competitor 3 packshot</span></div>
+                </div>
+                <div class="image-wrapper-3">
+                  <div class="image w-embed">
+                    <div class="ph" data-ph="video" style="width:100%;max-width:766px;aspect-ratio:766/883;border-radius:12px;display:block;"><video class="ph-ref" src="https://cdn.shopify.com/videos/c/o/v/da6d2d52425345068174cc733365ea50.mp4" autoplay muted loop playsinline preload="metadata"></video><span class="ph-t">VIDEO 7:8</span><span class="ph-d">The pain the problem causes (UGC)</span></div>
+                  </div>
+                </div>
+              </div>
+              <p class="p-listicle-2 publisher">"Mom, just get Nikes." So I did.<br><br>And they're fine. For her. She's 29 and runs 5Ks. But a running shoe is <strong>a sneaker doing a job it wasn't built for.</strong> The narrow front squeezed my toes by hour three, and the raised heel put me right back into that familiar knee ache.<br><br>Popular doesn't mean right for <em>your</em> feet. It just means <strong>well-advertised.</strong><br></p>
+            </div>
+            <div id="overview" data-quiz-step="reason" data-reason-index="5" class="afq-step">
+              <h3 class="display-xl-2 nl af"><strong class="bold-text-1916">4. The $135 "Comfort" Ones That Ranked Dead Last</strong></h3>
+              <div class="video-s authority">
+                <div class="image-wrapper-3">
+                  <div class="image-content-2 ph" data-ph="image" style="aspect-ratio:1710/1968"><img class="ph-ref" src="https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6a2bd5e69662b8e5b538c84a_Sketcher%20Slip%20ins.webp" alt="" loading="lazy"><span class="ph-t">IMG 7:8</span><span class="ph-d">Competitor 4 packshot</span></div>
+                </div>
+                <div class="image-wrapper-3">
+                  <div class="image w-embed">
+                    <div class="ph" data-ph="video" style="width:100%;max-width:766px;aspect-ratio:766/890;border-radius:12px;display:block;"><video class="ph-ref" src="https://cdn.shopify.com/videos/c/o/v/adf27a2b41044643b6d95970a8fa7daf.mp4" autoplay muted loop playsinline preload="metadata"></video><span class="ph-t">VIDEO 7:8</span><span class="ph-d">Frustrated, ditching competitor 4 (UGC)</span></div>
+                  </div>
+                </div>
+              </div>
+              <p class="p-listicle-2 publisher">The Skechers Slip-ins. The only shoe in our test with comfort as its entire sales pitch. Which makes this the most disappointing one to write.<br><br>The memory foam feels incredible in the store. Two weeks in, it had <strong>molded itself completely flat</strong>, the same trick my $140 insoles pulled. And that soft, mushy base gives you nothing solid to stand on. On a wet supermarket floor, I had <strong>a slip that genuinely scared me.<br><br>‍</strong>All three of us ranked it last. Even the shoe with comfort as its whole promise couldn't deliver it.<br></p>
+            </div>
+            <div id="overview" data-quiz-step="reason" data-reason-index="6" class="afq-step">
+              <h3 class="display-xl-2 nl af"><strong class="bold-text-1916">5. The One I'd Never Heard Of</strong></h3>
+              <div class="video-s authority">
+                <div class="image-wrapper-3">
+                  <div class="image w-embed">
+                    <div class="ph" data-ph="video" style="width:100%;max-width:766px;aspect-ratio:766/883;border-radius:12px;display:block;"><video class="ph-ref" src="https://cdn.shopify.com/videos/c/o/v/13888ff1e3c74dc4a9465c2d7dd1b8dc.mp4" autoplay muted loop playsinline preload="metadata"></video><span class="ph-t">VIDEO 7:8</span><span class="ph-d">Our product in use, close-up</span></div>
+                  </div>
+                </div>
+                <div class="image-wrapper-3">
+                  <div class="image w-embed">
+                    <div class="ph" data-ph="video" style="width:100%;max-width:766px;aspect-ratio:766/883;border-radius:12px;display:block;"><video class="ph-ref" src="https://cdn.shopify.com/videos/c/o/v/ed1f1d2f475f4c9ca1731eec94076de0.mp4" autoplay muted loop playsinline preload="metadata"></video><span class="ph-t">VIDEO 7:8</span><span class="ph-d">Author presenting our product, selfie (UGC)</span></div>
+                  </div>
+                </div>
+              </div>
+              <p class="p-listicle-2 publisher">Then there was the one <strong>nobody recommended.<br><br>‍</strong>I almost didn't try the HF Stride. I'd never seen it in a store. It had never shown up in my feed. A reader mentioned it in a comment, and I added it almost as an afterthought.<br><br>The first thing I noticed was that it sat <strong>completely flat.</strong> Heel and forefoot at exactly the same level. After years in heel-elevated shoes, standing in something genuinely zero-drop felt strange for a moment. <strong>Then it felt <em>correct</em>.</strong><br></p>
+              <a href="https://offer.dinosaurized.com/OFFER-SLUG" class="af-commit-bar w-inline-block">
+                <div class="div-block-2598">
+                  <div id="w-node-_947274c5-ff86-9af7-b192-c964623e0c88-85e78146" class="af-commit-img">
+                    <div class="af-commit-img-placeholder-2 ph" data-ph="image" title="IMG 1:1 · Our product thumbnail"><span class="ph-t">IMG 80x80</span></div>
+                  </div>
+                  <div class="af-commit-body">
+                    <div class="af-commit-title">Never heard of it?<strong class="bold-text-1915"> See the shoe that won</strong></div>
+                    <p class="af-commit-sub"><span class="text-span-225">Low Stock</span> · Free Shipping</p>
+                  </div>
+                </div>
+                <div data-lq-cta-reason="3" class="af-commit-cta">Try Risk-Free <span class="af-commit-cta-arrow">→</span></div>
+                <p class="af-commit-sub mb"><span class="text-span-225">Low Stock</span> · Free Shipping</p>
+              </a>
+              <div class="divider-article af"></div>
+            </div>
+            <div id="overview" data-quiz-step="reason" data-reason-index="7" class="afq-step">
+              <h3 class="display-xl-2 nl af"><strong class="bold-text-1916">6. Why the HF Stride Was Different</strong></h3>
+              <div class="video-s authority">
+                <div class="image-wrapper-3">
+                  <div class="image w-embed">
+                    <div class="ph" data-ph="video" style="width:100%;max-width:766px;aspect-ratio:766/883;border-radius:12px;display:block;"><video class="ph-ref" src="https://cdn.shopify.com/videos/c/o/v/c67d5e8c4ede4fbab3b459a92f00d8f0.mp4" autoplay muted loop playsinline preload="metadata"></video><span class="ph-t">VIDEO 7:8</span><span class="ph-d">Author happy with our product (UGC)</span></div>
+                  </div>
+                </div>
+                <div class="image-wrapper-3">
+                  <div class="image w-embed">
+                    <div class="ph" data-ph="video" style="width:100%;max-width:766px;aspect-ratio:766/883;border-radius:12px;display:block;"><video class="ph-ref" src="https://cdn.shopify.com/videos/c/o/v/8667920f11234911a876e1a40010c8c8.mp4" autoplay muted loop playsinline preload="metadata"></video><span class="ph-t">VIDEO 7:8</span><span class="ph-d">Key feature of our product, close-up demo</span></div>
+                  </div>
+                </div>
+              </div>
+              <p class="p-listicle-2 publisher">By hour two, the mid-morning stiffness I'd come to treat as normal <strong>simply wasn't there.<br><br>‍</strong>The toe box was wide enough that my toes, pressed against seams all week in every other pair, finally had <strong>room to spread.</strong> I walked the uneven path I'd been using as my stability test and, for the first time in the whole experiment, <strong>I wasn't scared.<br><br>‍</strong>By hour four, I just kept walking. No excuse to stop. No counting down to when I could take them off. The HF Stride didn't feel like a "comfort shoe." It felt like a shoe that was <strong>actually on my side.</strong><br></p>
+              <a href="https://offer.dinosaurized.com/OFFER-SLUG" class="af-commit-bar w-inline-block">
+                <div class="div-block-2598">
+                  <div id="w-node-_947274c5-ff86-9af7-b192-c964623e0cbf-85e78146" class="af-commit-img">
+                    <div class="af-commit-img-placeholder-2 ph" data-ph="image" title="IMG 1:1 · Our product thumbnail"><span class="ph-t">IMG 80x80</span></div>
+                  </div>
+                  <div class="af-commit-body">
+                    <div class="af-commit-title">Never heard of it?<strong class="bold-text-1915"> See the shoe that won</strong></div>
+                    <p class="af-commit-sub"><span class="text-span-225">Low Stock</span> · Free Shipping</p>
+                  </div>
+                </div>
+                <div data-lq-cta-reason="3" class="af-commit-cta">Try Risk-Free <span class="af-commit-cta-arrow">→</span></div>
+                <p class="af-commit-sub mb"><span class="text-span-225">Low Stock</span> · Free Shipping</p>
+              </a>
+              <div class="divider-article af"></div>
+            </div>
+            <div id="overview" data-quiz-step="reason" data-reason-index="8" class="afq-step">
+              <h3 class="display-xl-2 nl af"><strong class="bold-text-1916">7. How the Five Compared</strong></h3>
+              <div class="video-s authority">
+                <div class="image-wrapper-3">
+                  <div class="image-content-2 ph" data-ph="image" style="aspect-ratio:1710/1992"><img class="ph-ref" src="https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6a1c7981a8018a51048775e9_Mary%20Thompson%20HF%20Stride%20V4.png" alt="" loading="lazy"><span class="ph-t">IMG 7:8</span><span class="ph-d">Our product in real use (POV)</span></div>
+                </div>
+                <div class="image-wrapper-3">
+                  <div class="image-content-2 ph" data-ph="image" style="aspect-ratio:1710/1992"><img class="ph-ref" src="https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6a1c7981a8018a51048775d1_Mary%20Thompson%20HF%20Stride%20V3.png" alt="" loading="lazy"><span class="ph-t">IMG 7:8</span><span class="ph-d">Our product, close-up</span></div>
+                </div>
+              </div>
+              <p class="p-listicle-2 publisher">Same days. Same surfaces. Same three women. Here's where each one landed.<br></p>
+              <ul role="list" class="list-dd">
+                <li class="list-item-3 adv lst"><strong>The New Balances with $140 insoles:</strong> the insoles flattened within weeks. Nothing changed.<br></li>
+                <li class="list-item-3 adv lst"><strong>The $170 Hoka Bondi:</strong> wonderful for the first hour. By noon, my knees were paying for that thick heel.<br></li>
+                <li class="list-item-3 adv lst"><strong>The $110 Nikes:</strong> built for my daughter's 5Ks, not for standing all day. Narrow exactly where it matters.<br></li>
+                <li class="list-item-3 adv lst"><strong>The $135 Skechers Slip-ins:</strong> comfort was the whole promise. All three of us ranked it last.<br></li>
+              </ul>
+              <p class="p-listicle-2 publisher">‍<strong>The HF Stride ($69.95):</strong> flat, wide, steady. The only pair all three of us kept.<br><br>The four that failed cost us <strong>$555 combined.</strong> The one that worked costs <strong>less than any of them.</strong><br></p>
+              <a href="https://offer.dinosaurized.com/OFFER-SLUG" class="af-commit-bar w-inline-block">
+                <div class="div-block-2598">
+                  <div id="w-node-_947274c5-ff86-9af7-b192-c964623e0d08-85e78146" class="af-commit-img">
+                    <div class="af-commit-img-placeholder-2 ph" data-ph="image" title="IMG 1:1 · Our product thumbnail"><span class="ph-t">IMG 80x80</span></div>
+                  </div>
+                  <div class="af-commit-body">
+                    <div class="af-commit-title">Ready to toss the bad ones?<strong class="bold-text-1915"> The keeper is $69.95</strong></div>
+                    <p class="af-commit-sub"><span class="text-span-225">Low Stock</span> · Free Shipping</p>
+                  </div>
+                </div>
+                <div data-lq-cta-reason="3" class="af-commit-cta">Try Risk-Free <span class="af-commit-cta-arrow">→</span></div>
+                <p class="af-commit-sub mb"><span class="text-span-225">Low Stock</span> · Free Shipping</p>
+              </a>
+              <div class="divider-article af"></div>
+            </div>
+            <div id="overview" data-quiz-step="reason" data-reason-index="9" class="afq-step">
+              <h3 class="display-xl-2 nl af"><strong class="bold-text-1916">8. The Only Pair I Still Wear</strong></h3>
+              <div class="video-s authority">
+                <div class="image-wrapper-3">
+                  <div class="image-content-2 ph" data-ph="image" style="aspect-ratio:1710/1992"><img class="ph-ref" src="https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6a1c7981a8018a51048775de_Mary%20Thompson%20HF%20Stride%20V2.avif" alt="" loading="lazy"><span class="ph-t">IMG 7:8</span><span class="ph-d">Our product, lifestyle shot</span></div>
+                </div>
+                <div class="image-wrapper-3">
+                  <div class="image w-embed">
+                    <div class="ph" data-ph="video" style="width:100%;max-width:766px;aspect-ratio:766/883;border-radius:12px;display:block;"><video class="ph-ref" src="https://cdn.shopify.com/videos/c/o/v/5551728d853a48ffb703e6f2f8a9b267.mp4" autoplay muted loop playsinline preload="metadata"></video><span class="ph-t">VIDEO 7:8</span><span class="ph-d">Old products thrown away (UGC)</span></div>
+                  </div>
+                </div>
+              </div>
+              <p class="p-listicle-2 publisher">It's been four months since the test ended. Last week, the old pairs finally went where they belonged: <strong>the trash.</strong> <br><br>The HF Stride is by my front door, where my everyday shoes live.And here's the part that still surprises me: after spending <strong>$555 on shoes that didn't work</strong>, the one that did costs <strong>$69.95</strong> <em>(normally $110)</em>.<br></p>
+              <a href="https://offer.dinosaurized.com/OFFER-SLUG" class="af-commit-bar w-inline-block">
+                <div class="div-block-2598">
+                  <div id="w-node-_947274c5-ff86-9af7-b192-c964623e0d3d-85e78146" class="af-commit-img">
+                    <div class="af-commit-img-placeholder-2 ph" data-ph="image" title="IMG 1:1 · Our product thumbnail"><span class="ph-t">IMG 80x80</span></div>
+                  </div>
+                  <div class="af-commit-body">
+                    <div class="af-commit-title">$555 in failures. The winner?<strong class="bold-text-1915"> See the one that won</strong></div>
+                    <p class="af-commit-sub"><span class="text-span-225">Low Stock</span> · Free Shipping</p>
+                  </div>
+                </div>
+                <div data-lq-cta-reason="3" class="af-commit-cta">Try Risk-Free <span class="af-commit-cta-arrow">→</span></div>
+                <p class="af-commit-sub mb"><span class="text-span-225">Low Stock</span> · Free Shipping</p>
+              </a>
+              <div class="divider-article af"></div>
+            </div>
+            <div id="overview" data-quiz-step="reason" data-reason-index="10" class="afq-step">
+              <h3 class="display-xl-2 nl af"><strong class="bold-text-1916">9. But Will It Fit My Feet?</strong></h3>
+              <div class="image w-embed">
+                <div class="ph" data-ph="video" style="width:100%;max-width:1600px;aspect-ratio:1600/800;border-radius:12px;display:block;"><video class="ph-ref" src="https://cdn.shopify.com/videos/c/o/v/a9873a29506f421981122b250dac3048.mp4" autoplay muted loop playsinline preload="metadata"></video><span class="ph-t">VIDEO 2:1</span><span class="ph-d">How our product works (feature animation)</span></div>
+              </div>
+              <p class="p-listicle-2 publisher">That was my exact worry, and it's the #1 question readers ask us.<br><br>Here's the honest answer: the HF Stride <strong>fits true to size</strong>, and the wide toe box means it's forgiving in exactly the place most shoes aren't. I ordered my normal size and it was right.<br><br>And if it isn't right for you? <strong>You get 30 days to walk in them, actually wear them outside, and still send them back.</strong> Not "unworn in the original box." <strong>Worn.<br><br>‍</strong>One more thing, because it matters at our age: that steady, planted feeling on uneven ground isn't a bonus feature. For the three of us, it was the whole point. <strong>A shoe that keeps you confident on your feet is a shoe that keeps you walking.</strong><br></p>
+              <a href="https://offer.dinosaurized.com/OFFER-SLUG" class="af-commit-bar w-inline-block">
+                <div class="div-block-2598">
+                  <div id="w-node-_947274c5-ff86-9af7-b192-c964623e0d73-85e78146" class="af-commit-img">
+                    <div class="af-commit-img-placeholder-2 ph" data-ph="image" title="IMG 1:1 · Our product thumbnail"><span class="ph-t">IMG 80x80</span></div>
+                  </div>
+                  <div class="af-commit-body">
+                    <div class="af-commit-title">Still unsure? <strong class="bold-text-1915">30 days to prove it, risk-free</strong></div>
+                    <p class="af-commit-sub"><span class="text-span-225">Low Stock</span> · Free Shipping</p>
+                  </div>
+                </div>
+                <div data-lq-cta-reason="3" class="af-commit-cta">Try Risk-Free <span class="af-commit-cta-arrow">→</span></div>
+                <p class="af-commit-sub mb"><span class="text-span-225">Low Stock</span> · Free Shipping</p>
+              </a>
+              <div class="divider-article af"></div>
+            </div>
+            <div id="overview" data-quiz-step="reason" data-reason-index="11" data-lq-result-page="true" class="afq-step">
+              <h3 class="display-xl-2 nl af rp"><strong class="bold-text-1916">Reaching #10 means one thing: you're truly serious about </strong><span class="text-span-226">walking comfortably again</span></h3>
+              <p class="p-listicle-2 publisher rp">Here's everything you need to decide<br></p>
+              <div class="cta-content-2 nl">
+                <div class="text-align-center-5">
+                  <div class="max-width-medium-2">
+                    <div class="adv_cta_div">
+                      <div class="photo-wrappers dark-grey">
+                        <div class="image-89 baresandals nl ph" data-ph="image" style="aspect-ratio:1/1"><img class="ph-ref" src="https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6845a11fcb21f012cb5328af_HF%20Stride%20Transparant.webp" alt="" loading="lazy"><span class="ph-t">IMG 1:1</span><span class="ph-d">Our product packshot, transparent cut-out</span></div>
+                      </div>
+                      <div class="adv_cta_right_div nl">
+                        <h1 class="adv_cta_heading-2 rp"><span class="span-red">Up To 49% off</span> For A Limited Time Only</h1>
+                        <div class="adv_cta_top_div"><div class="padding-bottom padding-xsmall"></div><div class="adv_cta_subtitle_text nl">I was skeptical too. But true to size, free shipping, and a 30-day money-back guarantee means there's nothing to lose.</div><div class="padding-bottom padding-small"></div><a href="https://offer.dinosaurized.com/OFFER-SLUG" class="button w-inline-block"><div data-button="content" class="button_content"><div id="cta_text" class="text-block-580 rp">Try Them Risk-Free</div><div data-button="icon" class="button_icon w-embed"><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" aria-hidden="true" role="img" class="iconify iconify--heroicons" width="100%" height="100%" preserveAspectRatio="xMidYMid meet" viewBox="0 0 20 20"><path fill="currentColor" fill-rule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z" clip-rule="evenodd" width="100%" height="100%"></path></svg></div></div><svg viewBox="0 0 50 50" data-button="spinner" class="button_spinner button_spinner"><circle cx="25" cy="25" r="20" fill="none" stroke-width="5" class="path path"></circle></svg></a><div class="bot_cta_badge_div"><div class="div-block-2"><div class="div-block-766"><div class="text-block nl">Sell-Out Risk: <span class="text-span-6">High</span></div></div></div><div class="div-block-765"><div class="text-block-4">|</div></div><div class="div-block-764"><div class="div-block-767"><div class="text-block-279 nl"><span class="text-span-7">FREE</span> shipping</div></div></div></div></div>
+                        <div class="padding-bottom padding-xsmall"></div>
+                        <div class="text-size-tiny text-align-center">30 days to try them. If they're not right, send them back. No restocking fee, no hassle.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="div-block-900"><a href="https://offer.dinosaurized.com/OFFER-SLUG" class="w-inline-block"><div class="listicle-banner-sale-badge">SUMMER SALE</div></a></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+  <div id="sticky_bar" data-lq-hide-from="11" class="sticky_bar af">
+    <div class="padding-global-21 m-1 af">
+      <div class="container-small-6 af">
+        <div data-lq-show-on="1" class="listicle-holder-1 lq-show"><a data-quiz="next-reason" href="#" class="button-104 af w-inline-block"><div data-button="content" class="button_content"><div id="cta_text" class="text-block-934">See which one worked</div><div class="af-arrow"><div data-button="icon" class="button_icon af w-embed"><svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M0.35409 2.13275C-0.118373 1.64449 -0.11801 0.853835 0.355061 0.366085C0.828496 -0.122028 1.59601 -0.122028 2.06944 0.366085L7.64408 6.11404C8.11864 6.60331 8.11864 7.39668 7.64408 7.88596L2.06944 13.6339C1.59601 14.122 0.828496 14.122 0.355061 13.6339C-0.11801 13.1461 -0.118373 12.3555 0.35409 11.8672L5.06438 7L0.35409 2.13275Z" fill="white"></path>
+</svg></div></div></div><svg viewBox="0 0 50 50" data-button="spinner" class="button_spinner button_spinner"><circle cx="25" cy="25" r="20" fill="none" stroke-width="5" class="path path"></circle></svg></a></div>
+        <div data-lq-show-from="2" class="listicle-holder af"><a data-quiz="prev-reason" href="#" class="button-104 af bck w-inline-block"><div data-button="content" class="button_content af"><div data-button="icon" class="button_icon af w-embed"><svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M7.64591 2.13275C8.11837 1.64449 8.11801 0.853835 7.64494 0.366085C7.1715 -0.122028 6.40399 -0.122028 5.93056 0.366085L0.355924 6.11404C-0.118641 6.60331 -0.118641 7.39668 0.355924 7.88596L5.93056 13.6339C6.40399 14.122 7.1715 14.122 7.64494 13.6339C8.11801 13.1461 8.11837 12.3555 7.64591 11.8672L2.93562 7L7.64591 2.13275Z" fill="#31392B" fill-opacity="0.75"></path>
+</svg></div><div id="cta_text" class="text-block-934 bk">Back</div></div><svg viewBox="0 0 50 50" data-button="spinner" class="button_spinner button_spinner"><circle cx="25" cy="25" r="20" fill="none" stroke-width="5" class="path path"></circle></svg></a><a data-lq-hide-on="11" data-quiz="next-reason" href="#" class="button-104 af nxt w-inline-block"><div data-button="content" class="button_content af"><div id="cta_text" class="text-block-934">Next Reason</div><div class="af-arrow next"><div data-button="icon" class="button_icon af w-embed"><svg width="8" height="14" viewBox="0 0 8 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M0.35409 2.13275C-0.118373 1.64449 -0.11801 0.853835 0.355061 0.366085C0.828496 -0.122028 1.59601 -0.122028 2.06944 0.366085L7.64408 6.11404C8.11864 6.60331 8.11864 7.39668 7.64408 7.88596L2.06944 13.6339C1.59601 14.122 0.828496 14.122 0.355061 13.6339C-0.11801 13.1461 -0.118373 12.3555 0.35409 11.8672L5.06438 7L0.35409 2.13275Z" fill="white"></path>
+</svg></div></div></div><svg viewBox="0 0 50 50" data-button="spinner" class="button_spinner button_spinner"><circle cx="25" cy="25" r="20" fill="none" stroke-width="5" class="path path"></circle></svg></a></div>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Quiz-listicle: one step visible at a time. Same rules as the live page's
+     li11-p script (read from its behavior, the original is obfuscated):
+     next/prev = [data-quiz="next-reason"|"prev-reason"], scroll back to top on
+     every step, progress segs is-complete/is-active, counter 01..11,
+     [data-lq-show-on|show-from] toggle .lq-show, [data-lq-hide-on|hide-from] hide. -->
+<script>
+(function(){
+  var steps=[].slice.call(document.querySelectorAll('[data-quiz-step]')),
+      segs=[].slice.call(document.querySelectorAll('[data-quiz-progress-seg]')),
+      curEl=document.querySelector('[data-quiz-progress-current-display]'),
+      totEl=document.querySelector('[data-quiz-progress-total-display]'),
+      n=steps.length, cur=1;
+  function pad(x){return (x<10?'0':'')+x;}
+  function each(attr,fn){[].forEach.call(document.querySelectorAll('['+attr+']'),function(el){fn(el,+el.getAttribute(attr));});}
+  function vis(el,on){el.classList.toggle('lq-show',on);el.style.display=on?'':'none';}
+  function render(){
+    steps.forEach(function(s,i){
+      if(i!==cur-1){s.style.display='none';return;}
+      s.style.display='';s.style.opacity='0';
+      requestAnimationFrame(function(){requestAnimationFrame(function(){s.style.opacity='1';});});
+    });
+    segs.forEach(function(g,i){g.classList.toggle('is-complete',i<cur-1);g.classList.toggle('is-active',i===cur-1);});
+    if(curEl)curEl.textContent=pad(cur);
+    if(totEl)totEl.textContent=pad(n);
+    each('data-lq-show-on',function(el,v){vis(el,cur===v);});
+    each('data-lq-show-from',function(el,v){vis(el,cur>=v);});
+    each('data-lq-hide-on',function(el,v){el.style.display=cur===v?'none':'';});
+    each('data-lq-hide-from',function(el,v){el.style.display=cur>=v?'none':'';});
+  }
+  document.addEventListener('click',function(e){
+    var a=e.target.closest('[data-quiz]');
+    if(!a)return;
+    e.preventDefault();
+    var next=Math.min(n,Math.max(1,cur+(a.getAttribute('data-quiz')==='prev-reason'?-1:1)));
+    if(next===cur)return;
+    cur=next;render();window.scrollTo(0,0);
+  });
+  render();
+})();
+</script>
+<!-- Noi click-ID sang trang ban. KHONG ban cta_click o day: tags.js da co mot
+     listener bat moi click vao offer.dinosaurized.com roi, ban them lan nua se
+     lam moi cu click dem thanh hai. -->
+<script>
+(function(){
+  var sp=new URLSearchParams(location.search),keep=new URLSearchParams();
+  ['gclid','gbraid','wbraid','fbclid','twclid','msclkid','ttclid','utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(function(k){if(sp.get(k))keep.set(k,sp.get(k));});
+  var extra=keep.toString();
+  function wire(){
+    document.querySelectorAll('a[href*="offer.dinosaurized.com"]').forEach(function(a){
+      if(extra)a.href+=(a.href.indexOf('?')>-1?'&':'?')+extra;
+    });
+  }
+  if(document.readyState!=='loading')wire();else document.addEventListener('DOMContentLoaded',wire);
+})();
+</script>
+</body>
+</html>

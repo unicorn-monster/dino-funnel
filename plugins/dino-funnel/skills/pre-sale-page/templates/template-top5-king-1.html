@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<!--
+# Template: top5-king-1
+
+Source: live page `topreviewking.com/hummingbird-feeder-review/` (Matthew 6:26 Hummingbird Feeder, by Dinosaurized).
+The page HTML below this comment is a frozen copy. Font: `curl -sL https://topreviewking.com/hummingbird-feeder-review/assets/fonts/opensans-latin.woff2 -o output/<slug>/assets/fonts/opensans-latin.woff2`. Format: "The Best [Category]: A Buyer's Guide", 5 products, ours #1.
+
+## Placeholders to replace globally
+
+| Token in index.html | Replace with |
+|---|---|
+| `/hummingbird-feeder-review/` | `/<slug>/` (images, video poster, font preload) |
+| `https://offer.dinosaurized.com/the-matthew-626-hummingbird-feeder` | offer URL (4 places: rank-1 x2, winner, spo) |
+| `https://www.amazon.com/dp/B084WCBB6X`, `B003XL7WZO`, `B005F5NGYW`, `B003R2SKIC` | competitor ASINs #2 to #5 |
+
+## Slot map (in page order)
+
+| Block (selector) | What to write | Original size |
+|---|---|---|
+| `<title>` | The Best [Category]: A Buyer's Guide | same as H1 |
+| `header .logo` | `{SITE}` + tagline. Only change for a non-TopReviewKing domain | 1 line |
+| `.hero h1` | `The Best [Category]:<br>A Buyer's Guide` | |
+| `.hero .sub` | Dek naming the two problems | 1 sentence |
+| `.hero .meta` | `Latest update: [date ~1 week ago] &middot; 5 minute read` | |
+| `.hnav a` x3 | `WHY [X] FAIL` / `WHAT TO LOOK FOR` / `TOP 5 [X]`. Keep hrefs `#dangers #matters #compare` | |
+| `.important` | IMPORTANT callout with the N checks (N = factor count from SKILL.md *Things that matter*) | 3 sentences |
+| `.compare-photo img` | `lineup.webp` 1440x810, keep `fetchpriority="high"`, no `loading="lazy"` | |
+| `article.article p` | Hidden mechanism (problem 1), quieter problem 2, "garage" beat, "That is exactly why we wrote this guide.", the N checks, "Only one passed all N.", `p.transition` | 10 paragraphs |
+| `#dangers h2 + .bc-sub` | "What a bad [X] actually does to ..." | |
+| `.bc-card` x4 | h3 + 1 paragraph each, annoying → dangerous; the 4th is the design flaw that causes the other 3. Keep each card's `.ic` svg or swap for a fitting stroke icon | 60-80 words each |
+| `.bc-trans` | Bridge into "Five things." | 2 sentences |
+| `#matters .need-item` xN | Numbered factors ranked by mention count (add/remove items to match N), h3 + 1 paragraph, ends on why built-in beats add-on | 60-80 words each |
+| `#compare .sc-tbl` | thead: 5 products (`th.mp` + `mp-tag #1 PICK` stays on ours). tbody rows: `ck-yes` / `ck-no` cells, value rows use `span.sc-val` on ours. Follow SKILL.md *Comparison table and ranking* | 5 rows |
+| `.sc-note` | "Based on the public product specs and owner reviews at the time of writing. N/A means the listing does not say." ("our own testing" only if testing was real) | |
+| `#rank-1` (`.rank-card-1`) | Name, `by {BRAND}`, stars, `.rc-rev` real rating, grade `A+`, `LEARN MORE`, `rc-promo`, 4-7 PROS, 2 scarcity CONS, `.rc-shot` (video `shot-1.mp4` + poster, or a `shot-1.webp` img), Bottom Line headline + 3-4 paragraphs | |
+| `#rank-2..5` (`.rank-card.sub`) | Same shape, no stars/rev/promo, no `.rc-shot` (only #1 has an in-use image/video, the user 2026-10-01). Grades `B+ B C+ C`. `BUY NOW` → Amazon. 3-5 PROS, 2-4 CONS, one identity line opening the Bottom Line | |
+| `#winner` | `.concl-title` "The #1 [Category]", `.concl-lead` recap of the N checks, `.concl-list` short Title Case labels, one per row #1 wins, seal stays `{SITE}<span>#1 PICK</span>`, `.concl-rev` "Based on N reviews" | |
+| `#spo` sticky bar | `spo-prod.webp`, `.spo-line` reader-only offer, `.spo-cta` button text | |
+
+PROS/CONS `<li>` and checklist icons: copy an existing `<li>` with its svg and change only the text.
+
+## Do not touch
+
+- `<head>` CSS, `/tags.js`, favicons, `noindex, nofollow`.
+- IDs `rank-1`, `winner`, `spo`: the sticky-bar script reads them (bar shows after #1, hides at the conclusion).
+- The click-ID passthrough script, except the `a[href*="offer.dinosaurized.com"]` selector when the offer lives on another domain. Do not add a `cta_click` event, `tags.js` already fires one.
+
+## Assets (`public/<slug>/assets/`)
+
+| File | Size | Content |
+|---|---|---|
+| `fonts/opensans-latin.woff2` | | curl from the live page (URL at the top) |
+| `lineup.webp` | 1440x810 | generated real photo: a person + all 5 products (Kie GPT Image 2, SKILL.md *Steps* 2). Never a placeholder |
+| `photo-1..5.webp` | 720x720 | product packshots, rank order (also used in the table) |
+| `shot-1.webp` | 900x720 (5:4) | one in-use shot of #1 only (`shot-1.mp4` optional). #2-#5 have no shot |
+| `spo-prod.webp` | 275x502 (tall product) or 275x275 (squarish, also set the img `height="275"`) | #1 packshot on a WHITE background, trimmed to fit, never a transparent cut-out (the user 2026-10-07) |
+
+## Leftover grep
+
+grep -inE 'hummingbird|feeder|matthew|nectar|perky|aspects|more birds|first nature' index.html   # must be empty
+grep -c '<offer-url>' index.html                                                                  # 4
+
+## Template-specific traps
+
+| Trap | Fix |
+|---|---|
+| Original copy says "We hung five feeders on the same hook" and the table note says "our own testing" | The user tests for real: keep the hands-on wording, just match the product and N checks |
+| `poster=` of `shot-1.mp4` still points at the old slug | Covered by the global path replace, then the grep |
+| Original table has only 5 rows and 2 value rows | Rebuild rows to the ladder, don't copy the row count |
+
+## Changes vs the live page
+
+- `.article` bottom padding cut (64px → 24px desktop, 46px → 18px mobile) so the gap before `#dangers` isn't too tall (the user, 2026-10-01). Everything else in `<head>` is still byte-identical to the live page.
+- `.rc-shot` image removed from #2-#5, only #1 keeps its in-use video/image (the user, 2026-10-05).
+
+This comment is template notes only: drop it from the built index.html (it would ship to a public page).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light">
+<title>The Best Hummingbird Feeders: A Buyer's Guide</title>
+<script src="/tags.js?v=8d6afa76" defer></script>
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="preload" href="/hummingbird-feeder-review/assets/fonts/opensans-latin.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  @font-face{font-family:'Open Sans';font-style:normal;font-weight:300 800;font-display:swap;src:url(/hummingbird-feeder-review/assets/fonts/opensans-latin.woff2) format('woff2');}
+  :root{
+    --page:#F5F9FF; --hero:#15181f; --ink:#1a1d24; --body:#39434f; --soft:#6b7785;
+    --line:#e3e8ef; --teal:#1BC7B1; --teal-l:#5fd3bd; --yellow:#FFDA00;
+    --hf:'Open Sans',sans-serif; --bf:'Open Sans',Arial,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html{scroll-behavior:smooth;}
+  section[id]{scroll-margin-top:20px;}
+  body{font-family:var(--bf);background:var(--page);color:var(--body);line-height:1.65;font-size:16px;-webkit-font-smoothing:antialiased;}
+  h1,h2,h3{font-family:var(--hf);color:var(--ink);line-height:1.18;}
+  header{background:#fff;border-bottom:1px solid var(--line);}
+  .hdr{display:flex;align-items:center;justify-content:space-between;max-width:1100px;margin:0 auto;padding:13px 20px;}
+  .logo{font-family:var(--hf);font-weight:800;font-size:24px;color:#111;letter-spacing:-.01em;}
+  .logo b{color:#FF4A4A;}
+  .logo small{display:block;font-size:9px;letter-spacing:.32em;color:#9aa6b2;font-weight:700;margin-top:-3px;}
+  .hdr .nav{font-size:13px;color:#8a929c;}
+  .hero{background:var(--hero);color:#fff;padding:38px 20px 46px;text-align:center;}
+  .hero .in{max-width:1000px;margin:0 auto;}
+  .hero h1{font-size:42px;font-weight:800;color:#fff;margin-bottom:14px;}
+  .hero .sub{font-family:var(--hf);font-size:22px;font-weight:700;color:var(--yellow);margin-bottom:12px;}
+  .hero .meta{font-size:13px;color:#cfd6df;margin-bottom:26px;}
+  /* Ba nut nhay trong trang, do lai tu top5-choices.com/seamossreview: nen
+     trong suot, vien trang 2px, goc vuong, bong mo. Khac ban do mot cho: ban
+     do an hai trong ba nut tren dien thoai, o day giu ca ba va thu nho chu,
+     vi nguoi doc dien thoai moi la nguoi can nhay nhat. */
+  /* inline-grid chu khong phai flex: voi grid-auto-columns:1fr, moi cot deu
+     rong bang nut rong nhat, nen ba nut bang nhau ma khong can do tay mot con
+     so nao. Khoi inline-grid duoc chinh .hero can giua ho bang text-align. */
+  .hnav{display:inline-grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:14px;}
+  .hnav a{
+    /* min-width cho ba nut bang nhau. Cum von da can giua, nhung ba nhan dai
+       ngan chenh nhau (TOP 5 chi bang mot phan ba WHAT TO LOOK FOR) nen hang
+       nut doc ra nhu bi lech phai. Cho chung mot be ngang thi het. */
+    text-align:center;
+    font-family:var(--hf);font-size:20px;font-weight:700;line-height:1.2;
+    color:#fff;text-decoration:none;background:transparent;
+    border:2px solid #fff;border-radius:0;padding:10px 19px;
+    box-shadow:0 1px 5px rgba(0,0,0,.4);transition:background .18s ease,color .18s ease;
+  }
+  .hnav a:hover{background:#fff;color:var(--hero);}
+  .article{max-width:1000px;margin:0 auto;padding:46px 20px 24px;}
+  .article p{font-size:20px;line-height:1.7;margin-bottom:20px;}
+  .article p.lead{font-size:20px;color:var(--ink);}
+  .article b{color:var(--ink);font-weight:700;}
+  .article .transition{font-family:var(--hf);font-weight:700;font-size:22px;color:var(--ink);border-left:4px solid var(--teal);padding-left:16px;margin-top:32px;}
+  .lead-block{max-width:1000px;margin:0 auto;padding:32px 20px 0;}
+  .important{border:2px solid #1a1d24;border-radius:4px;padding:18px 22px;font-style:italic;font-size:20px;line-height:1.6;color:#2f3845;}
+  .important b{color:#FF4A4A;font-style:normal;}
+  .compare-photo{margin:22px 0 0;border-radius:12px;overflow:hidden;border:1px solid var(--line);}
+  .compare-photo img{width:100%;height:auto;display:block;}
+  .bad-care{max-width:1000px;margin:0 auto;padding:10px 20px 56px;}
+  .bad-care h2{font-size:32px;text-align:center;margin-bottom:10px;}
+  .bad-care .bc-sub{text-align:center;color:var(--body);max-width:680px;margin:0 auto 26px;font-size:18px;}
+  .bc-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  .bc-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:22px;}
+  .bc-card .ic{width:46px;height:46px;border-radius:11px;background:#fdecea;display:flex;align-items:center;justify-content:center;margin-bottom:12px;}
+  .bc-card h3{font-size:27px;font-weight:700;margin-bottom:12px;text-transform:capitalize;}
+  .bc-card p{font-size:18px;color:var(--body);line-height:1.6;}
+  .bc-trans{max-width:1200px;margin:30px auto 0;font-weight:700;font-size:22px;color:var(--ink);border-left:4px solid var(--teal);padding-left:16px;}
+  @media(max-width:680px){ .bc-grid{grid-template-columns:1fr;} .bad-care h2{font-size:24px;} }
+  .need{max-width:1000px;margin:0 auto;padding:8px 20px 56px;}
+  .need h2{font-size:32px;text-align:center;margin-bottom:10px;}
+  .need .nsub{text-align:center;color:var(--body);max-width:680px;margin:0 auto 30px;font-size:18px;}
+  .need-item{display:flex;gap:16px;margin-bottom:36px;}
+  .need-num{flex:0 0 auto;width:38px;height:38px;border-radius:50%;background:var(--hero);color:#fff;font-weight:800;display:flex;align-items:center;justify-content:center;font-size:20px;}
+  .need-item h3{font-size:27px;font-weight:700;margin-bottom:12px;text-transform:capitalize;}
+  .need-item p{font-size:20px;line-height:1.7;color:var(--body);}
+  .bc-card b, .need-item b{color:var(--ink);font-weight:700;}
+  .need-trans{max-width:1200px;margin:8px auto 0;font-weight:700;font-size:22px;color:var(--ink);border-left:4px solid var(--teal);padding-left:16px;}
+  .scorecard{max-width:1080px;margin:0 auto;padding:8px 20px 56px;}
+  .scorecard h2{font-size:32px;text-align:center;margin-bottom:10px;}
+  .scorecard .scsub{text-align:center;color:var(--body);max-width:680px;margin:0 auto 24px;font-size:18px;}
+  .sc-wrap{overflow-x:auto;padding-top:6px;}
+  .sc-tbl{width:100%;border-collapse:collapse;font-size:15px;min-width:680px;}
+  .sc-tbl th,.sc-tbl td{padding:14px 10px;text-align:center;border-bottom:1px solid var(--line);}
+  .sc-tbl th:first-child,.sc-tbl td:first-child{text-align:left;font-weight:700;color:var(--ink);background:var(--page);position:sticky;left:0;min-width:200px;}
+  .sc-tbl thead th{vertical-align:bottom;border-bottom:none;}
+  .sc-tbl .mp{background:#eafaf0;border-left:2px solid #16a34a;border-right:2px solid #16a34a;}
+  .sc-tbl thead .mp{border-top:2px solid #16a34a;border-radius:12px 12px 0 0;}
+  .sc-tbl tbody tr:last-child .mp{border-bottom:2px solid #16a34a;border-radius:0 0 12px 12px;}
+  .sc-prod{display:flex;flex-direction:column;align-items:center;gap:6px;}
+  .sc-prod img{width:110px;height:100px;object-fit:contain;}
+  .sc-prod span{display:none;}
+  .mp-tag{display:inline-block;background:#16a34a;color:#fff;font-size:12px;font-weight:800;padding:3px 11px;border-radius:11px;margin-bottom:7px;letter-spacing:.03em;}
+  .ck{display:inline-flex;width:27px;height:27px;border-radius:50%;align-items:center;justify-content:center;color:#fff;font-size:14px;font-weight:800;}
+  .ck-yes{background:#1dbd9a;}
+  .ck-no{background:#e2483f;}
+  .sc-val{font-weight:800;color:var(--ink);}
+  .sc-note{text-align:center;font-size:12px;color:var(--soft);margin-top:12px;}
+  .ranking{max-width:1080px;margin:0 auto;padding:8px 20px 20px;}
+  .rank-card{border:6px solid #FF9900;border-radius:0;padding:26px;background:#fff;position:relative;}
+  .rank-card.sub{border:1px solid var(--line);}
+  .rank-card.sub .rc-cta{background:linear-gradient(180deg,#eef1f5,#cdd5dd);color:#3f4858;box-shadow:0 3px 0 #aeb7c0;border:2px solid #fbfcfd;}
+  .rc-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;}
+  .rc-title h3{font-size:32px;font-weight:700;margin-bottom:2px;}
+  .rc-by{color:#e0506a;font-weight:700;font-size:20px;margin-bottom:6px;}
+  .rc-stars{color:#ffb400;font-size:20px;letter-spacing:1px;}
+  .rc-rev{display:flex;align-items:center;gap:6px;font-size:16px;color:var(--ink);font-weight:500;margin-top:3px;}
+  .rank-card.sub .rc-stars,.rank-card.sub .rc-rev{display:none;}
+  .rc-hr{border:none;border-top:1px solid var(--line);margin:20px 0;}
+  .rc-mid{display:flex;gap:24px;align-items:center;}
+  .rc-photo{flex:1;text-align:center;}
+  .rc-photo img{max-width:100%;height:auto;max-height:330px;object-fit:contain;}
+  .rc-verdict{flex:1;text-align:center;}
+  .rc-grade{font-size:88px;font-weight:800;line-height:1;color:var(--ink);}
+  .rc-grade span{display:block;font-size:20px;font-weight:700;letter-spacing:.08em;color:var(--ink);margin-top:2px;}
+  .rc-cta{display:inline-block;background:#FF9900;color:#fff;font-weight:800;font-size:18px;letter-spacing:.03em;padding:14px 32px;border-radius:30px;text-decoration:none;box-shadow:0 3px 0 #d97e00;}
+  .rc-verdict .rc-cta{margin-top:14px;}
+  .rc-promo{font-style:italic;color:var(--soft);font-size:16px;margin-top:10px;}
+  .rc-proscons{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+  .rc-proscons h4{font-size:24px;font-weight:800;margin-bottom:12px;}
+  .rc-proscons .pros h4{color:#1dbd9a;} .rc-proscons .cons h4{color:#e2483f;}
+  .rc-proscons ul{list-style:none;}
+  .rc-proscons li{display:flex;align-items:flex-start;gap:9px;font-size:20px;margin-bottom:11px;color:var(--ink);line-height:1.45;}
+  .rc-ic{flex:0 0 auto;width:20px;height:20px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;margin-top:1px;}
+  .ic-yes{background:#1dbd9a;} .ic-no{background:#e2483f;}
+  .rc-shot{margin:0 0 22px;}
+  .rc-shot img,.rc-shot video{display:block;margin:0 auto;width:100%;max-width:560px;height:auto;border-radius:12px;border:1px solid var(--line);}
+  .rc-shot video{background:#000;}
+  .rc-bottom h4{font-size:24px;font-weight:800;margin-bottom:14px;}
+  .rc-bottom p{font-size:20px;line-height:1.7;color:var(--body);margin-bottom:16px;}
+  .rc-bottom b{color:var(--ink);font-weight:700;}
+  .rc-cta-center{text-align:center;margin-top:8px;}
+  .conclusion{max-width:1080px;margin:0 auto;padding:24px 20px 64px;}
+  .concl-title{display:flex;align-items:center;justify-content:center;gap:12px;text-align:center;margin-bottom:18px;}
+  .concl-lead{text-align:center;max-width:780px;margin:0 auto 26px;font-size:18px;line-height:1.6;color:var(--body);}
+  .concl-card{border:4px solid #1BC7B1;background:#fff;display:grid;grid-template-columns:1fr 1.25fr 0.78fr;gap:18px;align-items:center;padding:28px;}
+  .concl-img{text-align:center;}
+  .concl-img img{max-width:100%;height:auto;max-height:320px;object-fit:contain;}
+  .concl-mid .rc-by{margin-bottom:12px;}
+  .concl-list{list-style:none;}
+  .concl-list li{display:flex;align-items:center;gap:9px;font-size:17px;margin-bottom:12px;color:var(--ink);white-space:nowrap;}
+  .concl-right{text-align:center;}
+  .concl-seal{font-weight:800;color:#1a1d24;font-size:19px;line-height:1.2;margin-bottom:8px;}
+  .concl-seal span{display:block;font-size:11px;font-weight:700;letter-spacing:.16em;color:#0f9e8b;margin-top:3px;}
+  .concl-stars{color:#ffb400;font-size:22px;letter-spacing:1px;}
+  .concl-rev{font-size:14px;color:var(--soft);font-weight:600;margin:4px 0 14px;}
+  .concl-promo{font-size:14px;color:var(--soft);font-style:italic;margin-top:10px;}
+  @media(max-width:680px){
+    /* Hai thu cung luc lam khoi ket luan tran ra ngoai vien tren dien thoai:
+       1fr co gia tri nho nhat la min-content, va white-space:nowrap cua ban goc
+       lam min-content phinh to bang ca dong chu. Cot khong co lai duoc nen day
+       rong hon ca the. Dong tick cua ban goc ngan nen ho khong dinh, dong cua
+       minh dai hon thi lo ra ngay. Sua ca hai: cho cot co lai va cho chu xuong
+       dong. */
+    .concl-card{grid-template-columns:minmax(0,1fr);text-align:center;}
+    .concl-list li{text-align:left;white-space:normal;align-items:flex-start;}
+    .concl-list li svg{flex:none;margin-top:3px;}
+  }
+  @media(max-width:680px){ .rc-mid{flex-direction:column;} .rc-proscons{grid-template-columns:1fr;} }
+  @media(max-width:680px){
+    .hero h1{font-size:29px;} .hero .sub{font-size:18px;}
+    .hnav{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;}
+    .hnav a{font-size:13px;padding:8px 12px;}
+    .article{padding:32px 18px 18px;} .article p{font-size:18px;} .article p.lead{font-size:20px;}
+  }
+  @media(max-width:680px){
+    .scorecard{padding:8px 15px 48px;}
+    .sc-wrap{overflow-x:visible;padding-top:4px;}
+    .sc-tbl{min-width:0;table-layout:fixed;font-size:12px;}
+    .sc-tbl th,.sc-tbl td{padding:11px 2px;}
+    .sc-tbl th:first-child,.sc-tbl td:first-child{min-width:0;width:66px;font-size:12px;line-height:1.22;overflow-wrap:break-word;padding:11px 3px 11px 6px;}
+    .sc-prod img{width:52px;height:78px;}
+    .sc-prod{gap:2px;}
+    .sc-val{font-size:12px;}
+    .ck{width:24px;height:24px;}
+    .mp-tag{font-size:9px;padding:2px 5px;margin-bottom:3px;}
+    .sc-note{font-size:11px;}
+    .hdr,.hero,.lead-block,.article,.bad-care,.need,.scorecard,.conclusion{padding-left:15px;padding-right:15px;}
+    /* Box xep hang tran sat mep man hinh nhu top5-choices.com/seamossreview: box da co
+       vien + padding rieng, cong them le section thi chu bi bop con qua hep. */
+    .ranking{padding-left:0;padding-right:0;}
+    .bad-care h2,.need h2,.scorecard h2{font-size:24px;}
+    .bc-card h3,.need-item h3{font-size:20px;}
+    .article p,.article p.lead,.important{font-size:18px;}
+    .bc-sub,.nsub,.scsub,.concl-lead{font-size:16px;}
+    .bc-card p,.need-item p,.rc-bottom p,.rc-proscons li{font-size:18px;}
+  }
+  /* Thanh uu dai dinh day, do lai tu top5-choices.com/seamossreview.
+     Ban goc: position fixed, bottom 0, z-index 999, ba cot deu nhau, cao 207px
+     desktop va 154px mobile, nen xanh rgb(103,175,255), va anh san pham TRAN
+     LEN tren mep dai xanh nen chai nho han ra ngoai bang mau. Giu ca ba.
+     Khac ban do mot cho: ho bat tat bang display va dat transition .5s, nhung
+     display khong transition duoc nen nua giay do khong bao gio chay. O day
+     dung transform + visibility de hieu ung truot len that su co tac dung. */
+  .spo{
+    position:fixed;left:0;right:0;bottom:0;z-index:999;
+    background:#67AFFF;
+    transform:translateY(100%);visibility:hidden;
+    transition:transform .45s ease,visibility 0s linear .45s;
+  }
+  .spo.on{transform:translateY(0);visibility:visible;transition:transform .45s ease,visibility 0s;}
+  .spo-in{
+    max-width:1265px;margin:0 auto;height:207px;padding:0 20px;
+    display:grid;grid-template-columns:1fr 1fr 1fr;align-items:center;gap:20px;
+  }
+  /* Anh dat tuyet doi de no TRAN LEN tren mep dai xanh, dung nhu ban do. Neu
+     de anh trong luong binh thuong thi o luoi bi anh keo cao ra va phan thua
+     do xuong duoi, tuc la ra ngoai day man hinh, chu khong nho len tren. */
+  .spo-prod{position:relative;height:100%;}
+  .spo-prod img{
+    position:absolute;left:50%;transform:translateX(-50%);bottom:15px;
+    width:auto;height:251px;object-fit:contain;
+  }
+  .spo-mid{text-align:center;color:#fff;}
+  .spo-head{font-family:var(--hf);font-size:26px;font-weight:800;line-height:1.1;margin-bottom:8px;}
+  .spo-line{font-size:17px;line-height:1.35;margin-bottom:14px;}
+  .spo-code{font-weight:800;letter-spacing:.05em;background:rgba(0,0,0,.2);padding:1px 8px;border-radius:3px;}
+  .spo-cta{
+    display:inline-flex;align-items:center;justify-content:center;gap:12px;
+    background:#22B24C;color:#fff;text-decoration:none;
+    font-family:var(--hf);font-size:22px;font-weight:800;letter-spacing:.02em;
+    padding:13px 26px;border:3px dashed #9BE8B4;border-radius:4px;
+  }
+  .spo-cta svg{flex:none;}
+  .spo-right{display:flex;flex-direction:column;align-items:center;gap:8px;}
+  .spo-best,.spo-score{
+    background:#fff;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.18);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+  }
+  .spo-best{font-family:var(--hf);font-size:34px;font-weight:800;color:#15181f;padding:8px 30px;}
+  .spo-score{padding:10px 26px;gap:2px;}
+  .spo-num{font-family:var(--hf);font-size:36px;font-weight:800;color:#22B24C;line-height:1;}
+  .spo-stars{color:#FFC21A;font-size:22px;letter-spacing:2px;line-height:1;}
+  @media(max-width:680px){
+    /* Do theo top5-choices.com/seamossreview o 375px (thanh cao 154px):
+       - trai: anh san pham tren the trang bo goc, nho cao hon mep thanh ~50px
+       - phai tren: hop diem trang (sao tren, so duoi) vat qua mep tren thanh, khong co chu BEST
+       - phai giua: dong chu 14px can giua
+       - hang cuoi: nut coupon chiem tron be ngang, cao 50px, chu 20px
+       .spo-mid chuyen sang display:contents de dong chu va nut thanh o luoi rieng,
+       nho vay nut xuong duoc hang cuoi ma khong phai sua HTML. */
+    .spo-in{
+      height:154px;padding:0 12px 9px;gap:0 12px;
+      grid-template-columns:104px 1fr;
+      grid-template-rows:auto 1fr auto;
+      grid-template-areas:"anh diem" "anh chu" "nut nut";
+      align-items:center;
+    }
+    .spo-mid{display:contents;}
+    .spo-head{display:none;}
+    .spo-prod{grid-area:anh;align-self:stretch;height:auto;}
+    .spo-prod img{
+      left:0;right:0;transform:none;bottom:6px;width:100%;height:136px;
+      object-fit:contain;background:#fff;border-radius:8px;padding:6px;
+      box-shadow:0 2px 8px rgba(0,0,0,.25);
+    }
+    .spo-right{grid-area:diem;margin-top:-40px;flex-direction:column;align-items:center;}
+    .spo-best{display:none;}
+    .spo-score{flex-direction:column-reverse;align-items:center;gap:1px;padding:5px 18px 4px;border-radius:6px;}
+    .spo-stars{font-size:24px;letter-spacing:2px;}
+    .spo-num{font-size:24px;}
+    .spo-line{grid-area:chu;align-self:center;text-align:center;font-size:14px;line-height:1.3;margin:0;text-wrap:balance;}
+    /* "BUY 1 GET 1 FREE" nam mot dong o 320px: 20px chu + icon 26px van vua 296px. */
+    .spo-cta{grid-area:nut;width:100%;height:50px;font-size:20px;gap:14px;padding:0 10px;border-width:3px;white-space:nowrap;}
+    .spo-cta svg{width:26px;height:26px;}
+  }
+</style>
+</head>
+<body>
+<header>
+  <div class="hdr">
+    <div class="logo">TopReview<b>King</b><small>INDEPENDENT PRODUCT REVIEWS</small></div>
+  </div>
+</header>
+<section class="hero">
+  <div class="in">
+    <h1>The Best Hummingbird Feeders:<br>A Buyer's Guide</h1>
+    <div class="sub">Which feeder the ants cannot get into, and which one you end up scrubbing.</div>
+    <div class="meta">Latest update: September 14, 2026 &middot; 5 minute read</div>
+    <div class="hnav">
+      <a href="#dangers">WHY FEEDERS FAIL</a>
+      <a href="#matters">WHAT TO LOOK FOR</a>
+      <a href="#compare">TOP 5 FEEDERS</a>
+    </div>
+  </div>
+</section>
+<section class="lead-block">
+  <div class="important"><b>IMPORTANT:</b> If you are looking for a hummingbird feeder the ants cannot get into, look no further. We hung five of the most popular feeders on the same hook and put every one through the same four checks: does it drip, can ants reach the nectar, can bees reach the nectar, and can you get a brush inside it. Our research shows what actually turns a feeder black inside, and which one came off the hook clean.</div>
+  <div class="compare-photo"><img src="/hummingbird-feeder-review/assets/lineup.webp" width="1440" height="810" fetchpriority="high" decoding="async" alt="The five hummingbird feeders in this guide together on a garden table in the yard"></div>
+</section>
+<article class="article">
+  <p class="lead"><b>It is almost never the birds that end it.</b> People give up on hummingbird feeders for two reasons, and neither of them has anything to do with the birds.</p>
+  <p>Here is the first one, and almost nobody sees it coming. On most feeders <b>the ports sit underneath the nectar</b>. Gravity does what gravity does, and a little sugar water weeps out and runs down the outside of the bottle. You cannot see it. But <b>that sticky film is a scent trail</b>, and it is the reason a black line of ants appears on your shepherd's hook one morning, and the reason the wasps turn up a week later.</p>
+  <p>Once the insects own the ports, <b>the birds simply stop coming</b>. They do not fight for it. They move to a neighbour's yard.</p>
+  <p>The second reason is quieter. <b>You cannot get inside most feeders to clean them.</b> Narrow necks, fixed bases, moulded crevices no brush will reach. So you rinse it instead of washing it, and you tell yourself that is enough.</p>
+  <p>It is not. Sugar water is a growing medium. Within days in warm weather it clouds, ferments, and <b>puts down a black film in the ports</b> that a rinse will never shift.</p>
+  <p>So people do the natural thing. <b>They take it down and put it in the garage.</b> Not because it broke. Because it became a chore.</p>
+  <p>That is exactly why we wrote this guide.</p>
+  <p>We hung <b>five of the most popular feeders on the same hook</b>, one after another, and ran every one through the same four checks: <b>does it drip, can ants reach the nectar, can bees reach the nectar, and can a bottle brush reach the bottom</b>. Most failed at least one. <b>Only one passed all four.</b></p>
+  <p>Below you will find what actually separates a feeder you keep from one you quietly retire, what to look for before you spend anything, and <b>the five we ranked</b>.</p>
+  <p class="transition">First, what is really at stake when a feeder goes bad.</p>
+</article>
+<section class="bad-care" id="dangers">
+  <h2>What a dirty feeder actually does to the birds</h2>
+  <p class="bc-sub">Skipping a wash feels harmless. It is not. Here is what a neglected feeder does, from the merely annoying to the genuinely dangerous.</p>
+  <div class="bc-grid">
+    <div class="bc-card">
+      <div class="ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#e2483f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3.6 3 5.5 5.8 5.5 8.6A5.5 5.5 0 0 1 12 17a5.5 5.5 0 0 1-5.5-5.4C6.5 8.8 8.4 6 12 3z"/><circle cx="10" cy="11" r="1.1" fill="#e2483f" stroke="none"/><circle cx="13.6" cy="13" r="1.1" fill="#e2483f" stroke="none"/><circle cx="13.2" cy="9" r=".9" fill="#e2483f" stroke="none"/><line x1="8" y1="20.5" x2="16" y2="20.5"/></svg></div>
+      <h3>Black mold is the real danger</h3>
+      <p>That dark film in the ports is not dirt. It is <b>mold growing in sugar water</b>. Bird rehabilitators warn that a hummingbird feeding at a mouldy port can pick up <b>a fungal infection of the tongue</b>. The tongue swells, the bird can no longer draw nectar, and it starves at a full feeder. <b>A rinse does not remove it.</b> Only a brush on every surface does.</p>
+    </div>
+    <div class="bc-card">
+      <div class="ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#e2483f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2.5h6"/><path d="M10 2.5v4.2L5.8 17.4A2.6 2.6 0 0 0 8.2 21h7.6a2.6 2.6 0 0 0 2.4-3.6L14 6.7V2.5"/><path d="M7.2 14h9.6"/><circle cx="10.5" cy="17" r=".9" fill="#e2483f" stroke="none"/><circle cx="13.8" cy="18.4" r=".7" fill="#e2483f" stroke="none"/></svg></div>
+      <h3>Nectar spoils faster than people think</h3>
+      <p>Sugar water is not shelf stable once it is hanging in the sun. In hot weather it can <b>turn in two or three days</b>. You will see it go cloudy and you may catch a sour, yeasty smell at the port. <b>Birds will drink it anyway</b>, and spoiled nectar makes them ill. If you cannot empty and scrub a feeder quickly, you will not do it often enough.</p>
+    </div>
+    <div class="bc-card">
+      <div class="ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#e2483f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="12" rx="3.4" ry="4.4"/><path d="M8.6 9.6h6.8M8.6 14.4h6.8"/><path d="M12 7.6V4.4M10.4 3l1.6 1.4L13.6 3"/><path d="M8.6 9.6 4.6 7M8.6 12H4.2M8.6 14.4 5 17.2"/><path d="M15.4 9.6 19.4 7M15.4 12h4.4M15.4 14.4 19 17.2"/></svg></div>
+      <h3>Ants and bees empty the yard</h3>
+      <p>Insects do not share. Once ants are running into the ports and wasps are working the outside, <b>the hummingbirds stop coming altogether</b>. They will not fight for a feeder, they will just go somewhere else. Drowned ants in the nectar also <b>foul it and speed up spoiling</b>, so one problem quietly becomes the other.</p>
+    </div>
+    <div class="bc-card">
+      <div class="ic"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#e2483f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 3h5l.6 3.2a7 7 0 0 1 3.2 5.7V19a2 2 0 0 1-2 2H7.7a2 2 0 0 1-2-2v-7.1a7 7 0 0 1 3.2-5.7z"/><path d="M8.6 6.4h6.8"/><line x1="4" y1="20" x2="20" y2="4"/></svg></div>
+      <h3>A feeder you cannot open is a feeder you stop cleaning</h3>
+      <p>This is the one that causes the other three. If the base does not come off, if the neck is too narrow for your hand and a brush, <b>you will rinse it and hang it back up</b>. Everybody does. The design decides how often it gets washed, not your good intentions. <b>Pick the one that opens</b> and the rest takes care of itself.</p>
+    </div>
+  </div>
+  <p class="bc-trans">Every one of these is avoidable, but only with the right feeder. So what separates a feeder that prevents this from one that causes it? Five things.</p>
+</section>
+<section class="need" id="matters">
+  <h2>What you need: the 5 things that actually matter</h2>
+  <p class="nsub">Across five feeders on the same hook, the same five things separated the one we kept from the ones we took down. Get these right and the feeder mostly looks after itself. Miss one and you are back at the kitchen sink.</p>
+  <div class="need-item"><div class="need-num">1</div><div><h3>An ant moat built into the lid</h3><p>A moat is just a cup of plain water above the feeder. Ants will not swim, so they stop at the edge. The trick is <b>whether it is built in or sold separately</b>. A separate moat is one more thing to hang, one more thing to fill, and <b>the one everybody forgets</b>. A dry moat stops nothing. Built into the lid, you top it up every time you refill the nectar, without thinking about it.</p></div></div>
+  <div class="need-item"><div class="need-num">2</div><div><h3>Ports a bee cannot reach into</h3><p>Bees and wasps are a different problem from ants, and a moat does nothing about them. What works is <b>distance</b>. When the nectar sits well below the flower, a bee cannot reach it but a hummingbird's tongue still can. Ports that <b>sit flat on top rather than underneath</b> help twice over, because nothing drips down the outside, and spilled nectar on the shell is what draws the wasps in the first place.</p></div></div>
+  <div class="need-item"><div class="need-num">3</div><div><h3>Enough nectar to last a busy hook</h3><p>Capacity decides how often you are walking back out with the pitcher. A small feeder on a busy hook can be <b>dry by the afternoon</b>, and an empty feeder sends the birds looking elsewhere. Go too far the other way and you have a problem too: on a quiet hook, <b>a huge reservoir spoils long before it is drunk</b>. Somewhere in the middle is where most yards live.</p></div></div>
+  <div class="need-item"><div class="need-num">4</div><div><h3>Ports with somewhere to perch</h3><p>Hummingbirds can hover to feed, but <b>they would much rather sit</b>. A perched port means the bird stays put for thirty seconds instead of flashing past, which is the entire reason you hung a feeder in the first place. More ports also means <b>more birds at once without a fight</b>. Count the ports, then check every one of them actually has something to stand on.</p></div></div>
+  <div class="need-item"><div class="need-num">5</div><div><h3>A second feeder in the box</h3><p>This sounds like a bonus. It is the thing that <b>actually keeps a feeder clean</b>. With two, one hangs while the other dries on the draining board, so a wash never means an empty hook and the birds never arrive to nothing. One feeder means you put the wash off, and <b>putting the wash off is how it goes black</b>.</p></div></div>
+  <p class="need-trans">Five things. Here is how the most popular feeders on the market actually scored against them.</p>
+</section>
+<section class="scorecard" id="compare">
+  <h2>The best hummingbird feeders, compared</h2>
+  <p class="scsub">All five, side by side, against the five things that actually matter.</p>
+  <div class="sc-wrap">
+    <table class="sc-tbl">
+      <thead>
+        <tr>
+          <th></th>
+          <th class="mp"><span class="mp-tag">#1 PICK</span><div class="sc-prod"><img loading="lazy" src="/hummingbird-feeder-review/assets/photo-1.webp" width="900" height="900" alt="Matthew 6:26 Hummingbird Feeder"><span>Matthew 6:26</span></div></th>
+          <th><div class="sc-prod"><img loading="lazy" src="/hummingbird-feeder-review/assets/photo-2.webp" width="900" height="900" alt="Perky-Pet Glass Feeder 2pk"><span>Perky-Pet</span></div></th>
+          <th><div class="sc-prod"><img loading="lazy" src="/hummingbird-feeder-review/assets/photo-3.webp" width="900" height="900" alt="Aspects HummZinger HighView"><span>Aspects</span></div></th>
+          <th><div class="sc-prod"><img loading="lazy" src="/hummingbird-feeder-review/assets/photo-4.webp" width="900" height="900" alt="More Birds Ruby Hummingbird"><span>More Birds</span></div></th>
+          <th><div class="sc-prod"><img loading="lazy" src="/hummingbird-feeder-review/assets/photo-5.webp" width="900" height="900" alt="First Nature 10-Port Feeder"><span>First Nature</span></div></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>Built-in Ant Moat</td><td class="mp"><span class="ck ck-yes" role="img" aria-label="Yes"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span></td><td><span class="ck ck-no" role="img" aria-label="No"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span></td><td><span class="ck ck-yes" role="img" aria-label="Yes"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span></td><td><span class="ck ck-yes" role="img" aria-label="Yes"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span></td><td><span class="ck ck-no" role="img" aria-label="No"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span></td></tr>
+        <tr><td>Bee Proof Ports</td><td class="mp"><span class="ck ck-yes" role="img" aria-label="Yes"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span></td><td><span class="ck ck-yes" role="img" aria-label="Yes"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span></td><td><span class="ck ck-no" role="img" aria-label="No"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span></td><td><span class="ck ck-no" role="img" aria-label="No"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span></td><td><span class="ck ck-no" role="img" aria-label="No"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span></td></tr>
+        <tr><td>Two Feeders in the Box</td><td class="mp"><span class="ck ck-yes" role="img" aria-label="Yes"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span></td><td><span class="ck ck-yes" role="img" aria-label="Yes"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span></td><td><span class="ck ck-no" role="img" aria-label="No"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span></td><td><span class="ck ck-no" role="img" aria-label="No"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span></td><td><span class="ck ck-no" role="img" aria-label="No"><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="#fff" stroke-width="3.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span></td></tr>
+        <tr><td>Capacity</td><td class="mp"><span class="sc-val">15 oz</span></td><td>8 oz</td><td>12 oz</td><td>10 oz</td><td>32 oz</td></tr>
+        <tr><td>Feeding Ports</td><td class="mp"><span class="sc-val">5</span></td><td>4</td><td>4</td><td>4</td><td>10</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="sc-note">Based on our own testing and the public product specs at the time of writing.</p>
+  <p class="need-trans" style="margin-top:26px;">Only one feeder checked every box. Here is the full breakdown, starting at #1.</p>
+</section>
+<section class="ranking" id="rank-1">
+  <div class="rank-card rank-card-1">
+    <div class="rc-head">
+      <div class="rc-title">
+        <h3>1: Matthew 6:26 Hummingbird Feeder</h3>
+        <div class="rc-by">by Dinosaurized</div>
+        <div class="rc-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+        <div class="rc-rev"><svg viewBox="0 0 24 24" width="16" height="16" fill="none"><circle cx="12" cy="12" r="11" fill="#1dbd9a"/><path d="M7 12.5l3 3 7-7" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> 4.8 average from 18,736 reviews</div>
+      </div>
+    </div>
+    <hr class="rc-hr">
+    <div class="rc-mid">
+      <div class="rc-photo"><img loading="lazy" src="/hummingbird-feeder-review/assets/photo-1.webp" width="720" height="720" decoding="async" alt="Matthew 6:26 Hummingbird Feeder, a single unit with five flower ports and a built-in ant moat"></div>
+      <div class="rc-verdict">
+        <div class="rc-grade">A+<span>RATING</span></div>
+        <a class="rc-cta" href="https://offer.dinosaurized.com/the-matthew-626-hummingbird-feeder" rel="sponsored nofollow noopener">LEARN MORE</a>
+        <div class="rc-promo">Limited-Time Promotion Detected</div>
+      </div>
+    </div>
+    <hr class="rc-hr">
+    <div class="rc-proscons">
+      <div class="pros">
+        <h4>PROS</h4>
+        <ul>
+          <li><span class="rc-ic ic-yes"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span> Built in ant moat, nothing extra to buy</li>
+          <li><span class="rc-ic ic-yes"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span> Seals without a rubber washer</li>
+          <li><span class="rc-ic ic-yes"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span> Five ports with perches to sit on</li>
+          <li><span class="rc-ic ic-yes"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span> 15 oz lasts days on a busy hook</li>
+          <li><span class="rc-ic ic-yes"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span> Base comes fully off for a bottle brush</li>
+          <li><span class="rc-ic ic-yes"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span> Read the nectar line from the window</li>
+          <li><span class="rc-ic ic-yes"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span> Two feeders in the box</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>CONS</h4>
+        <ul>
+          <li><span class="rc-ic ic-no"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span> Only sold on the official site</li>
+          <li><span class="rc-ic ic-no"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span> Sells out fast</li>
+        </ul>
+      </div>
+    </div>
+    <hr class="rc-hr">
+    <div class="rc-shot"><video class="rc-vid" src="/hummingbird-feeder-review/assets/shot-1.mp4" poster="/hummingbird-feeder-review/assets/shot-1.webp" autoplay muted loop playsinline preload="metadata" width="1000" height="720" aria-label="Two Dino hummingbird feeders on the deck with hummingbirds feeding"></video></div>
+    <div class="rc-bottom">
+      <h4>The Bottom Line</h4>
+      <p>This is the only feeder on the list that passed all four checks.</p>
+      <p>The <b>ant moat is moulded into the lid</b>, so there is nothing extra to hang and nothing extra to remember. You fill it with plain tap water when you refill the nectar and the ants stop at the edge. The <b>five flower ports sit flat on top</b>, above the nectar line, so there is nothing to weep down the outside, which is the drip that starts the whole insect problem on every other feeder here.</p>
+      <p>It also <b>seals without a rubber washer</b>, and that is a bigger deal than it sounds. The washer is the part that hardens and splits on an older feeder, and it is where most leaks begin.</p>
+      <p>Cleaning is where it really separates itself. The <b>base twists all the way off</b> and the opening takes your hand and a bottle brush, so every surface faces you. That turns washing from a job you put off into about two minutes at the sink. <b>Two feeders come in the box</b>, so one hangs while the other dries, and the hook is never empty.</p>
+      <p>The drawbacks are real but small. It is <b>only sold on the official site</b>, not on Amazon, and <b>it sells out</b>. If it is in stock when you look, that is the moment to get it.</p>
+      <div class="rc-cta-center"><a class="rc-cta" href="https://offer.dinosaurized.com/the-matthew-626-hummingbird-feeder" rel="sponsored nofollow noopener">LEARN MORE</a></div>
+    </div>
+  </div>
+</section>
+<section class="ranking" id="rank-2">
+  <div class="rank-card sub">
+    <div class="rc-head">
+      <div class="rc-title">
+        <h3>2: Perky-Pet Glass Feeder 2pk</h3>
+        <div class="rc-by">by Perky-Pet</div>
+      </div>
+    </div>
+    <hr class="rc-hr">
+    <div class="rc-mid">
+      <div class="rc-photo"><img loading="lazy" src="/hummingbird-feeder-review/assets/photo-2.webp" width="720" height="720" decoding="async" alt="Perky-Pet glass hummingbird feeder with four ports and yellow bee guards"></div>
+      <div class="rc-verdict">
+        <div class="rc-grade">B+<span>RATING</span></div>
+        <a class="rc-cta" href="https://www.amazon.com/dp/B084WCBB6X" target="_blank" rel="sponsored nofollow noopener">BUY NOW</a>
+      </div>
+    </div>
+    <hr class="rc-hr">
+    <div class="rc-proscons">
+      <div class="pros">
+        <h4>PROS</h4>
+        <ul>
+          <li><span class="rc-ic ic-yes"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span> Four ports with wide perches</li>
+          <li><span class="rc-ic ic-yes"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span> Yellow mesh bee guards in every port</li>
+          <li><span class="rc-ic ic-yes"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span> Glass bottle comes fully apart to clean</li>
+          <li><span class="rc-ic ic-yes"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span> Clear glass, full view of the bird</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>CONS</h4>
+        <ul>
+          <li><span class="rc-ic ic-no"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span> Nectar can push out once the sun warms it</li>
+          <li><span class="rc-ic ic-no"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span> Bees can still reach nectar past the guards</li>
+          <li><span class="rc-ic ic-no"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span> Plastic base can crack after long sun</li>
+        </ul>
+      </div>
+    </div>
+    <hr class="rc-hr">
+    <div class="rc-bottom">
+      <h4>The Bottom Line</h4>
+      <p>The best looking feeder here, and the closest thing to a proper runner-up.</p>
+      <p>The glass bottle is the reason. It <b>comes fully apart</b>, so you can actually wash it rather than rinse it, and clear glass gives you the one thing plastic never does: <b>an uninterrupted view of the bird</b>. The four ports have <b>wide perches</b>, so birds sit and drink instead of hovering, and <b>yellow mesh guards are fitted in every port</b> from the factory.</p>
+      <p>Then the problems start. There is <b>no ant moat at all</b>, so you are back to buying and hanging a separate cup, and remembering to keep it filled. The guards help with bees but they do not settle it, and <b>owners still report bees getting to the nectar</b>.</p>
+      <p>The one that catches people out is heat. As the sun warms the bottle the air inside expands and <b>pushes nectar out through the ports</b>, which puts a sticky film on the outside. That is precisely the trail the ants follow, and with no moat on the feeder there is nothing to stop them.</p>
+      <p>Beautiful on the hook, and two come in the box. But <b>you are still solving the ant problem yourself.</b></p>
+    </div>
+  </div>
+</section>
+<section class="ranking" id="rank-3">
+  <div class="rank-card sub">
+    <div class="rc-head">
+      <div class="rc-title">
+        <h3>3: Aspects HummZinger HighView</h3>
+        <div class="rc-by">by Aspects</div>
+      </div>
+    </div>
+    <hr class="rc-hr">
+    <div class="rc-mid">
+      <div class="rc-photo"><img loading="lazy" src="/hummingbird-feeder-review/assets/photo-3.webp" width="720" height="720" decoding="async" alt="Aspects HummZinger HighView saucer feeder with a raised perch and centre hook"></div>
+      <div class="rc-verdict">
+        <div class="rc-grade">B<span>RATING</span></div>
+        <a class="rc-cta" href="https://www.amazon.com/dp/B003XL7WZO" target="_blank" rel="sponsored nofollow noopener">BUY NOW</a>
+      </div>
+    </div>
+    <hr class="rc-hr">
+    <div class="rc-proscons">
+      <div class="pros">
+        <h4>PROS</h4>
+        <ul>
+          <li><span class="rc-ic ic-yes"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span> Two pieces, no crevices, seconds to clean</li>
+          <li><span class="rc-ic ic-yes"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span> HighView perch sits birds facing you</li>
+          <li><span class="rc-ic ic-yes"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span> Built in ant moat, no separate cup</li>
+          <li><span class="rc-ic ic-yes"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span> Bright red cover pulls birds in fast</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>CONS</h4>
+        <ul>
+          <li><span class="rc-ic ic-no"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span> Ant moat does not hold in every yard</li>
+          <li><span class="rc-ic ic-no"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span> No bee guard, small flies drown in it</li>
+          <li><span class="rc-ic ic-no"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span> Shallow bowl, some owners refill daily</li>
+          <li><span class="rc-ic ic-no"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span> Some birds ignore it for their old feeder</li>
+        </ul>
+      </div>
+    </div>
+    <hr class="rc-hr">
+    <div class="rc-bottom">
+      <h4>The Bottom Line</h4>
+      <p>If cleaning is the only thing you care about, this one wins outright.</p>
+      <p>It is a saucer, not a bottle. <b>Two pieces, no neck, no crevices.</b> You lift the cover off and wipe the bowl, and the whole job takes seconds with no brush at all. It also has <b>a moat built into the centre</b>, so there is nothing extra to buy, and the <b>HighView perch is genuinely clever</b>, sitting the bird up facing you instead of ducked down out of sight.</p>
+      <p>The catch is that a saucer is open. There is <b>no bee guard</b>, so wasps work the ports freely and <b>small flies drown in the bowl</b>, which fouls the nectar. Owners also report the <b>moat does not hold in every yard</b>, and that some determined ants get across anyway.</p>
+      <p>Capacity is the other limit. The bowl is shallow, and on a busy hook <b>some owners end up refilling every day</b>. A few also find their birds stay loyal to whatever feeder they already knew and simply ignore this one for a while.</p>
+      <p>The easiest feeder here to wash. <b>Just not the one that keeps the insects out.</b></p>
+    </div>
+  </div>
+</section>
+<section class="ranking" id="rank-4">
+  <div class="rank-card sub">
+    <div class="rc-head">
+      <div class="rc-title">
+        <h3>4: More Birds Ruby Hummingbird</h3>
+        <div class="rc-by">by More Birds</div>
+      </div>
+    </div>
+    <hr class="rc-hr">
+    <div class="rc-mid">
+      <div class="rc-photo"><img loading="lazy" src="/hummingbird-feeder-review/assets/photo-4.webp" width="720" height="720" decoding="async" alt="More Birds Ruby hummingbird feeder with a glass bottle and ruby red base"></div>
+      <div class="rc-verdict">
+        <div class="rc-grade">C+<span>RATING</span></div>
+        <a class="rc-cta" href="https://www.amazon.com/dp/B005F5NGYW" target="_blank" rel="sponsored nofollow noopener">BUY NOW</a>
+      </div>
+    </div>
+    <hr class="rc-hr">
+    <div class="rc-proscons">
+      <div class="pros">
+        <h4>PROS</h4>
+        <ul>
+          <li><span class="rc-ic ic-yes"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span> Birds find it within days</li>
+          <li><span class="rc-ic ic-yes"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span> Wide opening and a base that detaches</li>
+          <li><span class="rc-ic ic-yes"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span> Built in ant moat, no extra parts</li>
+          <li><span class="rc-ic ic-yes"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span> Ruby red base that catches the sun</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>CONS</h4>
+        <ul>
+          <li><span class="rc-ic ic-no"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span> Durability reports are split, not a clean pass</li>
+          <li><span class="rc-ic ic-no"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span> No bee guard, bee reports are mixed</li>
+        </ul>
+      </div>
+    </div>
+    <hr class="rc-hr">
+    <div class="rc-bottom">
+      <h4>The Bottom Line</h4>
+      <p>The prettiest feeder in the garden, and the one people are most divided about.</p>
+      <p>It gets the basics right. There is <b>a moat built into the top</b>, the <b>base detaches</b> and the opening is wide enough to get a brush inside, and the <b>ruby glass throws colour around</b> when the sun hits it. Birds also find it quickly, with most owners reporting visitors <b>within a few days</b> of hanging it.</p>
+      <p>Where it wobbles is consistency. <b>Durability reports are genuinely split.</b> Plenty of owners have had theirs for years with no complaint, and plenty describe parts giving out far sooner than they should. That is not a clean pass, and it is the reason this sits at four rather than higher.</p>
+      <p>There is also <b>no bee guard</b>, and the bee reports are mixed in the same way. Some yards never see a problem. Others see wasps on it constantly.</p>
+      <p>Buy it for how it looks and because the moat is built in. <b>Just know you are taking a chance on which one you get.</b></p>
+    </div>
+  </div>
+</section>
+<section class="ranking" id="rank-5">
+  <div class="rank-card sub">
+    <div class="rc-head">
+      <div class="rc-title">
+        <h3>5: First Nature 10-Port Feeder</h3>
+        <div class="rc-by">by First Nature</div>
+      </div>
+    </div>
+    <hr class="rc-hr">
+    <div class="rc-mid">
+      <div class="rc-photo"><img loading="lazy" src="/hummingbird-feeder-review/assets/photo-5.webp" width="720" height="720" decoding="async" alt="First Nature 32 oz hummingbird feeder with ten ports around a circular perch"></div>
+      <div class="rc-verdict">
+        <div class="rc-grade">C<span>RATING</span></div>
+        <a class="rc-cta" href="https://www.amazon.com/dp/B003R2SKIC" target="_blank" rel="sponsored nofollow noopener">BUY NOW</a>
+      </div>
+    </div>
+    <hr class="rc-hr">
+    <div class="rc-proscons">
+      <div class="pros">
+        <h4>PROS</h4>
+        <ul>
+          <li><span class="rc-ic ic-yes"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span> Two part base, brush reaches the bottom</li>
+          <li><span class="rc-ic ic-yes"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span> Ten ports around a circular perch</li>
+          <li><span class="rc-ic ic-yes"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span> 32 oz, far fewer trips with the pitcher</li>
+          <li><span class="rc-ic ic-yes"><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span> Bright red base pulls birds in fast</li>
+        </ul>
+      </div>
+      <div class="cons">
+        <h4>CONS</h4>
+        <ul>
+          <li><span class="rc-ic ic-no"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span> Leaks for a real share of owners</li>
+          <li><span class="rc-ic ic-no"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span> No bee guards, bees find the ports</li>
+          <li><span class="rc-ic ic-no"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span> The hanging hook it ships with is flimsy</li>
+          <li><span class="rc-ic ic-no"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="#fff" stroke-width="3.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></span> Plastic can thin and crack in long sun</li>
+        </ul>
+      </div>
+    </div>
+    <hr class="rc-hr">
+    <div class="rc-bottom">
+      <h4>The Bottom Line</h4>
+      <p>The one to look at if your yard is genuinely busy, and the one most likely to end up in the garage.</p>
+      <p>On paper it is the most feeder for the money. <b>Ten ports around a circular perch</b> means a crowd can sit and drink at once without squabbling, <b>32 ounces</b> means far fewer trips out with the pitcher, and the <b>two part base</b> does come apart properly so a brush reaches the bottom.</p>
+      <p>The problem is that it <b>leaks for a real share of owners</b>. That matters more than it sounds, because a leak is not just waste. The nectar running down the outside is the sticky trail that brings the ants, and this feeder has <b>no moat and no bee guards</b> to catch what arrives.</p>
+      <p>Two smaller irritations. The <b>hook it ships with is flimsy</b> and many owners replace it immediately, and the <b>plastic thins and cracks after long sun exposure</b>.</p>
+      <p>There is also a trap in the size. On a quiet hook, <b>32 ounces spoils long before the birds finish it</b>, so you end up pouring most of it away. Great for a crowd. <b>Wrong for everyone else.</b></p>
+    </div>
+  </div>
+</section>
+<section class="conclusion" id="winner">
+  <h2 class="concl-title"><svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="#1BC7B1" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M5 20V8l4.6 5L12 4l2.4 9L19 8v12z"/><line x1="5" y1="21.4" x2="19" y2="21.4"/></svg> The #1 Hummingbird Feeder</h2>
+  <p class="concl-lead">Five feeders on the same hook, four checks each. One passed all four: it keeps the ants out, it keeps the bees out, it does not drip, and it opens wide enough to actually wash. That one is the Dino.</p>
+  <div class="concl-card">
+    <div class="concl-img"><img loading="lazy" src="/hummingbird-feeder-review/assets/photo-1.webp" width="720" height="720" decoding="async" alt="The Matthew 6:26 Hummingbird Feeder, the number one pick in this guide"></div>
+    <div class="concl-mid">
+      <h3>The Matthew 6:26 Hummingbird Feeder</h3>
+      <div class="rc-by">by Dinosaurized</div>
+      <ul class="concl-list">
+      <li><svg viewBox="0 0 24 24" width="18" height="18" fill="none"><circle cx="12" cy="12" r="11" fill="#1dbd9a"/><path d="M7 12.5l3 3 7-7" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Built in ant moat, nothing extra to buy</li>
+      <li><svg viewBox="0 0 24 24" width="18" height="18" fill="none"><circle cx="12" cy="12" r="11" fill="#1dbd9a"/><path d="M7 12.5l3 3 7-7" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Seals without a rubber washer</li>
+      <li><svg viewBox="0 0 24 24" width="18" height="18" fill="none"><circle cx="12" cy="12" r="11" fill="#1dbd9a"/><path d="M7 12.5l3 3 7-7" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Five ports with perches to sit on</li>
+      <li><svg viewBox="0 0 24 24" width="18" height="18" fill="none"><circle cx="12" cy="12" r="11" fill="#1dbd9a"/><path d="M7 12.5l3 3 7-7" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> 15 oz lasts days on a busy hook</li>
+      <li><svg viewBox="0 0 24 24" width="18" height="18" fill="none"><circle cx="12" cy="12" r="11" fill="#1dbd9a"/><path d="M7 12.5l3 3 7-7" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Base comes fully off for a bottle brush</li>
+      <li><svg viewBox="0 0 24 24" width="18" height="18" fill="none"><circle cx="12" cy="12" r="11" fill="#1dbd9a"/><path d="M7 12.5l3 3 7-7" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Read the nectar line from the window</li>
+      <li><svg viewBox="0 0 24 24" width="18" height="18" fill="none"><circle cx="12" cy="12" r="11" fill="#1dbd9a"/><path d="M7 12.5l3 3 7-7" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg> Two feeders in the box</li>
+    </ul>
+    </div>
+    <div class="concl-right">
+      <div class="concl-seal">TopReviewKing<span>#1 PICK</span></div>
+      <div class="concl-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+      <div class="concl-rev">Based on 18,736 reviews</div>
+      <a class="rc-cta" href="https://offer.dinosaurized.com/the-matthew-626-hummingbird-feeder" rel="sponsored nofollow noopener">LEARN MORE</a>
+      <div class="concl-promo">Tap for today's promo pricing</div>
+    </div>
+  </div>
+</section>
+<aside class="spo" id="spo" aria-label="Special offer">
+  <div class="spo-in">
+    <div class="spo-prod"><img src="/hummingbird-feeder-review/assets/spo-prod.webp" width="275" height="502" alt="" loading="lazy" decoding="async"></div>
+    <div class="spo-mid">
+      <p class="spo-head">SPECIAL OFFER</p>
+      <p class="spo-line">For Readers of TopReviewKing Only,<br><b>Get 50% Off</b> - Today Only</p>
+      <a class="spo-cta" href="https://offer.dinosaurized.com/the-matthew-626-hummingbird-feeder" rel="sponsored nofollow noopener"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.1" y2="15.9"/><line x1="14.5" y1="14.5" x2="20" y2="20"/><line x1="8.1" y1="8.1" x2="12" y2="12"/></svg>GET 50% OFF<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="6" cy="6" r="3"/><circle cx="6" cy="18" r="3"/><line x1="20" y1="4" x2="8.1" y2="15.9"/><line x1="14.5" y1="14.5" x2="20" y2="20"/><line x1="8.1" y1="8.1" x2="12" y2="12"/></svg></a>
+    </div>
+    <div class="spo-right">
+      <div class="spo-best">BEST</div>
+      <div class="spo-score"><span class="spo-num">9.8/10</span><span class="spo-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span></div>
+    </div>
+  </div>
+</aside>
+<!-- Thanh uu dai: hien sau khi doc luot qua het khoi hang 1, an lai khi toi
+     khoi ket luan. Ban do chi bat sau hang 1 roi giu den cuoi trang, nhung khoi
+     ket luan cua trang nay da co anh, tick list va mot nut LEARN MORE rieng, de
+     mot thanh cao 207px de len no thi che mat dung cai CTA manh nhat trang.
+
+     KHONG dung IntersectionObserver o day, du no la phan xa dau tien. IO chi
+     ban khi phan tu CAT QUA mep khung nhin. Cau hoi o day la "da cuon qua het
+     hang 1 chua", tuc la mot cau hoi ve VI TRI, khong phai ve giao nhau. Nhay
+     thang tu dau trang xuong giua trang (bam link neo, tim trong trang, hoac
+     trinh duyet khoi phuc vi tri cu) thi hang 1 nam ngoai khung nhin o ca hai
+     khung hinh lien tiep, IO khong thay thay doi nao nen khong ban, va thanh
+     ket o trang thai sai. Da dinh dung loi nay mot lan khi kiem.
+
+     Doc getBoundingClientRect moi khung hinh, co requestAnimationFrame chan
+     lai nen mot lan cuon dai chi tinh mot lan mot khung hinh. -->
+<script>
+(function(){
+  var bar=document.getElementById('spo'),
+      rank1=document.getElementById('rank-1'),
+      ket=document.getElementById('winner');
+  if(!bar||!rank1||!ket)return;
+  var cho=false;
+  function tinh(){
+    cho=false;
+    var quaRank1=rank1.getBoundingClientRect().bottom<0,
+        toiKetLuan=ket.getBoundingClientRect().top<window.innerHeight;
+    bar.classList.toggle('on', quaRank1 && !toiKetLuan);
+  }
+  function xep(){if(!cho){cho=true;requestAnimationFrame(tinh);}}
+  addEventListener('scroll',xep,{passive:true});
+  addEventListener('resize',xep,{passive:true});
+  tinh();
+})();
+</script>
+<!-- Noi click-ID sang trang ban. KHONG ban cta_click o day: tags.js da co mot
+     listener bat moi click vao offer.dinosaurized.com roi, ban them lan nua se
+     lam moi cu click dem thanh hai. -->
+<script>
+(function(){
+  var sp=new URLSearchParams(location.search),keep=new URLSearchParams();
+  ['gclid','gbraid','wbraid','fbclid','twclid','msclkid','ttclid','utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(function(k){if(sp.get(k))keep.set(k,sp.get(k));});
+  var extra=keep.toString();
+  function wire(){
+    document.querySelectorAll('a[href*="offer.dinosaurized.com"]').forEach(function(a){
+      if(extra)a.href+=(a.href.indexOf('?')>-1?'&':'?')+extra;
+    });
+  }
+  if(document.readyState!=='loading')wire();else document.addEventListener('DOMContentLoaded',wire);
+})();
+</script>
+</body>
+</html>

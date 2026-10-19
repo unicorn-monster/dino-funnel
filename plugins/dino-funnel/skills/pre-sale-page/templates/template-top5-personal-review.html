@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<!--
+# Template: top5-personal-review
+
+Source: live page `https://www.thereviewboard.co/trb-review-template/i-tried-the-most-popular-protein-powders-so-you-dont-have-to---here-are-my-favorites` (The Review Board, Webflow CMS), cloned 2026-10-09.
+Format: **first-person personal review** by a named editor ("Hi I'm Isabel"): "Best (and Worst) [Category]", photo strip of her own testing, intro story, a compact ranking list (rank, packshot, stars, See details), "How I Tested", then one long card per product (rank badge, "Best [X]" line, packshot, star rating, Specs/Details table, Check Price, Verdict, Pros, Cons, "What I Love" + "What Could Be Better" each with a real-life photo). Newsletter block + footer. Static page, no quiz. The source ranks **9** products; for a top 5 delete ranks 6-9 (see traps).
+
+How it was built (code, not visuals): server HTML of the live page, Webflow runtime / tracking / other articles' one-off scripts removed. CSS = the site's shared Webflow stylesheet + every inline `<style>`, pruned to selectors that match this DOM. Verified against the live page in Chrome at 390px and 1280px: every element's box matches (see the verify note at the end).
+
+## Placeholders to replace globally
+
+| Token | Replace with |
+|---|---|
+| `/SLUG/` | `/<slug>/` (fonts) |
+| `https://offer.dinosaurized.com/OFFER-SLUG` | offer URL (6 places, all #1: ranking-list "See details", "Check Price", visit link, intro link, 2 links inside #1 "What I Love") |
+| `https://www.amazon.com/dp/ASIN-N` (N = 2..9) | competitor N's Amazon URL, 2 per competitor (ranking list "See details" + card "Check Price"). Already `target="_blank" rel="sponsored nofollow noopener"` |
+| `offer.dinosaurized.com` (text of `.visit-link` in #1's card, "Visit offer.dinosaurized.com") | keep or the brand's domain |
+| `The Review Board` (coach text, newsletter heading, footer `.heading-47`), `New York, NY` (header + footer), `Hi I'm Isabel 👋` | publication name (TopReviewKing / Queen) and the author persona |
+| `href="#"` (14: logo, footer nav, Instagram, Privacy, Terms) | real URLs on our site or leave `#` |
+
+## Fonts (self-hosted, `public/<slug>/assets/fonts/`)
+
+Only faces the page actually renders: Graphik 400/500/600 (the site's own, TTF as served), Inter 400/500/600, Playfair Display 400-700. `D=public/<slug>/assets/fonts; mkdir -p $D` then:
+
+```
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Graphik-400.ttf" "https://cdn.prod.website-files.com/69665c587148670bbfde737b/6a291f13f31f40fe41ae414a_Graphik-Regular.ttf"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Graphik-500.ttf" "https://cdn.prod.website-files.com/69665c587148670bbfde737b/6a291f13229dd5bd1199a376_Graphik-Medium.ttf"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Graphik-600.ttf" "https://cdn.prod.website-files.com/69665c587148670bbfde737b/6a291f13ef6011a11c43b1a6_Graphik-Semibold.ttf"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Inter-400.woff2" "https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuLyfAZ9hiJ-Ek-_0ew.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Inter-500.woff2" "https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuI6fAZ9hiJ-Ek-_0ew.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Inter-600.woff2" "https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuGKYAZ9hiJ-Ek-_0ew.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/PlayfairDisplay-400.woff2" "https://fonts.gstatic.com/s/playfairdisplay/v40/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKdFvXDXbtPK-F2qO0g.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/PlayfairDisplay-500.woff2" "https://fonts.gstatic.com/s/playfairdisplay/v40/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKd3vXDXbtPK-F2qO0g.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/PlayfairDisplay-600.woff2" "https://fonts.gstatic.com/s/playfairdisplay/v40/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKebunDXbtPK-F2qO0g.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/PlayfairDisplay-700.woff2" "https://fonts.gstatic.com/s/playfairdisplay/v40/nuFvD-vYSZviVYUb_rj3ij__anPXJzDwcbmjWBN2PKeiunDXbtPK-F2qO0g.woff2"
+```
+
+## Slot map (in page order)
+
+Copy style: first person, a named editor who "researched hundreds of products", warm and plain ("I work out hard, but..."), short paragraphs. Rich-text blocks (`.w-richtext`) are plain `<p>`s; lists are `<ul>/<ol><li>`.
+
+| Block (selector) | What to write | Original size |
+|---|---|---|
+| `<title>` | page title (source: "The Review Board 2026") | |
+| `h1.trb-title` | `Best (and Worst) [Category]` | 6 words |
+| `.coach-title` / `.coach-des` | `Hi I'm [Name] 👋` / who she is + "editor for [Site]" | 24 words |
+| `.published-date .publish_date_month` | `Published` date, short month + period: `Sep 16, 2026.` (desktop only, hidden on mobile) | |
+| `.text1` | disclosure ("We research, purchase, and personally test...") | 28 words |
+| `.trb-description.des-pb` (2 `<p>`) | intro story: her problem, what she tried, link to #1 in the last sentence | 120 words |
+| `.trb-products .product-box` x9 | ranking list: `.text-block-114` (`Winner`, `Runner-Up`, `Rank #3`...), `.product-title`, `.rating-value` (stars fill from it), `See details` | |
+| `.how-i-scored-title` | `h2` "How I Tested Each [X]" + 3 `<p>` + `<ol>` of 7 criteria + empty `<p>` | 150 words |
+| `.collection-list-wrapper-47 .w-dyn-item` x9 (one per rank) | `.product-details-rank-text` + `.best-overall-text` ("Best Overall [X]", "2nd Best Overall", then "Best [angle]"), `h2.product-heading`, `.rating-value`, Specs/Details table (6 rows, same rows for every product), `Check Price`, `.verdict-des` (~45 words), Pros `<ul>` (#1: 11 items, others 4-6), Cons `<ul>` (#1: 2 scarcity cons "Only Available Online", "Sells Out Fast"; others 2-3 real cons) | |
+| `.what-i-love-block` (per product) | "What I Love" 1-4 `<p>` (#1 ends with a "try it risk-free" link) + "What Could Be Better" 1-2 `<p>` | 60-180 words each |
+| `.section-24` newsletter | heading + 1 line. The form is **not wired** (Webflow form, no handler here): connect it to Klaviyo or delete the section before publishing | |
+| `.section-30` footer | site name, nav links, location, © line, legal links | |
+
+Same rules as the top 5 pages (pre-sale-page skill): #1 = ours, every competitor claim traces to a real spec or recurring complaint, ours' cons are scarcity. Dinosaurized guarantee = 120 days.
+
+## Media slots (`data-ph`)
+
+Every media slot keeps its ORIGINAL `<img>` (so the layout is exact) with the source page's image hotlinked as a visual reference, plus `data-ph="IMG <ratio>|<role>"`. The **template-only** `<style>` + `<script>` at the end of `<body>` draws those labels on top of each slot. Building a page: set each `src` (+ `width`/`height`) to your own asset, remove `data-ph`, delete the template-only style + script. The hotlinked files are a competitor's: never ship them.
+
+| Slot (class) | Label (ratio, role) |
+|---|---|
+| `.image-39` header | Site logo (SVG, ~9:1) |
+| `.image-124` coach box | IMG 1:1, Author headshot (shown as a circle) |
+| `.image_s` x6 hero strip | IMG 3:4: all tested products together / testing close-up / author testing (UGC) / products lineup / author taking notes / products with labeled samples |
+| `.product-image` x9 (ranking list) and `.product-image-1` x9 (cards) | packshot of #1 OUR PRODUCT, then #2-#9 competitors (any ratio, white background, shown contained) |
+| `.what-i-love-image` x2 per product | IMG 1:1: hands-on photo (author with the product, or label close-up) / in-use photo (product + result, labeled) |
+| `.div-block-124` newsletter | CSS background (`background-image` in the `.div-block-124` rules, 2 places), ~5:2 banner |
+
+UI icons (hamburger, Winner crown, Runner-up check, Pros ✓, Cons ✗) are generic and already embedded as data URIs.
+
+## Do not touch
+
+- The star-rating script: it sets `.stars-fill` width from `.rating-value` (e.g. 4.8 → 96%). Just change the number.
+- `<head>`: `/tags.js`, favicons, `noindex, nofollow`. The click-ID passthrough script (selector `a[href*="offer.dinosaurized.com"]`).
+- The CSS is pruned to this DOM. A NEW class has no rule: reuse the classes already on the page.
+
+## Leftover grep
+
+grep -inE 'website-files|data-ph|ph-l|Isabel|Review Board|equip|Transparent Labs|FlavCity|Kion|Truvani|Gainful|Naked|Peak Performance|Promix|protein|ASIN-|OFFER-SLUG|/SLUG/' index.html   # must be empty
+grep -nE '—|–' index.html   # the source disclosure line has an em dash: rewrite it
+
+## Template-specific traps
+
+| Trap | Fix |
+|---|---|
+| 9 products in the source | top 5: delete `.product-box` 6-9 in `.trb-products` AND `.w-dyn-item` 6-9 in `.collection-list-wrapper-47`, and say "5" wherever the copy counts |
+| Only #1 has the `.visit-text` "Visit [domain]" line; only #1 (crown) and #2 (check) have a rank icon | ranks 3+ have no icon (the source's empty CMS image was removed) |
+| Hamburger icon in the header | decorative only: the Webflow menu it opened was removed |
+| Pros/Cons bullets are `li::after` backgrounds (✓ / ✗), not text | write plain `<li>` text, no emoji |
+| `section` id is the source article slug | rename to `<slug>` (nothing targets it) |
+
+## Changes vs the live page
+
+- Removed: Webflow runtime + nav menu, Clarity/other trackers, scripts that only run on other articles of the site, hidden CMS duplicates (`.trb-products-h`, `.product-wrapper-hide`, `.hide-list`, empty CMS images), Webflow form success/fail messages, WebFont loader (fonts self-hosted).
+- The source's link script (forced `target=_blank` on every external link + its own UTM forwarding) → competitor links carry `target="_blank" rel="sponsored nofollow noopener"` in the markup, offer links get our click-ID passthrough.
+- Star fill script kept (rewritten, same math).
+
+This comment is template notes only: drop it from the built index.html (it would ship to a public page).
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light">
+<title>The Review Board 2026</title>
+<script src="/tags.js?v=8d6afa76" defer></script>
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>
+@font-face { font-family: Graphik; src: url("/SLUG/assets/fonts/Graphik-400.ttf") format("truetype"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: Graphik; src: url("/SLUG/assets/fonts/Graphik-500.ttf") format("truetype"); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: Graphik; src: url("/SLUG/assets/fonts/Graphik-600.ttf") format("truetype"); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: Inter; src: url("/SLUG/assets/fonts/Inter-400.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: Inter; src: url("/SLUG/assets/fonts/Inter-500.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: Inter; src: url("/SLUG/assets/fonts/Inter-600.woff2") format("woff2"); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: "Playfair Display"; src: url("/SLUG/assets/fonts/PlayfairDisplay-400.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: "Playfair Display"; src: url("/SLUG/assets/fonts/PlayfairDisplay-500.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: "Playfair Display"; src: url("/SLUG/assets/fonts/PlayfairDisplay-600.woff2") format("woff2"); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: "Playfair Display"; src: url("/SLUG/assets/fonts/PlayfairDisplay-700.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+
+html { text-size-adjust: 100%; font-family: sans-serif; }
+body { margin: 0px; }
+section { display: block; }
+a { background-color: rgba(0, 0, 0, 0); }
+a:active, a:hover { outline: 0px; }
+h1 { margin: 0.67em 0px; font-size: 2em; }
+img { border: 0px; }
+input { color: inherit; font: inherit; margin: 0px; }
+input { line-height: normal; }
+* { box-sizing: border-box; }
+html { height: 100%; }
+body { color: rgb(51, 51, 51); background-color: rgb(255, 255, 255); min-height: 100%; margin: 0px; font-family: Arial, sans-serif; font-size: 14px; line-height: 20px; }
+img { vertical-align: middle; max-width: 100%; display: inline-block; }
+.w-inline-block { max-width: 100%; display: inline-block; }
+.w-button { color: rgb(255, 255, 255); line-height: inherit; cursor: pointer; background-color: rgb(56, 152, 236); border: 0px; border-radius: 0px; padding: 9px 15px; text-decoration: none; display: inline-block; }
+input.w-button { appearance: button; }
+h1, h2, h3, h4 { margin-bottom: 10px; font-weight: bold; }
+h1 { margin-top: 20px; font-size: 38px; line-height: 44px; }
+h2 { margin-top: 20px; font-size: 32px; line-height: 36px; }
+h3 { margin-top: 20px; font-size: 24px; line-height: 30px; }
+h4 { margin-top: 10px; font-size: 18px; line-height: 24px; }
+p { margin-top: 0px; margin-bottom: 10px; }
+ul, ol { margin-top: 0px; margin-bottom: 10px; padding-left: 40px; }
+.w-form { margin: 0px 0px 15px; }
+.w-input { color: rgb(51, 51, 51); vertical-align: middle; background-color: rgb(255, 255, 255); border: 1px solid rgb(204, 204, 204); width: 100%; height: 38px; margin-bottom: 10px; padding: 8px 12px; font-size: 14px; line-height: 1.42857; display: block; }
+.w-input::placeholder { color: rgb(153, 153, 153); }
+.w-input:focus { border-color: rgb(56, 152, 236); outline: 0px; }
+.w-container { max-width: 940px; margin-left: auto; margin-right: auto; }
+.w-container::before, .w-container::after { content: " "; grid-area: 1 / 1 / 2 / 2; display: table; }
+.w-container::after { clear: both; }
+@media screen and (max-width: 991px) {
+  .w-container { max-width: 728px; }
+}
+@media screen and (max-width: 479px) {
+  .w-container { max-width: none; }
+}
+.w-richtext::before, .w-richtext::after { content: " "; grid-area: 1 / 1 / 2 / 2; display: table; }
+.w-richtext::after { clear: both; }
+.w-richtext ol, .w-richtext ul { overflow: hidden; }
+.w-nav { z-index: 1000; background: rgb(221, 221, 221); position: relative; }
+.w-nav::before, .w-nav::after { content: " "; grid-area: 1 / 1 / 2 / 2; display: table; }
+.w-nav::after { clear: both; }
+.w-nav-brand { float: left; color: rgb(51, 51, 51); text-decoration: none; position: relative; }
+.w-nav-button { float: right; cursor: pointer; -webkit-tap-highlight-color: rgba(0, 0, 0, 0); user-select: none; padding: 18px; font-size: 24px; display: none; position: relative; }
+.w-nav-button:focus { outline: 0px; }
+.w-nav[data-collapse="all"] .w-nav-button { display: block; }
+@media screen and (max-width: 767px) {
+  .w-nav-brand { padding-left: 10px; }
+}
+:root { --body-text-color: #dbdbdb; }
+.w-layout-blockcontainer { max-width: 940px; margin-left: auto; margin-right: auto; display: block; }
+.w-layout-vflex { flex-direction: column; align-items: flex-start; display: flex; }
+@media screen and (max-width: 991px) {
+  .w-layout-blockcontainer { max-width: 728px; }
+}
+@media screen and (max-width: 767px) {
+  .w-layout-blockcontainer { max-width: none; }
+}
+body { color: rgb(51, 51, 51); font-family: Arial, "Helvetica Neue", Helvetica, sans-serif; font-size: 14px; line-height: 20px; }
+h2 { margin-top: 20px; margin-bottom: 10px; font-size: 32px; font-weight: bold; line-height: 36px; }
+.section-24 { background-color: rgb(250, 250, 250); padding: 60px 20px; }
+.div-block-123 { max-width: 1218px; min-height: 215px; box-shadow: none; background-color: rgb(255, 255, 255); border: 1px solid rgb(219, 229, 227); border-radius: 7.08px; margin-left: auto; margin-right: auto; display: flex; overflow: hidden; }
+.div-block-124 { aspect-ratio: 1983 / 793; background-color: rgb(255, 255, 255); background-image: url("https://cdn.prod.website-files.com/69665c587148670bbfde737b/6aa07011fc0778ffdad6d834_trb-newsletter-wellness-beauty.webp"); background-position: 50% center; background-repeat: no-repeat; background-size: contain; background-origin: content-box; flex: 1 1 0%; min-height: 0px; padding-top: 10px; }
+.div-block-125 { gap: 16px; flex-flow: column; flex: 1 1 0%; justify-content: center; padding: 34px 44px; display: flex; }
+.heading-35 { color: rgb(23, 23, 23); letter-spacing: 0px; margin-top: 0px; margin-bottom: 0px; font-family: "Playfair Display", sans-serif; font-size: 28.33px; font-weight: 400; line-height: 1.3em; }
+.paragraph-6 { color: rgb(52, 59, 59); width: 100%; max-width: 525px; margin-bottom: 0px; font-family: Inter, sans-serif; font-size: 13.28px; line-height: 21.6px; }
+.text-field-2 { color: rgb(23, 23, 23); background-color: rgba(255, 255, 255, 0); border-width: 0px 0px 1px; border-style: solid; border-color: rgb(0, 0, 0) rgb(0, 0, 0) rgb(134, 156, 155); border-image: none; flex: 1 1 0%; margin-bottom: 0px; padding-top: 4px; padding-bottom: 4px; padding-left: 0px; font-family: Inter, sans-serif; font-size: 13.28px; }
+.form { display: flex; }
+.submit-button-2 { color: rgb(255, 255, 255); letter-spacing: 0.53px; text-transform: uppercase; background-color: rgb(0, 127, 130); border-radius: 3.54px; width: 120px; min-width: 120px; padding-top: 5px; padding-bottom: 5px; font-family: Inter, sans-serif; font-size: 10.62px; font-weight: 500; line-height: 15.9px; }
+.form-block-2 { width: 100%; max-width: 531px; margin-bottom: 0px; }
+.footer-col { flex: 1 1 0%; max-width: 382px; }
+.footer-col.footer-menu-col { gap: 14px; flex-flow: column; flex: 1 1 0%; max-width: 203px; display: flex; }
+.footer-col.footer-form-col { margin-right: 100px; }
+.copyright-left-col { gap: 10px; flex: 1 1 0%; justify-content: flex-start; align-items: center; display: flex; }
+.copyright-right-col { gap: 33px; flex: 1 1 0%; justify-content: flex-end; align-items: center; display: flex; }
+.legalmenu { color: rgb(212, 230, 229); letter-spacing: 1.1px; text-transform: uppercase; font-family: Inter, sans-serif; font-size: 11px; line-height: 1.5em; text-decoration: none; }
+.legalmenu:hover { color: rgb(255, 255, 255); }
+.navbar-logo-left-container-2 { z-index: 5; background-color: rgba(0, 0, 0, 0); width: 1030px; max-width: 100%; margin-left: auto; margin-right: auto; padding: 15px 20px; }
+.navbar-logo-left-container-2.shadow-three { width: 100%; max-width: 1212px; margin-bottom: 0px; padding: 0px; }
+.navbar-wrapper-2 { gap: 16px; grid-template-rows: auto; grid-template-columns: 1fr 1fr 1fr; grid-auto-columns: 1fr; justify-content: space-between; align-items: center; display: grid; }
+.menu-button-3 { padding: 0px; }
+.image-39 { max-width: 277px; }
+.div-block-138 { justify-content: flex-end; align-items: center; padding-top: 0px; display: flex; }
+.div-block-139 { border-width: 0px 0px 1px; border-style: solid; border-color: rgb(229, 229, 229); border-image: none; padding: 22px 20px; }
+.image-41 { width: 20px; display: block; }
+.link-4 { color: rgb(255, 255, 255); letter-spacing: normal; font-family: Inter, sans-serif; font-size: 13px; line-height: 1.6em; text-decoration: none; }
+.link-4:hover { color: rgb(255, 255, 255); }
+.heading-47 { color: rgb(255, 255, 255); margin-top: 0px; margin-bottom: 20px; font-family: "Playfair Display", sans-serif; font-size: 42px; font-weight: 400; line-height: 1.1em; }
+.div-block-147 { gap: 64px; flex-flow: column; max-width: 1151px; margin-left: auto; margin-right: auto; display: flex; }
+.heading-48 { color: rgb(255, 255, 255); letter-spacing: 1.3px; text-transform: uppercase; margin-top: 0px; margin-bottom: 16px; font-family: Inter, sans-serif; font-size: 13px; font-weight: 500; line-height: 1.2em; }
+.heading-48.m-0 { margin-bottom: 8px; }
+.heading-48.location-text { margin-bottom: 0px; }
+.heading-48.location-text.location-text-h { color: rgb(0, 0, 0); }
+.div-block-148 { gap: 30px; border-width: 1px 0px 0px; border-style: solid; border-color: rgba(255, 255, 255, 0.22) rgba(255, 255, 255, 0.1) rgba(255, 255, 255, 0.1); border-image: none; padding-top: 45px; display: flex; }
+.div-block-149 { gap: 64px; display: flex; }
+.section-30 { color: rgb(255, 255, 255); background-color: rgb(7, 86, 91); padding: 97px 20px 32px; }
+.text-block-37 { color: rgb(212, 230, 229); letter-spacing: 1.1px; text-transform: uppercase; font-family: Inter, sans-serif; font-size: 11px; line-height: 1.5em; }
+.link-block-13 { text-decoration: none; display: block; }
+.trb-container { width: 100%; max-width: 1246px; margin-left: auto; margin-right: auto; padding: 0px 16px 56px; }
+.trb-section { padding-top: 40px; padding-bottom: 56px; }
+.trb-inner { width: 100%; max-width: 867px; margin-left: auto; margin-right: auto; padding-top: 40px; }
+.trb-inner.notags { padding-top: 10px; }
+.coach-box { gap: 24px; background-color: rgb(238, 255, 255); border-radius: 24px; justify-content: flex-start; align-items: center; width: 100%; padding: 24px; display: flex; }
+.trb-main-title { gap: 24px; flex-flow: column; justify-content: flex-start; align-items: flex-start; width: 100%; padding-top: 0px; padding-bottom: 20px; display: flex; }
+.image-124 { border-radius: 200px; width: 100%; max-width: 136px; }
+.coach-content { gap: 16px; flex-flow: column; justify-content: flex-start; align-items: flex-start; width: 100%; max-width: 351px; display: flex; }
+.coach-title { color: rgb(0, 0, 0); letter-spacing: -0.24px; margin-top: 0px; margin-bottom: 0px; font-family: "Playfair Display", sans-serif; font-size: 18px; font-weight: 700; line-height: 18px; }
+.coach-des { color: rgb(18, 18, 18); text-align: left; letter-spacing: 0px; font-family: Graphik, Arial, sans-serif; font-size: 12px; font-weight: 400; }
+.trb-title { color: rgb(0, 0, 0); text-align: left; width: 100%; max-width: 781px; margin-top: -2.5px; margin-bottom: -2.5px; padding-top: 20px; font-family: "Playfair Display", sans-serif; font-size: 56px; font-weight: 500; line-height: 64px; }
+.image-block { gap: 17px; justify-content: flex-start; align-items: flex-start; display: flex; }
+.image_s { border-radius: 9px; }
+.image-block-main { padding-top: 32px; padding-bottom: 35px; padding-left: 0px; }
+.trb-content1 { gap: 34px; flex-flow: column; justify-content: flex-start; align-items: flex-start; width: 100%; max-width: 864px; margin-left: auto; margin-right: auto; display: flex; }
+.trb-products { width: 100%; max-width: 701px; margin-left: auto; margin-right: auto; padding-top: 62px; padding-bottom: 106px; }
+.how-i-scored-title { gap: 21px; flex-flow: column; justify-content: flex-start; align-items: flex-start; width: 100%; max-width: 864px; margin-bottom: 53px; margin-left: auto; margin-right: auto; display: flex; }
+.trb-sub-title { color: rgb(18, 18, 18); width: 100%; margin-top: 0px; margin-bottom: 0px; font-family: "Playfair Display", sans-serif; font-size: 32px; font-weight: 600; line-height: 43px; display: block; }
+.trb-description { color: rgb(16, 16, 16); margin-bottom: auto; font-family: Inter, sans-serif; font-size: 18px; font-weight: 400; line-height: 26px; }
+.trb-description.des-pb { margin-bottom: 0px; }
+.text1 { color: rgb(63, 63, 70); margin-bottom: 3px; font-family: Inter, sans-serif; font-size: 14px; font-style: italic; font-weight: 400; line-height: 20px; }
+.published-date { gap: 7px; justify-content: flex-start; align-items: center; width: 100%; display: flex; }
+.p-text { color: rgb(48, 48, 48); font-family: Graphik, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 18px; }
+.line-1 { background-color: rgb(48, 48, 48); flex: 1 1 0%; height: 1px; margin-left: 12px; }
+.product-block { gap: 37px 40px; grid-template-rows: auto auto; grid-template-columns: 1fr 1fr 1fr; grid-auto-columns: 1fr; margin-left: 0px; margin-right: 0px; display: grid; }
+.product-list-box { background-color: rgb(255, 255, 255); border: 1px solid rgb(213, 213, 213); border-radius: 16px; flex-flow: column; justify-content: center; align-items: center; width: 100%; height: 100%; display: flex; overflow: hidden; box-shadow: rgba(0, 0, 0, 0.25) 0px 4px 4px; }
+.see-details-link { color: rgb(115, 115, 115); text-align: center; letter-spacing: 0px; text-transform: uppercase; background-color: rgb(0, 0, 0); width: 100%; padding: 9px 20px 12px; font-family: Graphik, Arial, sans-serif; font-size: 16px; font-weight: 500; line-height: 22px; text-decoration: underline; }
+.rank-box { gap: 8px; justify-content: center; align-items: center; width: 100%; margin-bottom: 0px; padding: 8px 16px 9px 15px; display: flex; }
+.product-image { object-fit: contain; width: 100%; max-width: 150px; height: 99px; max-height: 150px; margin: 20px auto 17px; }
+.what-i-love-block { gap: 32px; justify-content: space-between; align-items: stretch; width: 100%; max-width: 864px; margin-left: auto; margin-right: auto; padding-top: 77px; padding-bottom: 77px; display: flex; }
+.what-i-love-block.what-i-love-block-2 { gap: 31px; flex-flow: column; }
+.what-i-love-content { gap: 16px; flex-flow: column; justify-content: flex-start; align-items: flex-start; width: 100%; max-width: 520px; display: flex; }
+.what-i-love-content.content--w { max-width: 416px; }
+.what-i-love-image { border-radius: 16px; display: block; }
+.what-i-love-image.what-i-love-image-w { width: 100%; max-width: 312px; }
+.first-mobile-content { gap: 16px; display: none; }
+.first-mobile-content.better-content { display: flex; }
+.first-mobile-content.better-content.b-content--w { width: 100%; max-width: 418px; }
+.inner-block-1 { gap: 20px; justify-content: space-between; align-items: flex-start; display: flex; }
+.product-title { color: rgb(0, 0, 0); text-align: center; letter-spacing: 0px; width: 100%; margin-top: -2px; margin-bottom: 6px; padding-bottom: 2px; font-family: Graphik, Arial, sans-serif; font-size: 16px; font-weight: 500; line-height: 22px; }
+.product-details { border-radius: 16px; flex-flow: column; justify-content: center; align-items: center; width: 100%; margin-top: auto; padding-left: 7px; padding-right: 7px; display: flex; }
+.rating-text-1 { color: rgb(0, 0, 0); margin-bottom: 11px; margin-left: 0px; margin-right: 0px; font-family: Graphik, Arial, sans-serif; font-size: 24px; font-weight: 400; line-height: 32px; }
+.rating-text-1.rating-value { margin-left: 0px; margin-right: 0px; }
+.image-125 { width: 100%; max-width: 24px; font-size: 30px; line-height: 30px; }
+.product-details-box { background-color: rgb(255, 255, 255); border: 1px solid rgb(213, 213, 213); border-radius: 16px; width: 100%; max-width: 864px; margin-left: auto; margin-right: auto; overflow: hidden; box-shadow: rgba(0, 0, 0, 0.25) 0px 4px 4px; }
+.product-details-rank-box { gap: 8px; background-color: rgb(0, 205, 92); justify-content: center; align-items: center; padding: 6px 15px; display: flex; }
+.product-details-sub-line { border-top: 1px solid rgb(0, 205, 92); border-bottom: 1px solid rgb(0, 205, 92); padding: 15px 15px 13px; }
+.product-details-main-block { padding: 37px 32px 36px; }
+.product-details-top { gap: 32px; justify-content: flex-start; align-items: center; width: 100%; max-width: 696px; margin-bottom: 59px; margin-left: auto; margin-right: auto; display: flex; }
+.product-image-1 { width: 100%; max-width: 40%; margin-top: 2px; }
+.product-inner-details { width: 100%; max-width: 384px; }
+.product-details-rating-star { gap: 16px; flex-flow: wrap; justify-content: flex-start; align-items: center; margin-bottom: 21px; display: flex; position: relative; }
+.rating-text { color: rgb(246, 154, 27); margin-top: -3px; padding-bottom: 3px; font-family: Graphik, Arial, sans-serif; font-size: 32px; font-weight: 500; line-height: 43px; }
+.product-heading { color: rgb(0, 0, 0); text-transform: uppercase; margin-top: -3px; margin-bottom: 2px; margin-right: -50px; padding-bottom: 3px; font-family: Graphik, Arial, sans-serif; font-size: 32px; font-weight: 500; line-height: 43px; }
+.product-details-row { gap: 10px; border-top: 1px solid rgb(194, 194, 194); border-bottom: 1px solid rgb(194, 194, 194); justify-content: flex-start; align-items: center; display: flex; }
+.product-details-row.product-details-top-line-remove { gap: 10px; border-top-style: none; border-top-width: 0px; padding-top: 1px; }
+.product-details-title-col { width: 100%; padding-bottom: 4px; }
+.product-details-title-col.product-details-title-col-w { max-width: 43%; }
+.product-details-title { color: rgb(43, 43, 43); margin-top: -3px; margin-bottom: 0px; padding-bottom: 3px; font-family: Graphik, Arial, sans-serif; font-size: 16px; font-weight: 600; line-height: 22px; }
+.product-details-title-row { gap: 10px; justify-content: flex-start; align-items: center; display: flex; }
+.product-details-col { width: 100%; }
+.product-details-col.product-details-col-w { max-width: 43%; }
+.product-details-text { color: rgb(83, 83, 83); margin-top: -1px; padding-top: 0px; padding-bottom: 1px; font-family: Graphik, Arial, sans-serif; font-size: 14px; font-weight: 500; line-height: 26px; }
+.best-overall-text { color: rgb(0, 0, 0); text-align: center; font-family: Inter, sans-serif; font-size: 24px; font-weight: 600; line-height: 32px; }
+.product-details-rank-icon { width: 100%; max-width: 36px; }
+.product-details-rank-text { color: rgb(255, 255, 255); margin-top: -2px; padding-top: 0px; padding-bottom: 2px; font-family: Graphik, Arial, sans-serif; font-size: 27px; font-weight: 500; line-height: 36px; }
+.product-details-button-block { gap: 16px; flex-flow: column; justify-content: flex-start; align-items: center; width: 100%; max-width: 487px; margin-left: auto; margin-right: auto; display: flex; }
+.visit-link { color: rgb(83, 83, 83); margin-top: -2px; padding-bottom: 2px; font-family: Graphik, Arial, sans-serif; font-size: 14px; font-weight: 500; text-decoration: none; }
+.product-details-button { color: rgb(255, 255, 255); text-align: center; background-color: rgb(0, 0, 0); border-radius: 8px; width: 100%; padding: 11px 15px; font-family: Graphik, Arial, sans-serif; font-size: 29px; font-weight: 500; line-height: 40px; }
+.product-details-line { background-color: rgb(221, 221, 221); width: 100%; max-width: 798px; height: 1px; margin-top: 33px; margin-bottom: 26px; }
+.verdict-box { gap: 8px; flex-flow: column; justify-content: flex-start; align-items: flex-start; display: flex; }
+.pros-box { gap: 8px; flex-flow: column; justify-content: flex-start; align-items: flex-start; margin-top: 27px; margin-bottom: 17px; display: flex; }
+.cons-box { gap: 8px; flex-flow: column; justify-content: flex-start; align-items: flex-start; display: flex; }
+.verdict-title { color: rgb(38, 82, 208); margin-top: -2px; margin-bottom: 0px; padding-bottom: 2px; font-family: Graphik, Arial, sans-serif; font-size: 18px; font-weight: 600; line-height: 24px; }
+.verdict-des { color: rgb(43, 43, 43); letter-spacing: -0.2px; width: 100%; max-width: 799px; margin-bottom: 0px; font-family: Graphik, Arial, sans-serif; font-size: 16px; font-weight: 400; line-height: 25px; }
+.verdict-des.pros-des { color: rgb(60, 126, 68); }
+.verdict-des.pros-des.cons-des { color: rgb(153, 54, 49); }
+.pros-title { color: rgb(60, 126, 68); margin-top: -2px; margin-bottom: 0px; padding-bottom: 2px; font-family: Graphik, Arial, sans-serif; font-size: 18px; font-weight: 600; line-height: 24px; }
+.cons-title { color: rgb(153, 54, 49); margin-top: -2px; margin-bottom: 0px; padding-bottom: 2px; font-family: Graphik, Arial, sans-serif; font-size: 18px; font-weight: 600; line-height: 24px; }
+.pros-des { gap: 0px; flex-flow: column; justify-content: flex-start; align-items: flex-start; }
+.product-box { width: 100%; max-width: 100%; }
+.visit-text { gap: 4px; justify-content: flex-start; align-items: center; display: flex; }
+.text-block-114 { font-size: 20px; font-weight: 400; line-height: 24px; }
+.rating-wrapper { width: 160px; height: 28px; position: relative; overflow: hidden; }
+.rating-wrapper.rating-wrapper-top { justify-content: center; align-items: center; width: 86px; height: 16px; }
+.stars-background { width: 100%; height: 100%; position: absolute; }
+.stars-fill { width: 0%; height: 100%; position: absolute; top: 0px; left: 0px; right: 0px; overflow: hidden; }
+.rating-star-2 { color: rgb(135, 135, 135); letter-spacing: 11px; font-size: 28px; line-height: 28px; }
+.rating-star-2.fill-star-color { color: rgb(246, 154, 27); }
+.rating-star { color: rgb(135, 135, 135); text-align: center; letter-spacing: 6px; font-size: 15px; line-height: 16px; }
+.rating-star.fill-star { color: rgb(246, 154, 27); }
+.text-block-119 { text-align: center; letter-spacing: 6px; }
+.reting-text-block { gap: 0px; flex-flow: row; justify-content: center; align-items: center; display: flex; }
+.collection-item-48 { font-size: 13px; line-height: 1.6em; display: contents; }
+.collection-list-wrapper-54 { gap: 14px; display: contents; }
+.collection-list-49 { gap: 14px 20px; flex-flow: column; grid-template-columns: max-content max-content; display: contents; }
+.trb-footer-balanced-nav { gap: 14px 24px; flex-grow: 1; flex-shrink: 0; grid-template-rows: repeat(5, auto); grid-template-columns: max-content max-content; grid-auto-flow: column; align-content: start; max-width: 240px; display: grid; }
+.trb-footer-nav-heading { color: rgb(255, 255, 255); letter-spacing: 1.3px; text-transform: uppercase; grid-column: 1 / -1; grid-row-start: 1; margin-top: 0px; margin-bottom: 8px; font-family: Inter, sans-serif; font-size: 13px; font-weight: 500; line-height: 15.6px; }
+@media screen and (max-width: 991px) {
+  .menu-button { padding: 12px; }
+  .div-block-125 { padding-left: 31px; padding-right: 31px; }
+  .footer-col.footer-menu-col { max-width: 180px; }
+  .footer-col.footer-form-col { margin-right: 0px; }
+  .copyright-right-col { gap: 16px; }
+  .menu-button-3 { padding: 12px; }
+  .div-block-149 { gap: 30px; }
+  .trb-section { padding-top: 30px; padding-bottom: 65px; }
+  .trb-inner { gap: 5px; }
+  .coach-box { gap: 8px; justify-content: flex-start; align-items: flex-start; padding-left: 8px; padding-right: 8px; }
+  .trb-main-title { padding-top: 24px; padding-bottom: 24px; }
+  .image-124 { max-width: 96px; }
+  .trb-title { font-size: 32px; line-height: 40px; }
+  .image_s { border-radius: 6px; }
+  .image-block { gap: 11px; }
+  .image-block-main { padding-top: 24px; padding-bottom: 24px; }
+  .trb-content1 { gap: 24px; }
+  .trb-products { max-width: 100%; padding-top: 24px; padding-bottom: 24px; }
+  .how-i-scored-title { gap: 16px; margin-bottom: 35px; }
+  .trb-description { font-size: 16px; line-height: 24px; }
+  .text1 { margin-bottom: 0px; }
+  .published-date { display: none; }
+  .product-block { gap: 30px; }
+  .what-i-love-block { padding-top: 36px; padding-bottom: 32px; }
+  .what-i-love-block.what-i-love-block-2 { gap: 15px; }
+  .what-i-love-image.what-i-love-image-w { max-width: 250px; }
+  .product-details-sub-line { padding-top: 7px; padding-bottom: 7px; }
+  .product-details-main-block { padding: 20px; }
+  .product-details-top { max-width: 100%; margin-bottom: 20px; }
+  .product-details-rating-star { row-gap: 8px; }
+  .product-heading { margin-right: 0px; }
+  .best-overall-text { font-size: 18px; line-height: 32px; }
+  .product-details-line { margin-top: 20px; margin-bottom: 20px; }
+  .pros-box { gap: 10px; margin-top: 28px; margin-bottom: 24px; }
+}
+@media screen and (max-width: 767px) {
+  .div-block-123 { flex-flow: column-reverse; }
+  .div-block-124 { aspect-ratio: 1983 / 793; flex-basis: auto; min-height: 0px; }
+  .heading-35 { font-size: 32px; }
+  .paragraph-6 { font-size: 14px; }
+  .footer-col.footer-form-col { max-width: 100%; margin-bottom: 0px; }
+  .copyright-right-col { justify-content: flex-start; align-items: center; }
+  .navbar-logo-left-container-2 { max-width: 100%; }
+  .navbar-brand-2 { padding-left: 0px; }
+  .div-block-148 { flex-flow: column; }
+  .div-block-149 { gap: 63px; flex-flow: column; }
+  .section-30 { padding: 64px 31px 63px; }
+  .trb-container { padding-left: 0px; padding-right: 0px; }
+  .trb-section { padding-top: 29px; padding-bottom: 65px; }
+  .trb-inner { padding-left: 16px; padding-right: 16px; }
+  .image_s { width: 121px; max-width: 121px; margin-right: 11px; }
+  .image-block { gap: 0px; overflow: auto; }
+  .image-block-main { padding-left: 16px; padding-right: 0px; }
+  .trb-content1, .trb-products, .how-i-scored-title { padding-left: 16px; padding-right: 16px; }
+  .product-block { gap: 17px; }
+  .see-details-link { font-size: 14px; line-height: 20px; }
+  .what-i-love-block { padding-left: 16px; padding-right: 16px; }
+  .product-title { font-size: 14px; line-height: 20px; }
+  .rating-text-1 { font-size: 20px; line-height: 28px; }
+  .product-wrapper { padding-left: 16px; padding-right: 16px; }
+  .product-details-top { gap: 20px; }
+  .product-image-1 { max-width: 230px; margin-top: 0px; }
+  .product-details-rating-star { margin-bottom: 8px; }
+  .rating-text { font-size: 24px; line-height: 32px; }
+  .product-heading { margin-bottom: 0px; margin-right: 0px; font-size: 24px; line-height: 32px; }
+  .product-details-text { font-size: 12px; line-height: 22px; }
+  .verdict-des { line-height: 24px; }
+  .verdict-des.pros-des { line-height: 20px; }
+}
+@media screen and (max-width: 479px) {
+  .section-24 { padding: 43px 16px 16px; }
+  .div-block-124 { background-image: url("https://cdn.prod.website-files.com/69665c587148670bbfde737b/6aa07011fc0778ffdad6d834_trb-newsletter-wellness-beauty.webp"); flex-basis: auto; min-height: 0px; }
+  .text-field-2 { margin-bottom: 12px; padding-top: 8px; padding-bottom: 8px; }
+  .form { flex-flow: column; }
+  .submit-button-2 { width: 100%; padding-top: 13px; padding-bottom: 12px; }
+  .navbar-logo-left-container-2.shadow-three { padding-top: 0px; padding-bottom: 0px; }
+  .navbar-wrapper-2 { gap: 10px; display: flex; }
+  .menu-button-3 { padding: 0px; }
+  .image-39 { max-width: 180px; margin-top: -3px; }
+  .div-block-139 { padding: 32px 16px; }
+  .heading-47 { font-size: 32px; }
+  .heading-48.location-text.location-text-h { color: rgb(0, 0, 0); letter-spacing: 0px; margin-top: 6px; font-size: 11px; }
+  .section-30 { padding-left: 20px; padding-right: 20px; }
+  .trb-inner { padding-top: 20px; }
+  .coach-box { padding-right: 0px; }
+  .trb-main-title { padding-top: 0px; }
+  .coach-title { font-weight: 700; }
+  .trb-title { padding-top: 10px; }
+  .image-block { overflow: visible; }
+  .image-block-main { padding-right: 0px; }
+  .trb-description, .trb-description.des-pb { letter-spacing: -0.2px; }
+  .product-block { grid-template-rows: auto; grid-template-columns: 3.5fr; }
+  .product-list-box { box-shadow: rgba(0, 0, 0, 0.25) 0px 0px 3px; }
+  .see-details-link { padding-top: 8px; padding-bottom: 9px; font-size: 13px; line-height: 16px; }
+  .rank-box { gap: 6px; margin-bottom: 0px; }
+  .product-image { max-width: 100px; height: 77px; max-height: 167px; margin-top: 16px; margin-bottom: 13px; }
+  .what-i-love-block { padding-top: 0px; padding-bottom: 32px; }
+  .what-i-love-block.what-i-love-block-2 { gap: 32px; padding-top: 16px; }
+  .what-i-love-image { margin-top: 16px; margin-bottom: 16px; }
+  .what-i-love-image.what-i-love-image-w { max-width: 100%; margin-top: 0px; margin-bottom: 0px; }
+  .first-mobile-content { display: flex; }
+  .inner-block-1 { gap: 32px; flex-flow: column-reverse wrap; }
+  .product-title { letter-spacing: -0.4px; margin-bottom: 5px; font-size: 13px; line-height: 16px; }
+  .product-details { padding-left: 5px; padding-right: 5px; }
+  .rating-text-1 { margin-bottom: 8px; font-size: 19px; line-height: 26px; }
+  .image-125 { max-width: 13px; }
+  .collection-list-wrapper-46 { overflow: auto; }
+  .product-details-box { box-shadow: none; border-style: none; border-width: 0px; border-bottom-right-radius: 0px; border-bottom-left-radius: 0px; }
+  .product-details-sub-line { margin-bottom: 8px; }
+  .product-details-main-block { padding: 0px 0px 16px; }
+  .product-details-top { gap: 8px; flex-flow: column; }
+  .product-image-1 { max-width: 167px; }
+  .product-details-rating-star { justify-content: center; align-items: center; margin-top: 5px; margin-bottom: 10px; }
+  .rating-text { margin-top: 0px; padding-bottom: 0px; }
+  .product-heading { text-align: center; width: 100%; margin-right: 0px; }
+  .product-details-row.mobile-top-border-remove { border-top-style: none; border-top-width: 0px; }
+  .product-details-text { margin-top: 1px; padding-bottom: 1px; }
+  .product-details-rank-text { margin-top: 0px; padding-bottom: 0px; }
+  .product-details-button-block { gap: 8px; }
+  .visit-link.moonbrew-link-u { text-decoration: underline; }
+  .product-details-button { padding-top: 11px; padding-bottom: 12px; font-size: 24px; line-height: 32px; }
+  .product-details-line { margin-top: 8px; margin-bottom: 11px; }
+  .verdict-title { margin-top: 0px; padding-bottom: 0px; }
+  .verdict-des { line-height: 23.5px; }
+  .verdict-des.pros-des { color: rgb(60, 126, 68); }
+  .verdict-des.pros-des.cons-des { color: rgb(153, 54, 49); }
+  .pros-des, .pros-des.cons-des { gap: 8px; }
+  .visit-text { gap: 3px; }
+}
+.trb-description.des-pb p { margin-bottom: 15.67px !important; }
+.trb-description p:last-child, .trb-description.des-pb p:last-child { margin: 0px !important; }
+.verdict-des ul { padding-left: 24.5px; margin-bottom: 0px; }
+.verdict-des li { position: relative; list-style: none; margin-bottom: 5.35px; }
+.verdict-des li:last-child { margin-bottom: 0px; }
+.verdict-des ul li::after { content: ""; position: absolute; background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAACXBIWXMAACxLAAAsSwGlPZapAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAABiBJREFUeAHtm01y2zYUxx8gZqZL9QCdsrlA1F2mthullTvd2T5BlF13Ufa1KcUHiH0CKyeIsus0TqXEdsc7OxeoOZMDVN3WJF/fo0SZogCKH5DkdPybkUWRIIg/gfcAPMAAd/y/EbBA6k696oFVAykeYBDUBIgqBFClp1bDBAjDsBASLlEKF/7Fj5blXQ46gyEsCOOCHzp12wqsJkh4RILqUASEAVii5wWVN+ed31wwiDHB606jTl9OYZE6SDxasnvm/P4KDFBaMAsVKI4Q0IYFggjPz/aPD6AkFhSk7vxse+AdcY2SWFg4Ap/R39UIXnMaLQ89hw6rOW8dkuMaokA3/IXh/XaWfEKHl5ENZ7NJlbDFDjJpDrkFr+/9eEAFfZYpMTsfIXoC4bIirz/qvC97c1/ee4A+1Kgmt1V+ABF7kIH13Uab0jrhDzJY4Qf1tc5PEInObMPjLuZ1BqfEog4s4R0W7V7oWbYfyDoKyS/WzpofiyVFzswFhN7p/vEOH2YSHIpFq0+HtZRkpYWWQSuWoZZGgh/zYaYmPU8sNdmDivQ6qxDKpIolyGd0o+O5gkOb1YslgaJ9sv/2EFbEPLFE++zFu2xOi72xzkGRF3TJxnb+7Ly9hBWRRezpi+NO/ITWhsN+Fr0LUHQZLNYX/uPzzsCFFVFELCN1qWlQ8RLU/eOQa/ZzFMsoBXPHTdW4DUpE+3NrxnHUNozqDKlD79J49lY7qDSxzEwNj4dldvJ8aLfST81skZgQy8wIJmFPdBmuym5NiWWmvPTYM18lE3HtUl/2DawAk2KZqRr2pL+lSiRAlp6WFcG0WGa6SQeo9MyeuH4DS2YRYplJkx5PEP6eSREbeC+LRYllJt1SGF1UIWhOm5Pw5XlWzbMsN28QzpRYLgN/Jyc0N02aQqmqGyleNYAcjKIh1FIq0LfIAYYCMmJK7MavjS6XgT9rzuZRJJ6ZCBaBOgjHkQrICHt5miq+nDpJArKINiU2jHhImHStArFJwicToIlgHEUWkgzzzHFp/G0rL8wRbdRmOR6eJBaliXtp1awo14TeAk8/xtaIXqSDUiHTLpL9upCDcWto6zOcFr1ssUx6xEPkDsMCF3B9r8GHbU2eLHpynJKVcbFMag1Tk84tmBkXtK1NwEIXJJZapZ12PS54OFsuUUgwM1e0nlI1q6mkibabbgnAVSSsxvuwvBQQXUrsuKwz5Y1ru+mWpNpB8YgJSpBDdGmb1Y0WUdxou2nSAaoHGBVFv5aTDKLNOChUl5WXeqLjiWBtH2povTdFtDlvLNRljY8WpwIAtNbbVwmk5ZMvTa0qbOz+0EQpn9DKXrgiEA+Sl0EXvEjO9qb7YSl64GM9ec94LGqkFk72/+jSVxcMQ2LVoSlavYz/nOqHreBa97ZbZbz1MqAutKk6nwxeTAkOm616/luNzzhuGzwlVW65oOacDDyqRlq6pnsra5ltV6JQr3/FVg0jZgSfdo4H2loOrCO4ZfjgO7o4usoh6sbS6loWsL22SyuKt4SwKdMEX3O5rTqpXT3UdVFMIMS3q1xfYr5zNmsS8UJ1bbQk9O6p6pp2tkQDEb5B2ffSg/oPyXZgRYzsFvuay8O0JSGtYPLYLmKgu7FKAboLfsuwZPiZunVrhmy3lbYkVIEUPn24Ov+6fp8zfqi4/AXZwy9ffX//n08f/jqHJcA2KxFe87M1SXh7Q+rqpoAMpNkzQ7ORrg+VjumNoBHjLVNH+jVrmNqalIaEDJA9c0ZaJ8Wh0Ar6fdMenIVy3IsGPVepYqlslvSeZskzUw1HD5/7loFftHDJofSupXVYtMbDZwVWi0rHA4r0wQ6NpkjsTtbJTWbBERSg41hUO1PicOshfXx4n7bxm/dY3/MrNTKNWp591rw/7GT/+DnkILdghqd4NAuhEY6wIR/h5tL4iXEMKvcmVaxg68zJP7UsJJgZ7YesOFQrTVgm1Go8steiuxEKC44oUdv5IKFitOvvPZSgtOCIjb3GFgpoLeJfAEwIjTAmOGKy9ZfDOMXED4GDbhSpsMT1K9MbVo0LTrLR2XzEG7+pr7ZpGdOGhIPiaZwMeJe8cOdtJL/jjvn8B1+fLKwVIRoGAAAAAElFTkSuQmCC"); background-repeat: no-repeat; background-size: contain; left: -24.5px; top: 5px; width: 15px !important; height: 15px !important; }
+.verdict-des.pros-des.cons-des ul li::after { background-image: url("data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADwAAAA8CAYAAAA6/NlyAAAACXBIWXMAACxLAAAsSwGlPZapAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAABs9JREFUeAHtWr1uG0cQnlmKsgykUBmkMdOl89mw7CCNqTaNpSewBARRHBeWn0DUE1gqEkFGAClVSstFatFN4ERGdO7SmWkCd3ETWybFm8wsf3Tkzd7tHU9UEPiryNu92/12dmfnD+AD/t9AOEfs1YP5kxMIsAtX0ZgaENWQYD7ehxDeAGKLoqhFBC/nPoJwtRm+gXNC6YR3Pg9qJjIriHSbCdShAHhRmhHQAVXg6b3nYQtKRGmEmWi9QrhRlKQLQp6Q9td+C3+EEjAx4fMiqqDFB6AxKfHChGXrMtG9KRAdAQHuk4k2i271ChTA7o3r67zVfuKfn+V6kURB0Wv+1WJl9Yddbf7Byz7n+wnuHWCEK19+8vH7n/96/RxyIreEHy9c3+Iz9cCnLxE15QwiYrPaoZeroa5994JgvnMZr1KX6sy/joR1n+/zYm2tHf3+EHLAm7BcMZ13+CRzC4sUibZmT2HbRTALO0FQwyrc4YVa57+1tL6yoLyYy75jeRG2ZN/iIfF2cnYqgaiGnYVgxSBuQApxJhFW27ToM64BD1jJppGN6GC2Q5+uvQg3yyQruHcU7kdMBon2XX1kbp0qPgEPZEo49cyyVImvim+Owm2YAnZvBet8bh85O3ic6VTCoo3BkD4Akz3t0OL9MAxhivhuIQhm0EqzprV3I3r47Ytwy/W+k7A1Ebt4zD3mleaWbLN7Yblmny9EqZmqY24siKhC11z3tPMMVyKz4SALp21aviiyAhn7FGjRKspx8JwrXdxzvasSFs3IZ3NFa+O7dX3a21jD/SOeg6FNrU3u8p0bQV1rUwn3r4Hkh1hTTktB+WDtV3tWD7S2ioNDgrBIF3SF0KIOqCt6kZht06q2tV1SThCuGLwLKqjhe27FUJHBRPFBTuR91977SKpW1qQ8QlgGcZiOLV+3bPfm9Ub7Lf5tDB6aCF/x1dYATxR9d7YN2y4p//DFtSvxZyOEORRzR/sgn13nvRZHTyo0uqqGNnwmLmS1d8WxyHo3Tcrd9qjyHSHMK7ukvcRn9yn4oaY+zSCtku2DTcar4AErZQXsgNRHpjL4ISupbWdx8XzP7twJuK8rB+k0soJuh/4ED4iUEaE5/ly2dXyXDAmfzOnOgfaRtEFFuTk7jJHOIstOSSOPgSPC0Z6fzJxxmxn8kFCqZmiyM96EHGDltrl7U76PDbVDj3R/qdPJivcFORAZeGai5HMWmhyLph1++NBx/iRSATkhpLMkXTZZgetIxbmdKS2DtURPVvVF/dtM0i4UJCuwc9Wvp9rgd1zCSfWPMJEzn5v0BGSH0OYcy3akRjxYCbRgQniTLoMsWMGlCsmkv4yZl74fDJbTxwM4AWGXP5wHmVfPcCZ+FlkW2JaopbUPCROk7/0i8CY7nE0JpCldF51JOFLOK0vYx5bVkJvscEbFSdu5KruSY9et4ecHPwjOHsYRt1J84WNB5bHIfOGyFuPczghXQDUwuMNtyAEfsqKNfYyTvKTZylLnagDDs999OK0U9MzzgMM9jGPs6vEhnedIueYatxaHhH29jQzUnC2OezaLtK976ApeiEMRtxbNeKP2sfYMeGULne5hhlGRRtrXPTQES46mkSDfCGH2NvQwDmfxvCMP4xP3tKBU0nncQ0JVKOPBi4R18/jWtUM1rpXD9JPMQOUyXqm+c+eEy3y3n2FMBN9lx3JYeTH+LEFYajY4gHaY+Cp7IZIhLDs7OCl6VUN2vrVkK62MBx8TpiXnZJpqlIMv9PasO4VxUbApIUccXYu0qrZ0F8m1dZe+v8Epy/8IJLvpSgm5lKDTQ3GeZUmTciLL5nYuEP206bHW1k8JrWptTm+p+15PYcjWngE8LJJVKAsydj9HnIQk6VNSQk7C9jpwZOeEtCgKWWWYMmRMm7d2GDmUkRJK9Ydtds6ddZBVPp7mmZYzK7vL6afzXLOym15RBud5HowzYXVcFiTBxjknuSGWnHNQ7lwNXlU81fe0LKVBrnZkTSlbnOPRd6FECFGbYPsHX0EKWZnbpQ4sgwf8C9OkWu6SR2Ga+J4Rbkcz0UFRifckatZZbA+ywkwiWSFbamFaHLsLwSPoVchlf7xX+tuMIniWVvg9KCQ3kannqrPmM7t2FJ5P6WEctl4qwo3cQT5bXApvbMiF3yWJhUsMqsB3itaHFS8fFiO/ChuEuAJThGxhvmdXi1YRTV4g7lELWQaEKIdqGl8fHT+DCVBO8Bt6xNHAXe/SX0+URXSA0ggPMCj95QtvqSj5QZ11ZRb3v/rl2Cvi4YvSCccxKPyOTimwKUvO4tGYgkJbdgwtCaVKdDGtkPwDPiAb/wKvJM9qYgnyYgAAAABJRU5ErkJggg=="); }
+@media (max-width: 767px) {
+  .verdict-des ul li::after { top: 2px; }
+}
+@media (max-width: 479px) {
+  .verdict-des.pros-des ul li::after { top: 3px; }
+  .verdict-des.pros-des.cons-des ul li::after { top: 2px; }
+}
+.rating-wrapper-top { width: 97px !important; }
+.rating-wrapper-top .stars-background, .rating-wrapper-top .rating-star { width: 97px !important; white-space: nowrap !important; }
+.rating-wrapper-top .stars-fill { display: block !important; overflow: hidden !important; }
+.product-details-rating-star .rating-wrapper { width: 181px !important; }
+.product-details-rating-star .stars-background, .product-details-rating-star .rating-star-2 { width: 181px !important; white-space: nowrap !important; }
+.product-details-rating-star .stars-fill { display: block !important; overflow: hidden !important; }
+</style>
+</head>
+<body>
+<div class="div-block-139">
+  <div data-animation="over-left" data-collapse="all" data-duration="400" data-easing="ease" data-easing2="ease" data-no-scroll="1" role="banner" class="navbar-logo-left-container-2 shadow-three w-nav">
+    <div class="navbar-wrapper-2"><div class="w-layout-vflex"><div class="menu-button-3 menu-button w-nav-button"><img width="14" loading="lazy" alt="" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMTQiIHZpZXdCb3g9IjAgMCAyMCAxNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgY2xpcC1wYXRoPSJ1cmwoI2NsaXAwXzYzOV8xMzcyKSI+CjxwYXRoIGQ9Ik0wIDFIMjAiIHN0cm9rZT0iIzUyNTI1MiIvPgo8cGF0aCBkPSJNMCA3SDIwIiBzdHJva2U9IiM1MjUyNTIiLz4KPHBhdGggZD0iTTAgMTNIMjAiIHN0cm9rZT0iIzUyNTI1MiIvPgo8L2c+CjxkZWZzPgo8Y2xpcFBhdGggaWQ9ImNsaXAwXzYzOV8xMzcyIj4KPHJlY3Qgd2lkdGg9IjIwIiBoZWlnaHQ9IjE0IiBmaWxsPSJ3aGl0ZSIvPgo8L2NsaXBQYXRoPgo8L2RlZnM+Cjwvc3ZnPgo=" class="image-41"></div></div><a href="#" class="navbar-brand-2 w-nav-brand"><img loading="lazy" src="https://cdn.prod.website-files.com/69665c587148670bbfde737b/69665c587148670bbfde738c_The%20Review%20Board.svg" alt="" class="image-39" data-ph="IMG 9:1|Site logo"></a><div class="div-block-138"><h4 class="heading-48 location-text location-text-h">New York, NY</h4></div></div>
+  </div>
+</div>
+<section id="i-tried-the-most-popular-protein-powders-so-you-dont-have-to---here-are-my-favorites" class="trb-section">
+  <div class="w-layout-blockcontainer trb-container w-container">
+    <div class="w-layout-vflex trb-inner notags">
+      <div class="trb-main-title">
+        <h1 class="trb-title">Best (and Worst) Clean Protein Powders</h1>
+      </div>
+      <div style="background-color:#eff" class="coach-box"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa74daed90e0d765a043501_trb-6a31b248b6bcb0188bf9f39b.webp" loading="lazy" alt="" class="image-124" data-ph="IMG 1:1|Author headshot"><div class="coach-content"><h2 class="coach-title">Hi I'm Isabel 👋 </h2><div class="coach-des">I'm a fitness enthusiast and editor for The Review Board. I've researched hundreds of products to help people improve their nutrition to maximize results.</div></div></div>
+    </div>
+    <div class="image-block-main">
+      <div class="collection-list-wrapper-46 w-dyn-list">
+        <div role="list" class="image-block w-dyn-items">
+          <div role="listitem" class="w-dyn-item w-dyn-repeater-item"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa74da7193b94d23a0c3272_trb-6a4d309da7b2c27d0de318bd.webp" loading="lazy" width="243" alt="" class="image_s" data-ph="IMG 3:4|Hero strip 1/6: All tested products together on a table"></div>
+          <div role="listitem" class="w-dyn-item w-dyn-repeater-item"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa81949bbc113d97e6225bd_trb-6a4d30f5b99a68563073fc35.webp" loading="lazy" width="243" alt="" class="image_s" data-ph="IMG 3:4|Hero strip 2/6: Testing in progress, close-up (samples / prep)"></div>
+          <div role="listitem" class="w-dyn-item w-dyn-repeater-item"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa8195052fced4762b44569_trb-6a4d311a6b8392d7e80e95ef.webp" loading="lazy" width="243" alt="" class="image_s" data-ph="IMG 3:4|Hero strip 3/6: Author testing a product (UGC)"></div>
+          <div role="listitem" class="w-dyn-item w-dyn-repeater-item"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa8195f2b4f9365a22695da_trb-6a4d315a4a71e3459cc233f6.webp" loading="lazy" width="243" alt="" class="image_s" data-ph="IMG 3:4|Hero strip 4/6: Products lineup, close-up"></div>
+          <div role="listitem" class="w-dyn-item w-dyn-repeater-item"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa81966fc1a91f01ede7b2c_trb-6a4d3183ad8e29d65cacf2dc.webp" loading="lazy" width="243" alt="" class="image_s" data-ph="IMG 3:4|Hero strip 5/6: Author taking notes while testing"></div>
+          <div role="listitem" class="w-dyn-item w-dyn-repeater-item"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa81bf0a0e29cf1581c0fb9_trb-6a4d31b4564c05de1e1ff05b.webp" loading="lazy" width="243" alt="" class="image_s" data-ph="IMG 3:4|Hero strip 6/6: Products with labeled samples"></div>
+        </div>
+      </div>
+    </div>
+    <div class="trb-content1">
+      <div class="text1">We research, purchase, and personally test every product in this review. If you buy through our links we may earn a commission — it never influences our rankings.</div>
+      <div class="published-date">
+        <div class="p-text">Published</div>
+        <div class="p-text publish_date_month">Sep 16, 2026.</div>
+        <div class="line-1"></div>
+      </div>
+      <div class="trb-description des-pb w-richtext">
+        <p>I work out hard, but I always noticed other girls made way more progress than I did. You know, the ones with perfect abs, toned legs, and the perfect figure. The difference was that I could never get enough protein in my diet, and I hated every shake I tried. Some tasted like chalk, others made me bloated and sluggish.</p>
+        <p>I thought they were all the same, but people kept recommending different products telling me, "this one is different." I was skeptical, but I decided to set out on a mission to test all the viral favorites, most recommended powders, and more popular protein powders. Then, I ranked them to find the <a href="https://offer.dinosaurized.com/OFFER-SLUG">absolute best protein powder on the market. </a></p>
+      </div>
+    </div>
+    <div class="trb-products">
+      <div class="w-dyn-list">
+        <div role="list" class="product-block w-dyn-items">
+          <div role="listitem" class="product-box w-dyn-item">
+            <div class="product-list-box"><div style="background-color:#00cd5c" class="rank-box"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAXCAYAAAAcP/9qAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAAQBJREFUeAHFk4EVgiAQhu+YoDZohNqgURyhJnAER2iEaIJsgnQC20A3IM7AkGehvLi+907h5O7nOASIRCnVGFsBF1osU28OwIWp1NIAB161lgyWooOu2s4z1268ai0tfZuZg/ROYIKIPFJ0OPKQOGnYjdJEOsG5H0y31vhbFaaZOnaTo3DWSVSvW1k46zptlbaHNvpV9ua9hFCOIwlv9eAOvOyQnv2ZL68qlg4R18JMbsBHr2WFS+Cj/Ksw2hlTn/v+0kA4zgrSU9uBK3yB9MgpYY6KBw10vYn7PPSXEPBhRwmo3YkvnLLP8ptwyopHudH/mqjPo/4SAgI7+xG173gCukUxapEzoR0AAAAASUVORK5CYII=" loading="lazy" alt="" class="image-125"><div style="color:white" class="text-block-114">Winner</div></div><div class="product-details"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa80ac8eff865a9f5274466_trb-6a46b677812cce65fb303eb4.webp" loading="lazy" alt="" class="product-image" data-ph="IMG any|#1 OUR packshot"><h4 class="product-title">Equip Prime Protein</h4><div class="rating-wrapper rating-wrapper-top text-block-119"><div class="stars-background"><div class="rating-star">★★★★★</div></div><div class="stars-fill"><div class="rating-star fill-star">★★★★★</div></div></div><div class="w-layout-vflex reting-text-block"><div class="rating-text-1 rating-value">4.8</div><div class="rating-text-1">/5</div></div></div><a style="color:white;background-color:black" href="https://offer.dinosaurized.com/OFFER-SLUG" class="see-details-link">See details</a></div>
+          </div>
+          <div role="listitem" class="product-box w-dyn-item">
+            <div class="product-list-box"><div style="background-color:#3a6dff" class="rank-box"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAYAAABV7bNHAAAACXBIWXMAACxLAAAsSwGlPZapAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAABApJREFUeAHtnI152jAQhj/ydIB0A2eCkglCJkg6QckE0AlwJ0g2KBsknQA6QegE1gZkg+udJRNjjP+wbPnnfZ6LAUOQP+5O8kn2BA1CRNe88djuzFZsanZ7ibcrtg9jO/P832Qy2aJPiChsC7YN257qYcP2g81DF0mIYpuNiIUuYITxqT5PKUNgvtuDa7QsTJKAzYcrcGNmplGuEbA9oC1Ie80Luc8z6d6zEhNUgHScb3DaNbuKYrvnIYJCSa5QEhZnxpt3dEccwWN757Y/oiSlBOIvWEJ7TmWXbRFp86s5hvoh3Uv1BR91wv9wSf2jkCflJmnScfuKfnKfd26XKRDp3koSchdzThHkRPg2q3c7KxDpsUPXeqsqKGiRPtJ2ZvViPvovjuCxrc7tTPWgnuedc6Tmo3MCBRiG98RRSAm1kxAjPUbwMDw8tkXyxSMPou6dY9WNeM9N3IuSHjTHcMURpOc+8qKkBw0x9yQ58qKDB7E4c4ziCOJFhxp3PMS6UfhuhkNZJAwxk5wDjMT5KmEWedAM3UFygw/dZrE17PAZUdTM/FUdBJQyrcOvrah+ZLhzCDGC+yhk1JWp/h447M2uSNeYXUchv+i+Rb2E6wgkB32D2ygUm5GwUbO6E4E8uItCAXFMXpqhfkIPmsJNFIqJE85WwI4HeV9gt5y6ZXszj+WHmBf8nEJxcTaw9yNPw+xPdvidckBTyl/gEFCBFRqkp77fyS4ByA5BxoFliRSQO+KElJ56Lsju3A4OG9l3Dz3OiKPgRlgdYUugj6ydKSIpOChO9KU22FOBJSekw01CxSvw3sbCKo7NJP2MmqCWxGECWyEmyHy+jwuhNsLqk7DcsYM9VpeI1LI4QiiQgl0qieSAOMKuCYGEUiI5Io6gRKC/aIZCIjkkjrCbmAbJyLepJS6/eLzjp+1wTBwZr02uzPyPzUSdJNWTXBMHpgAXdfNvaBYRKVx1Snoh+hx6LZJLpZe1/Ilq0vLr7TESR2ZXwyQNE2ZbjERso/PC+Ei66TBzmXX04LB4oYXezFUUe89N9OTgQSbMXjCyjj9JLn8ZuhcpJOpSR2fzoxdhnSzanSzipOGsj05ylHsiTupBxoueMDyWaS+mFszMeuEhhdoLH/OftB3jpQg5lyKMF7PkXMySWZM2H/yO/vKUN9WUW7Q3+egn+seSj62+0yuys8ytLVawAfXj0sxFmWMufd086UulZOVG1xK3JORHDqtSNfjxxgI5VJpZNV90i24MJqWNt1XEqQX2pgdy9+Ymd3AF0r1cQO0jK0tWdMENTazBjfKoPaHcFSYNbuicmrtF16IzwiQh7VV1irVvUpRK3fwlkE6cMkHome21MS/xVmW2O/NYTMYw6tyZtw3+A64qolu7nsATAAAAAElFTkSuQmCC" loading="lazy" alt="" class="image-125"><div style="color:white" class="text-block-114">Runner-Up</div></div><div class="product-details"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa80a977b2cb35a3273baf7_trb-6a46ec6cc1c50b140efd21ec.webp" loading="lazy" alt="" class="product-image" data-ph="IMG any|#2 packshot"><h4 class="product-title">Transparent Labs</h4><div class="rating-wrapper rating-wrapper-top text-block-119"><div class="stars-background"><div class="rating-star">★★★★★</div></div><div class="stars-fill"><div class="rating-star fill-star">★★★★★</div></div></div><div class="w-layout-vflex reting-text-block"><div class="rating-text-1 rating-value">4.7</div><div class="rating-text-1">/5</div></div></div><a style="color:black;background-color:#e3e3e3" href="https://www.amazon.com/dp/ASIN-2" class="see-details-link" target="_blank" rel="sponsored nofollow noopener">See details</a></div>
+          </div>
+          <div role="listitem" class="product-box w-dyn-item">
+            <div class="product-list-box"><div style="background-color:#aac0ff" class="rank-box"><div style="color:black" class="text-block-114">Rank #3</div></div><div class="product-details"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa80a44505ed090b0f6eabe_trb-6a46e1031eeabe1065edb668.webp" loading="lazy" alt="" class="product-image" data-ph="IMG any|#3 packshot"><h4 class="product-title">FlavCity</h4><div class="rating-wrapper rating-wrapper-top text-block-119"><div class="stars-background"><div class="rating-star">★★★★★</div></div><div class="stars-fill"><div class="rating-star fill-star">★★★★★</div></div></div><div class="w-layout-vflex reting-text-block"><div class="rating-text-1 rating-value">4.6</div><div class="rating-text-1">/5</div></div></div><a style="color:black;background-color:#e3e3e3" href="https://www.amazon.com/dp/ASIN-3" class="see-details-link" target="_blank" rel="sponsored nofollow noopener">See details</a></div>
+          </div>
+          <div role="listitem" class="product-box w-dyn-item">
+            <div class="product-list-box"><div style="background-color:#aac0ff" class="rank-box"><div style="color:black" class="text-block-114">Rank #4</div></div><div class="product-details"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa80a0b5c4d2ed8637120b9_trb-6a46e6f72fbd5bf3f9e404d4.webp" loading="lazy" alt="" class="product-image" data-ph="IMG any|#4 packshot"><h4 class="product-title">Kion</h4><div class="rating-wrapper rating-wrapper-top text-block-119"><div class="stars-background"><div class="rating-star">★★★★★</div></div><div class="stars-fill"><div class="rating-star fill-star">★★★★★</div></div></div><div class="w-layout-vflex reting-text-block"><div class="rating-text-1 rating-value">4.5</div><div class="rating-text-1">/5</div></div></div><a style="color:black;background-color:#e3e3e3" href="https://www.amazon.com/dp/ASIN-4" class="see-details-link" target="_blank" rel="sponsored nofollow noopener">See details</a></div>
+          </div>
+          <div role="listitem" class="product-box w-dyn-item">
+            <div class="product-list-box"><div style="background-color:#aac0ff" class="rank-box"><div style="color:black" class="text-block-114">Rank #5</div></div><div class="product-details"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa809bdd9e81a6193692ba1_trb-6a4bcf4ca7170e91d2610415.webp" loading="lazy" alt="" class="product-image" data-ph="IMG any|#5 packshot"><h4 class="product-title">Truvani</h4><div class="rating-wrapper rating-wrapper-top text-block-119"><div class="stars-background"><div class="rating-star">★★★★★</div></div><div class="stars-fill"><div class="rating-star fill-star">★★★★★</div></div></div><div class="w-layout-vflex reting-text-block"><div class="rating-text-1 rating-value">4.2</div><div class="rating-text-1">/5</div></div></div><a style="color:black;background-color:#e3e3e3" href="https://www.amazon.com/dp/ASIN-5" class="see-details-link" target="_blank" rel="sponsored nofollow noopener">See details</a></div>
+          </div>
+          <div role="listitem" class="product-box w-dyn-item">
+            <div class="product-list-box"><div style="background-color:#aac0ff" class="rank-box"><div style="color:black" class="text-block-114">Rank #6</div></div><div class="product-details"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa8084de8eaf0b3b6c3f71a_trb-6a4bdb92355d613b94354c9d.webp" loading="lazy" alt="" class="product-image" data-ph="IMG any|#6 packshot"><h4 class="product-title">Gainful</h4><div class="rating-wrapper rating-wrapper-top text-block-119"><div class="stars-background"><div class="rating-star">★★★★★</div></div><div class="stars-fill"><div class="rating-star fill-star">★★★★★</div></div></div><div class="w-layout-vflex reting-text-block"><div class="rating-text-1 rating-value">4.0</div><div class="rating-text-1">/5</div></div></div><a style="color:black;background-color:#e3e3e3" href="https://www.amazon.com/dp/ASIN-6" class="see-details-link" target="_blank" rel="sponsored nofollow noopener">See details</a></div>
+          </div>
+          <div role="listitem" class="product-box w-dyn-item">
+            <div class="product-list-box"><div style="background-color:#aac0ff" class="rank-box"><div style="color:black" class="text-block-114">Rank #7</div></div><div class="product-details"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa8081df56d1f1d95472d96_trb-6a4be8c71ce3c93c84967af0.webp" loading="lazy" alt="" class="product-image" data-ph="IMG any|#7 packshot"><h4 class="product-title">Naked</h4><div class="rating-wrapper rating-wrapper-top text-block-119"><div class="stars-background"><div class="rating-star">★★★★★</div></div><div class="stars-fill"><div class="rating-star fill-star">★★★★★</div></div></div><div class="w-layout-vflex reting-text-block"><div class="rating-text-1 rating-value">3.8</div><div class="rating-text-1">/5</div></div></div><a style="color:black;background-color:#e3e3e3" href="https://www.amazon.com/dp/ASIN-7" class="see-details-link" target="_blank" rel="sponsored nofollow noopener">See details</a></div>
+          </div>
+          <div role="listitem" class="product-box w-dyn-item">
+            <div class="product-list-box"><div style="background-color:#aac0ff" class="rank-box"><div style="color:black" class="text-block-114">Rank #8</div></div><div class="product-details"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa807da5aef0a16cbf99e4c_trb-6a4bec821720c97c64083338.webp" loading="lazy" alt="" class="product-image" data-ph="IMG any|#8 packshot"><h4 class="product-title">Peak Performance</h4><div class="rating-wrapper rating-wrapper-top text-block-119"><div class="stars-background"><div class="rating-star">★★★★★</div></div><div class="stars-fill"><div class="rating-star fill-star">★★★★★</div></div></div><div class="w-layout-vflex reting-text-block"><div class="rating-text-1 rating-value">3.7</div><div class="rating-text-1">/5</div></div></div><a style="color:black;background-color:#e3e3e3" href="https://www.amazon.com/dp/ASIN-8" class="see-details-link" target="_blank" rel="sponsored nofollow noopener">See details</a></div>
+          </div>
+          <div role="listitem" class="product-box w-dyn-item">
+            <div class="product-list-box"><div style="background-color:#aac0ff" class="rank-box"><div style="color:black" class="text-block-114">Rank #9</div></div><div class="product-details"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa807a3c45e3f89c8b5779b_trb-6a4bf2d81ce3c93c849cd45c.webp" loading="lazy" alt="" class="product-image" data-ph="IMG any|#9 packshot"><h4 class="product-title">Promix</h4><div class="rating-wrapper rating-wrapper-top text-block-119"><div class="stars-background"><div class="rating-star">★★★★★</div></div><div class="stars-fill"><div class="rating-star fill-star">★★★★★</div></div></div><div class="w-layout-vflex reting-text-block"><div class="rating-text-1 rating-value">3.5</div><div class="rating-text-1">/5</div></div></div><a style="color:black;background-color:#e3e3e3" href="https://www.amazon.com/dp/ASIN-9" class="see-details-link" target="_blank" rel="sponsored nofollow noopener">See details</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="how-i-scored-title">
+      <h2 class="trb-sub-title">How I Tested Each Protein Powder</h2>
+      <div class="trb-description w-richtext">
+        <p>Everybody is different with different protein needs, but I wanted to be as objective as possible to find options that work for as many people as possible.&nbsp;</p>
+        <p>So, I looked for protein powders with real food ingredients that taste great, feel great, and aren't full of junk. &nbsp;And I especially didn’t want any that made me feel too bloated to workout.</p>
+        <p>To ensure the best ranking based not only on personal preference, but on objective factors, I tried each powder over the course of several days. This is the process I used:</p>
+        <ol role="list"><li>Found &amp; Tried the Most Popular Brands</li><li>Reviewed Ingredient Lists (And Transparency)</li><li>Checked Protein Content</li><li>Evaluated Sweeteners&nbsp;</li><li>Judged Taste and Texture</li><li>Wrote Down How I&nbsp;Felt After</li><li>Scored &amp; Ranked Each Bar</li></ol>
+        <p>‍</p>
+      </div>
+    </div>
+    <div class="collection-list-wrapper-47 w-dyn-list">
+      <div role="list" class="w-dyn-items">
+        <div role="listitem" class="w-dyn-item">
+          <div>
+            <div class="product-wrapper">
+              <div class="product-details-box">
+                <div style="background-color:#00cd5c" class="product-details-rank-box"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAXCAYAAAAcP/9qAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAAAQBJREFUeAHFk4EVgiAQhu+YoDZohNqgURyhJnAER2iEaIJsgnQC20A3IM7AkGehvLi+907h5O7nOASIRCnVGFsBF1osU28OwIWp1NIAB161lgyWooOu2s4z1268ai0tfZuZg/ROYIKIPFJ0OPKQOGnYjdJEOsG5H0y31vhbFaaZOnaTo3DWSVSvW1k46zptlbaHNvpV9ua9hFCOIwlv9eAOvOyQnv2ZL68qlg4R18JMbsBHr2WFS+Cj/Ksw2hlTn/v+0kA4zgrSU9uBK3yB9MgpYY6KBw10vYn7PPSXEPBhRwmo3YkvnLLP8ptwyopHudH/mqjPo/4SAgI7+xG173gCukUxapEzoR0AAAAASUVORK5CYII=" loading="lazy" alt="" class="product-details-rank-icon"><div style="color:white" class="product-details-rank-text">Winner</div></div>
+                <div style="border-color:#00cd5c;background-color:#c9ffe2" class="product-details-sub-line">
+                  <div class="best-overall-text">Best Overall Protein Powder</div>
+                </div>
+                <div class="product-details-main-block">
+                  <div class="product-details-top"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa80ac8eff865a9f5274466_trb-6a46b677812cce65fb303eb4.webp" loading="lazy" alt="" class="product-image-1" data-ph="IMG any|#1 OUR PRODUCT packshot"><div class="product-inner-details"><h2 class="product-heading">Equip Prime Protein</h2><div class="product-details-rating-star"><div class="reting-text-block"><div class="rating-text rating-value">4.8</div><div class="rating-text">/5</div></div><div class="rating-wrapper"><div class="stars-background"><div class="rating-star-2">★★★★★</div></div><div class="stars-fill"><div class="rating-star-2 fill-star-color">★★★★★</div></div></div></div><div class="product-details-table"><div class="product-details-title-row"><div class="product-details-title-col product-details-title-col-w"><h3 class="product-details-title">Specs</h3></div><div class="product-details-title-col"><h3 class="product-details-title">Details</h3></div></div><div class="product-details-row mobile-top-border-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Protein Content</div></div><div class="product-details-col"><div class="product-details-text">21g</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Protein Source</div></div><div class="product-details-col"><div class="product-details-text">Beef Protein</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Artificial Sweeteners</div></div><div class="product-details-col"><div class="product-details-text">No</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Gut Friendly</div></div><div class="product-details-col"><div class="product-details-text">Yes</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Processed Ingredients</div></div><div class="product-details-col"><div class="product-details-text">No</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Price Per Serving</div></div><div class="product-details-col"><div class="product-details-text">$1.81 When You Subscribe</div></div></div></div></div></div>
+                  <div class="product-details-button-block"><a style="color:white;background-color:black" href="https://offer.dinosaurized.com/OFFER-SLUG" class="product-details-button w-button">Check Price</a><div class="visit-text"><div class="visit-link">Visit</div><a href="https://offer.dinosaurized.com/OFFER-SLUG" class="visit-link moonbrew-link-u">offer.dinosaurized.com</a></div></div>
+                  <div class="product-details-line"></div>
+                  <div class="verdict-box">
+                    <h3 class="verdict-title">Verdict:</h3>
+                    <p class="verdict-des">The best and cleanest protein powder I tried. It’s delicious, made with real-food ingredients, and is free from artificial sweeteners, seed oils, and hydrogenated oils. Plus, since it's beef protein, there's zero bloat or discomfort.</p>
+                  </div>
+                  <div class="pros-box">
+                    <h3 class="pros-title">Pros:</h3>
+                    <div class="verdict-des pros-des w-richtext">
+                      <ul role="list"><li>21g of High-Quality Protein</li><li>Clean Real-Food Ingredients</li><li>No Seed or Hydrogenated Oils</li><li>No Artificial Sweeteners or Sugar Alcohols</li><li>Third-party Tested for Heavy Metals &amp; Microplastics</li><li>Rich, Dessert-Style Taste</li><li>Creamy Texture Without Chalk or Grit</li><li>Collagen for Muscle Recovery, Hair, and Skin</li><li>Great Calorie to Protein Ratio</li><li>Satiating for Meal Replacement</li><li>Only 3 Ingredients (Unflavored Has Only 1!)</li></ul>
+                    </div>
+                  </div>
+                  <div class="cons-box">
+                    <h3 class="cons-title">Cons:</h3>
+                    <div class="verdict-des pros-des cons-des w-richtext">
+                      <ul role="list"><li>The Lowest Price is Only Available Online</li><li>Sells Out Fast (Especially Chocolate!)</li></ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="what-i-love-block what-i-love-block-2">
+              <div class="inner-block-1"><div class="what-i-love-content content--w"><h2 class="trb-sub-title">What I Love</h2><div class="trb-description w-richtext"><p>Equip Prime Protein feels like a luxury option. The unflavored option is made with only one ingredient: grass-fed beef protein. Even the flavored versions only add a few more like natural flavors and stevia leaf extract. That means no sugar, no fillers, and no whey. The result is <a href="https://offer.dinosaurized.com/OFFER-SLUG">a cleaner feeling protein without any bloating or discomfort. </a></p><p>However, the most surprising thing about Equip for me was the taste. This was the third one I tried, so I was expecting some "off" flavor like the others, but instead it created a creamy and delicious drink that tastes more like dessert than protein. No clumps, beefy taste, or chalkiness. </p><p>The fact that it's third-party tested for pesticides and heavy metals is more than just a bonus. I recently read a Harvard Health article that said many protein powders contain toxins, BPA, heavy metals, and other contaminants "with links to cancer and other health conditions." That's why I will always stick with Equip because I know it's safe. </p><p>And the best part, you can <a href="https://offer.dinosaurized.com/OFFER-SLUG">try it risk-free</a>. If you don't like it, you can get your money back within 90 days. </p></div></div><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa80acf58ccd2c5b4039ad3_trb-6a4bfb52d783ed1a1e11125f.webp" loading="lazy" alt="" class="what-i-love-image what-i-love-image-w" data-ph="IMG 1:1|#1 hands-on photo (author with the product, or label close-up)"></div>
+              <div class="inner-block-1"><div class="w-layout-vflex first-mobile-content better-content b-content--w"><h2 class="trb-sub-title">What Could Be Better</h2><div class="trb-description w-richtext"><p>Since the best price is only available on the official website, you won't be able to pick this up at the store. Luckily, you can subscribe, save money, and make sure you never run out. </p><p>But the main issue is that they frequently sell out of their most popular flavors, like chocolate and vanilla. If it's in stock, make sure you grab your favorite. </p></div></div><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa80ad6e1dea3d858ca93ef_trb-6a4c0fc9880c5ed030155077.webp" loading="lazy" alt="" class="what-i-love-image what-i-love-image-w" data-ph="IMG 1:1|#1 in-use photo (product + result, labeled)"></div>
+            </div>
+          </div>
+        </div>
+        <div role="listitem" class="w-dyn-item">
+          <div>
+            <div class="product-wrapper">
+              <div class="product-details-box">
+                <div style="background-color:#3a6dff" class="product-details-rank-box"><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEgAAABICAYAAABV7bNHAAAACXBIWXMAACxLAAAsSwGlPZapAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAOdEVYdFNvZnR3YXJlAEZpZ21hnrGWYwAABApJREFUeAHtnI152jAQhj/ydIB0A2eCkglCJkg6QckE0AlwJ0g2KBsknQA6QegE1gZkg+udJRNjjP+wbPnnfZ6LAUOQP+5O8kn2BA1CRNe88djuzFZsanZ7ibcrtg9jO/P832Qy2aJPiChsC7YN257qYcP2g81DF0mIYpuNiIUuYITxqT5PKUNgvtuDa7QsTJKAzYcrcGNmplGuEbA9oC1Ie80Luc8z6d6zEhNUgHScb3DaNbuKYrvnIYJCSa5QEhZnxpt3dEccwWN757Y/oiSlBOIvWEJ7TmWXbRFp86s5hvoh3Uv1BR91wv9wSf2jkCflJmnScfuKfnKfd26XKRDp3koSchdzThHkRPg2q3c7KxDpsUPXeqsqKGiRPtJ2ZvViPvovjuCxrc7tTPWgnuedc6Tmo3MCBRiG98RRSAm1kxAjPUbwMDw8tkXyxSMPou6dY9WNeM9N3IuSHjTHcMURpOc+8qKkBw0x9yQ58qKDB7E4c4ziCOJFhxp3PMS6UfhuhkNZJAwxk5wDjMT5KmEWedAM3UFygw/dZrE17PAZUdTM/FUdBJQyrcOvrah+ZLhzCDGC+yhk1JWp/h447M2uSNeYXUchv+i+Rb2E6wgkB32D2ygUm5GwUbO6E4E8uItCAXFMXpqhfkIPmsJNFIqJE85WwI4HeV9gt5y6ZXszj+WHmBf8nEJxcTaw9yNPw+xPdvidckBTyl/gEFCBFRqkp77fyS4ByA5BxoFliRSQO+KElJ56Lsju3A4OG9l3Dz3OiKPgRlgdYUugj6ydKSIpOChO9KU22FOBJSekw01CxSvw3sbCKo7NJP2MmqCWxGECWyEmyHy+jwuhNsLqk7DcsYM9VpeI1LI4QiiQgl0qieSAOMKuCYGEUiI5Io6gRKC/aIZCIjkkjrCbmAbJyLepJS6/eLzjp+1wTBwZr02uzPyPzUSdJNWTXBMHpgAXdfNvaBYRKVx1Snoh+hx6LZJLpZe1/Ilq0vLr7TESR2ZXwyQNE2ZbjERso/PC+Ei66TBzmXX04LB4oYXezFUUe89N9OTgQSbMXjCyjj9JLn8ZuhcpJOpSR2fzoxdhnSzanSzipOGsj05ylHsiTupBxoueMDyWaS+mFszMeuEhhdoLH/OftB3jpQg5lyKMF7PkXMySWZM2H/yO/vKUN9WUW7Q3+egn+seSj62+0yuys8ytLVawAfXj0sxFmWMufd086UulZOVG1xK3JORHDqtSNfjxxgI5VJpZNV90i24MJqWNt1XEqQX2pgdy9+Ymd3AF0r1cQO0jK0tWdMENTazBjfKoPaHcFSYNbuicmrtF16IzwiQh7VV1irVvUpRK3fwlkE6cMkHome21MS/xVmW2O/NYTMYw6tyZtw3+A64qolu7nsATAAAAAElFTkSuQmCC" loading="lazy" alt="" class="product-details-rank-icon"><div style="color:white" class="product-details-rank-text">Runner-Up</div></div>
+                <div style="border-color:#3a6dff;background-color:#dfe7ff" class="product-details-sub-line">
+                  <div class="best-overall-text">2nd Best Overall Protein Powder</div>
+                </div>
+                <div class="product-details-main-block">
+                  <div class="product-details-top"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa80a977b2cb35a3273baf7_trb-6a46ec6cc1c50b140efd21ec.webp" loading="lazy" alt="" class="product-image-1" data-ph="IMG any|#2 competitor packshot"><div class="product-inner-details"><h2 class="product-heading">Transparent Labs</h2><div class="product-details-rating-star"><div class="reting-text-block"><div class="rating-text rating-value">4.7</div><div class="rating-text">/5</div></div><div class="rating-wrapper"><div class="stars-background"><div class="rating-star-2">★★★★★</div></div><div class="stars-fill"><div class="rating-star-2 fill-star-color">★★★★★</div></div></div></div><div class="product-details-table"><div class="product-details-title-row"><div class="product-details-title-col product-details-title-col-w"><h3 class="product-details-title">Specs</h3></div><div class="product-details-title-col"><h3 class="product-details-title">Details </h3></div></div><div class="product-details-row mobile-top-border-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Protein Content</div></div><div class="product-details-col"><div class="product-details-text">28g</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Protein Source</div></div><div class="product-details-col"><div class="product-details-text">Whey Isolate</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Artificial Sweeteners</div></div><div class="product-details-col"><div class="product-details-text">No</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Gut Friendly</div></div><div class="product-details-col"><div class="product-details-text">No</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Processed Ingredients</div></div><div class="product-details-col"><div class="product-details-text">No</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Price Per Serving</div></div><div class="product-details-col"><div class="product-details-text">$1.99</div></div></div></div></div></div>
+                  <div class="product-details-button-block"><a style="color:white;background-color:black" href="https://www.amazon.com/dp/ASIN-2" class="product-details-button w-button" target="_blank" rel="sponsored nofollow noopener">Check Price</a><div class="visit-text"></div></div>
+                  <div class="product-details-line"></div>
+                  <div class="verdict-box">
+                    <h3 class="verdict-title">Verdict: </h3>
+                    <p class="verdict-des">This protein powder packs 28 grams of protein into a 130-calorie serving, and tastes quite good. The problem is that it also causes bloating and gas because of the whey, which is why it lands at my second favorite despite the clean label.</p>
+                  </div>
+                  <div class="pros-box">
+                    <h3 class="pros-title">Pros:</h3>
+                    <div class="verdict-des pros-des w-richtext">
+                      <ul role="list"><li>28g of protein</li><li>No Artificial Sweeteners</li><li>Third-party tested</li><li>Tastes really good</li><li>Tons of flavors</li></ul>
+                    </div>
+                  </div>
+                  <div class="cons-box">
+                    <h3 class="cons-title">Cons:</h3>
+                    <div class="verdict-des pros-des cons-des w-richtext">
+                      <ul role="list"><li>Doesn't mix very well</li><li>Hard on the gut</li><li>Very sweet stevia taste</li></ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="what-i-love-block what-i-love-block-2">
+              <div class="inner-block-1"><div class="what-i-love-content content--w"><h2 class="trb-sub-title">What I Love</h2><div class="trb-description w-richtext"><p>I love that this option packs 28 grams of protein into a serving that's only 130 calories. Even better, it has a really clean label, that's completely transparent. They even list the exact weight of every ingredient on the label! Love that. </p><p>Plus, it's third party tested and comes in a ton of flavors as well. It's a great protein if you don't mind the big downside that holds it back. </p><p>‍</p></div></div><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa80a9e9a3a4ffecaed355a_trb-6a4c1cc7a3d46092d798d035.webp" loading="lazy" alt="" class="what-i-love-image what-i-love-image-w" data-ph="IMG 1:1|#2 hands-on photo (author with the product, or label close-up)"></div>
+              <div class="inner-block-1"><div class="w-layout-vflex first-mobile-content better-content b-content--w"><h2 class="trb-sub-title">What Could Be Better</h2><div class="trb-description w-richtext"><p>There are a few things that prevent this protein from beating Equip's beef protein option. First, it feels almost impossible to mix smoothly. It's always clumpy and gritty. However, that's not enough to hurt its ranking. </p><p>It's the gut problems that really prevent me from raving about Transparent Labs. It caused me tons of bloating and gas every time I took it. That was enough for me to choose another protein for my daily use. </p></div></div><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa80aa588c6205f49679fbc_trb-6a4c1ce479e7896d4ca18010.webp" loading="lazy" alt="" class="what-i-love-image what-i-love-image-w" data-ph="IMG 1:1|#2 in-use photo (product + result, labeled)"></div>
+            </div>
+          </div>
+        </div>
+        <div role="listitem" class="w-dyn-item">
+          <div>
+            <div class="product-wrapper">
+              <div class="product-details-box">
+                <div style="background-color:#aac0ff" class="product-details-rank-box">
+                  <div style="color:black" class="product-details-rank-text">Rank #3</div>
+                </div>
+                <div style="border-color:#aac0ff;background-color:#dfe7ff" class="product-details-sub-line">
+                  <div class="best-overall-text">Best Flavors</div>
+                </div>
+                <div class="product-details-main-block">
+                  <div class="product-details-top"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa80a44505ed090b0f6eabe_trb-6a46e1031eeabe1065edb668.webp" loading="lazy" alt="" class="product-image-1" data-ph="IMG any|#3 competitor packshot"><div class="product-inner-details"><h2 class="product-heading">FlavCity</h2><div class="product-details-rating-star"><div class="reting-text-block"><div class="rating-text rating-value">4.6</div><div class="rating-text">/5</div></div><div class="rating-wrapper"><div class="stars-background"><div class="rating-star-2">★★★★★</div></div><div class="stars-fill"><div class="rating-star-2 fill-star-color">★★★★★</div></div></div></div><div class="product-details-table"><div class="product-details-title-row"><div class="product-details-title-col product-details-title-col-w"><h3 class="product-details-title">Specs</h3></div><div class="product-details-title-col"><h3 class="product-details-title">Details</h3></div></div><div class="product-details-row mobile-top-border-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Protein Content</div></div><div class="product-details-col"><div class="product-details-text">25g</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Protein Source</div></div><div class="product-details-col"><div class="product-details-text">Whey and Collagen</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Artificial Sweeteners </div></div><div class="product-details-col"><div class="product-details-text">No</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Gut Friendly</div></div><div class="product-details-col"><div class="product-details-text">Mostly</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Processed Ingredients</div></div><div class="product-details-col"><div class="product-details-text">No</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Price Per Bar</div></div><div class="product-details-col"><div class="product-details-text">$2.99</div></div></div></div></div></div>
+                  <div class="product-details-button-block"><a style="color:white;background-color:black" href="https://www.amazon.com/dp/ASIN-3" class="product-details-button w-button" target="_blank" rel="sponsored nofollow noopener">Check Price</a><div class="visit-text"></div></div>
+                  <div class="product-details-line"></div>
+                  <div class="verdict-box">
+                    <h3 class="verdict-title">Verdict:</h3>
+                    <p class="verdict-des">This is an excellent tasting protein with plenty of collagen to support skin, bones, and joints. It's also naturally flavored and comes in many flavors. However, it does have 180 calories per serving and costs almost $3 per serving.</p>
+                  </div>
+                  <div class="pros-box">
+                    <h3 class="pros-title">Pros:</h3>
+                    <div class="verdict-des pros-des w-richtext">
+                      <ul role="list"><li>25g of protein per serving </li><li>Great selection of tasty flavors</li><li>Good source of collagen</li><li>Offers Reishi &amp;&nbsp;Cordyceps</li><li>No artificial flavors, only real fruit</li></ul>
+                    </div>
+                  </div>
+                  <div class="cons-box">
+                    <h3 class="cons-title">Cons:</h3>
+                    <div class="verdict-des pros-des cons-des w-richtext">
+                      <ul role="list"><li>Higher calories than others</li><li>Expensive</li><li>Cordyceps and reishi might not be good for everyone </li></ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="what-i-love-block what-i-love-block-2">
+              <div class="inner-block-1"><div class="what-i-love-content content--w"><h2 class="trb-sub-title">What I Love</h2><div class="trb-description w-richtext"><p>There's a lot to like about this protein powder. They have tons of great flavors, and it's really delicious and creamy. Plus, they use a combination of whey and collagen, which tends to be easier on the stomach and can support skin, hair, and joints too. </p><p> There's no junk, no artificial colors, no artificial flavors, and it's flavored with real fruit. Plus, they add cordyceps and reishi mushrooms to promote mental clarity and natural energy. Though some might not like that addition to a protein powder, I thought it was pretty unique. </p></div></div><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa80a4b505ed090b0f6fd32_trb-6a4c03a50fa4f4064f7f7570.webp" loading="lazy" alt="" class="what-i-love-image what-i-love-image-w" data-ph="IMG 1:1|#3 hands-on photo (author with the product, or label close-up)"></div>
+              <div class="inner-block-1"><div class="w-layout-vflex first-mobile-content better-content b-content--w"><h2 class="trb-sub-title">What Could Be Better</h2><div class="trb-description w-richtext"><p>While this option does have more protein than some, it's also 180 calories per serving, and that's not counting milk (waterworks but isn't as delicious). It's also very expensive, costing $2.99 per serving. The bag only comes with 20 servings at around $60.</p><p>Finally, while I didn't have a problem with the cordyceps and reishi, some people prefer their protein to be just protein. Plus, these mushrooms can cause side effects like bloating, nausea, altered blood sugar levels, and more. </p></div></div><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa80a525baec14662882906_trb-6a4c04258496b5d1c337b6d0.webp" loading="lazy" alt="" class="what-i-love-image what-i-love-image-w" data-ph="IMG 3:4|#3 in-use photo (product + result, labeled)"></div>
+            </div>
+          </div>
+        </div>
+        <div role="listitem" class="w-dyn-item">
+          <div>
+            <div class="product-wrapper">
+              <div class="product-details-box">
+                <div style="background-color:#aac0ff" class="product-details-rank-box">
+                  <div style="color:black" class="product-details-rank-text">Rank #4</div>
+                </div>
+                <div style="border-color:#aac0ff;background-color:#dfe7ff" class="product-details-sub-line">
+                  <div class="best-overall-text">Best Whey Isolate </div>
+                </div>
+                <div class="product-details-main-block">
+                  <div class="product-details-top"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa80a0b5c4d2ed8637120b9_trb-6a46e6f72fbd5bf3f9e404d4.webp" loading="lazy" alt="" class="product-image-1" data-ph="IMG any|#4 competitor packshot"><div class="product-inner-details"><h2 class="product-heading">Kion</h2><div class="product-details-rating-star"><div class="reting-text-block"><div class="rating-text rating-value">4.5</div><div class="rating-text">/5</div></div><div class="rating-wrapper"><div class="stars-background"><div class="rating-star-2">★★★★★</div></div><div class="stars-fill"><div class="rating-star-2 fill-star-color">★★★★★</div></div></div></div><div class="product-details-table"><div class="product-details-title-row"><div class="product-details-title-col product-details-title-col-w"><h3 class="product-details-title">Specs</h3></div><div class="product-details-title-col"><h3 class="product-details-title">Details</h3></div></div><div class="product-details-row mobile-top-border-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Protein Content</div></div><div class="product-details-col"><div class="product-details-text">23.3g</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Protein Source</div></div><div class="product-details-col"><div class="product-details-text">Whey Isolate</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Artificial Sweeteners</div></div><div class="product-details-col"><div class="product-details-text">No</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Gut Friendly</div></div><div class="product-details-col"><div class="product-details-text">Yes, But Contains Dairy</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Processed Ingredients</div></div><div class="product-details-col"><div class="product-details-text">No</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Price Per Serving</div></div><div class="product-details-col"><div class="product-details-text">$2.17</div></div></div></div></div></div>
+                  <div class="product-details-button-block"><a style="color:white;background-color:black" href="https://www.amazon.com/dp/ASIN-4" class="product-details-button w-button" target="_blank" rel="sponsored nofollow noopener">Check Price</a><div class="visit-text"></div></div>
+                  <div class="product-details-line"></div>
+                  <div class="verdict-box">
+                    <h3 class="verdict-title">Verdict:</h3>
+                    <p class="verdict-des">This protein has one of the best protein-to-calorie ratios that you'll find, offering 23.3 grams per 100 calories. Unfortunately, it also tastes very bad. Also, for some reason it doesn't come with a scoop, so it's hard to measure easily.</p>
+                  </div>
+                  <div class="pros-box">
+                    <h3 class="pros-title">Pros:</h3>
+                    <div class="verdict-des pros-des w-richtext">
+                      <ul role="list"><li>Fantastic protein to calorie ratio</li><li>Sweetened with stevia </li><li>No seed oils or hydrogenated oils</li><li>Organic flavors</li><li>Uses grass-fed whey</li></ul>
+                    </div>
+                  </div>
+                  <div class="cons-box">
+                    <h3 class="cons-title">Cons:</h3>
+                    <div class="verdict-des pros-des cons-des w-richtext">
+                      <ul role="list"><li>Doesn't taste very good</li><li>Not for those sensitive to dairy </li><li>Doesn't come with a scoop</li></ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="what-i-love-block what-i-love-block-2">
+              <div class="inner-block-1"><div class="what-i-love-content content--w"><h2 class="trb-sub-title">What I Love</h2><div class="trb-description w-richtext"><p>This protein has an amazing calorie to protein ratio, offering 23.3 grams of protein for only 100 calories per serving. It's also really clean, with grass-fed whey protein, stevia, pink salt, and alkalized chocolate. There are no seed oils, artificial sweeteners, or problematic ingredients. Because of that, even though it was whey, the bloat wasn't as terrible as other whey powders.&nbsp;</p></div></div><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa80a12cae0bfb3a1bda6bc_trb-6a4c1d4d9c257a1333981836.webp" loading="lazy" alt="" class="what-i-love-image what-i-love-image-w" data-ph="IMG 1:1|#4 hands-on photo (author with the product, or label close-up)"></div>
+              <div class="inner-block-1"><div class="w-layout-vflex first-mobile-content better-content b-content--w"><h2 class="trb-sub-title">What Could Be Better</h2><div class="trb-description w-richtext"><p>The main thing holding this protein back is the taste. To be honest, it's pretty awful. It's chalky, hard-to-mix, and tastes, "off." Whether the protein to calorie ratio is worth that is up to you.</p><p>It also uses whey so it might not be great for those who are sensitive to dairy, but for me I didn't have any issues. One other downside is that it doesn't come with a scoop, so it's hard to measure and easy to get too much or too little. </p></div></div><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa80a19d5057417c8916c74_trb-6a4c10203803b73f362d4c86.webp" loading="lazy" alt="" class="what-i-love-image what-i-love-image-w" data-ph="IMG 1:1|#4 in-use photo (product + result, labeled)"></div>
+            </div>
+          </div>
+        </div>
+        <div role="listitem" class="w-dyn-item">
+          <div>
+            <div class="product-wrapper">
+              <div class="product-details-box">
+                <div style="background-color:#aac0ff" class="product-details-rank-box">
+                  <div style="color:black" class="product-details-rank-text">Rank #5</div>
+                </div>
+                <div style="border-color:#aac0ff;background-color:#dfe7ff" class="product-details-sub-line">
+                  <div class="best-overall-text">Best Vegan Protein</div>
+                </div>
+                <div class="product-details-main-block">
+                  <div class="product-details-top"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa809bdd9e81a6193692ba1_trb-6a4bcf4ca7170e91d2610415.webp" loading="lazy" alt="" class="product-image-1" data-ph="IMG any|#5 competitor packshot"><div class="product-inner-details"><h2 class="product-heading">Truvani</h2><div class="product-details-rating-star"><div class="reting-text-block"><div class="rating-text rating-value">4.2</div><div class="rating-text">/5</div></div><div class="rating-wrapper"><div class="stars-background"><div class="rating-star-2">★★★★★</div></div><div class="stars-fill"><div class="rating-star-2 fill-star-color">★★★★★</div></div></div></div><div class="product-details-table"><div class="product-details-title-row"><div class="product-details-title-col product-details-title-col-w"><h3 class="product-details-title">Specs</h3></div><div class="product-details-title-col"><h3 class="product-details-title">Details</h3></div></div><div class="product-details-row mobile-top-border-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Protein Content</div></div><div class="product-details-col"><div class="product-details-text">20g</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Protein Source</div></div><div class="product-details-col"><div class="product-details-text">Pea Protein</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Artificial Sweeteners</div></div><div class="product-details-col"><div class="product-details-text">No</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Gut Friendly</div></div><div class="product-details-col"><div class="product-details-text">No</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Processed Ingredients</div></div><div class="product-details-col"><div class="product-details-text">No</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Price Per Serving</div></div><div class="product-details-col"><div class="product-details-text">$2.49</div></div></div></div></div></div>
+                  <div class="product-details-button-block"><a style="color:white;background-color:black" href="https://www.amazon.com/dp/ASIN-5" class="product-details-button w-button" target="_blank" rel="sponsored nofollow noopener">Check Price</a><div class="visit-text"></div></div>
+                  <div class="product-details-line"></div>
+                  <div class="verdict-box">
+                    <h3 class="verdict-title">Verdict:</h3>
+                    <p class="verdict-des">Truvani is an exceptional option for vegans, offering plenty of plant-based protein in a good-tasting powder. While it can have a gritty texture, the main downside is the price, costing $44.99 for only 18 servings.</p>
+                  </div>
+                  <div class="pros-box">
+                    <h3 class="pros-title">Pros:</h3>
+                    <div class="verdict-des pros-des w-richtext">
+                      <ul role="list"><li>Clean, plant-based ingredients</li><li>No additives, artificial sweeteners, soy, wheat, dairy, or gluten</li><li>Certified USDA&nbsp;Organic</li><li>Tastes really good</li><li>Mixes easily</li></ul>
+                    </div>
+                  </div>
+                  <div class="cons-box">
+                    <h3 class="cons-title">Cons:</h3>
+                    <div class="verdict-des pros-des cons-des w-richtext">
+                      <ul role="list"><li>Very expensive per serving</li><li>Can cause bloating and gut discomfort</li><li>Has a gritty texture</li></ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="what-i-love-block what-i-love-block-2">
+              <div class="inner-block-1"><div class="what-i-love-content content--w"><h2 class="trb-sub-title">What I Love</h2><div class="trb-description w-richtext"><p>I love Truvani for its clean ingredient list, full of only plant-based and certified organic ingredients. There are no additives, artificial sweeteners, or dairy, and it still tastes really good and mixes easily into milk, water, or any other beverage. Honestly, it's the best vegan protein powder I've ever tried, and it's free from problematic ingredients.</p></div></div><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa809c4cae0bfb3a1bd78d9_trb-6a4c1e30d67f9548b9a4e6e6.webp" loading="lazy" alt="" class="what-i-love-image what-i-love-image-w" data-ph="IMG 1:1|#5 hands-on photo (author with the product, or label close-up)"></div>
+              <div class="inner-block-1"><div class="w-layout-vflex first-mobile-content better-content b-content--w"><h2 class="trb-sub-title">What Could Be Better</h2><div class="trb-description w-richtext"><p>There are a couple of major issues I have with this protein. First, the price. It might look like a good deal at $44.99 at first glance, but that's only for 18 servings making it one of the most expensive protein options on our list. To add to that issue is the fact that pea protein made me feel very bloated and gassy, which is a very common experience. </p></div></div><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa809cc430c0b7b0756047d_trb-6a4c2f7125ac5a7fe61b770f.webp" loading="lazy" alt="" class="what-i-love-image what-i-love-image-w" data-ph="IMG 1:1|#5 in-use photo (product + result, labeled)"></div>
+            </div>
+          </div>
+        </div>
+        <div role="listitem" class="w-dyn-item">
+          <div>
+            <div class="product-wrapper">
+              <div class="product-details-box">
+                <div style="background-color:#aac0ff" class="product-details-rank-box">
+                  <div style="color:black" class="product-details-rank-text">Rank #6</div>
+                </div>
+                <div style="border-color:#aac0ff;background-color:#dfe7ff" class="product-details-sub-line">
+                  <div class="best-overall-text">Best Unflavored Protein</div>
+                </div>
+                <div class="product-details-main-block">
+                  <div class="product-details-top"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa8084de8eaf0b3b6c3f71a_trb-6a4bdb92355d613b94354c9d.webp" loading="lazy" alt="" class="product-image-1" data-ph="IMG any|#6 competitor packshot"><div class="product-inner-details"><h2 class="product-heading">Gainful</h2><div class="product-details-rating-star"><div class="reting-text-block"><div class="rating-text rating-value">4.0</div><div class="rating-text">/5</div></div><div class="rating-wrapper"><div class="stars-background"><div class="rating-star-2">★★★★★</div></div><div class="stars-fill"><div class="rating-star-2 fill-star-color">★★★★★</div></div></div></div><div class="product-details-table"><div class="product-details-title-row"><div class="product-details-title-col product-details-title-col-w"><h3 class="product-details-title">Specs</h3></div><div class="product-details-title-col"><h3 class="product-details-title">Details</h3></div></div><div class="product-details-row mobile-top-border-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Protein Content</div></div><div class="product-details-col"><div class="product-details-text">23g</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Protein Source</div></div><div class="product-details-col"><div class="product-details-text">Whey</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Artificial Sweeteners</div></div><div class="product-details-col"><div class="product-details-text">No</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Gut Friendly</div></div><div class="product-details-col"><div class="product-details-text">No</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Processed Ingredients</div></div><div class="product-details-col"><div class="product-details-text">No</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Price Per Serving</div></div><div class="product-details-col"><div class="product-details-text">$2.14</div></div></div></div></div></div>
+                  <div class="product-details-button-block"><a style="color:white;background-color:black" href="https://www.amazon.com/dp/ASIN-6" class="product-details-button w-button" target="_blank" rel="sponsored nofollow noopener">Check Price</a><div class="visit-text"></div></div>
+                  <div class="product-details-line"></div>
+                  <div class="verdict-box">
+                    <h3 class="verdict-title">Verdict:</h3>
+                    <p class="verdict-des">Gainful's Everyday Whey blends fast whey with slow-digesting casein for steady muscle recovery, using only clean, no-artificial-ingredient formulas. The main drawback: it's unflavored, so you'll need to buy separate flavor packets to make it palatable, adding extra cost and steps to your routine.</p>
+                  </div>
+                  <div class="pros-box">
+                    <h3 class="pros-title">Pros:</h3>
+                    <div class="verdict-des pros-des w-richtext">
+                      <ul role="list"><li>23g protein per serving</li><li>No artificial flavors, sweeteners, or dyes</li><li>3rd party tested</li><li>Mixes easily</li><li>Great for recovery</li></ul>
+                    </div>
+                  </div>
+                  <div class="cons-box">
+                    <h3 class="cons-title">Cons:</h3>
+                    <div class="verdict-des pros-des cons-des w-richtext">
+                      <ul role="list"><li>Unflavored so you taste all chalky whey</li><li>Only 14 servings per jar</li><li>Whey conentrate is heavy on the gut</li></ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="what-i-love-block what-i-love-block-2">
+              <div class="inner-block-1"><div class="what-i-love-content content--w"><h2 class="trb-sub-title">What I Love</h2><div class="trb-description w-richtext"><p>This protein powder pairs fast-absorbing whey with slow-digesting casein, so you get both an immediate amino acid boost and sustained muscle recovery over time. At 23g of protein per serving, it's solid for daily use, whether post-workout or as a meal add-in. It skips artificial flavors, sweeteners, and dyes, and Gainful runs third-party testing in NSF-certified facilities, so you know exactly what you're putting in your shaker bottle.</p></div></div><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa8085488c6205f49658c37_trb-6a4c1f0920d89ddb849c026d.webp" loading="lazy" alt="" class="what-i-love-image what-i-love-image-w" data-ph="IMG 1:1|#6 hands-on photo (author with the product, or label close-up)"></div>
+              <div class="inner-block-1"><div class="w-layout-vflex first-mobile-content better-content b-content--w"><h2 class="trb-sub-title">What Could Be Better</h2><div class="trb-description w-richtext"><p>Since this powder comes unflavored, you'll need to add Gainful's flavor packets (or your own mix-ins) to make it taste like more than gritty, chalky milk. That adds costs and an extra step to prep. The bag only holds 14 servings, so it runs out faster than larger tubs, meaning more frequent reorders as well as a deceivigly low price. And since it's whey-, it can cause some tummy troubles. </p></div></div><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa8085b5ebf01293de552e0_trb-6a4c1f70ab1a03c02f1db940.webp" loading="lazy" alt="" class="what-i-love-image what-i-love-image-w" data-ph="IMG 1:1|#6 in-use photo (product + result, labeled)"></div>
+            </div>
+          </div>
+        </div>
+        <div role="listitem" class="w-dyn-item">
+          <div>
+            <div class="product-wrapper">
+              <div class="product-details-box">
+                <div style="background-color:#aac0ff" class="product-details-rank-box">
+                  <div style="color:black" class="product-details-rank-text">Rank #7</div>
+                </div>
+                <div style="border-color:#aac0ff;background-color:#dfe7ff" class="product-details-sub-line">
+                  <div class="best-overall-text">Lowest Calorie Per Serving</div>
+                </div>
+                <div class="product-details-main-block">
+                  <div class="product-details-top"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa8081df56d1f1d95472d96_trb-6a4be8c71ce3c93c84967af0.webp" loading="lazy" alt="" class="product-image-1" data-ph="IMG any|#7 competitor packshot"><div class="product-inner-details"><h2 class="product-heading">Naked</h2><div class="product-details-rating-star"><div class="reting-text-block"><div class="rating-text rating-value">3.8</div><div class="rating-text">/5</div></div><div class="rating-wrapper"><div class="stars-background"><div class="rating-star-2">★★★★★</div></div><div class="stars-fill"><div class="rating-star-2 fill-star-color">★★★★★</div></div></div></div><div class="product-details-table"><div class="product-details-title-row"><div class="product-details-title-col product-details-title-col-w"><h3 class="product-details-title">Specs</h3></div><div class="product-details-title-col"><h3 class="product-details-title">Details</h3></div></div><div class="product-details-row mobile-top-border-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Protein Content</div></div><div class="product-details-col"><div class="product-details-text">21g</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Protein Source</div></div><div class="product-details-col"><div class="product-details-text">Beef Protein</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Artificial Sweeteners</div></div><div class="product-details-col"><div class="product-details-text">No</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Gut Friendly</div></div><div class="product-details-col"><div class="product-details-text">Yes</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Processed Ingredients</div></div><div class="product-details-col"><div class="product-details-text">No</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Price Per Serving</div></div><div class="product-details-col"><div class="product-details-text">$2.25</div></div></div></div></div></div>
+                  <div class="product-details-button-block"><a style="color:white;background-color:black" href="https://www.amazon.com/dp/ASIN-7" class="product-details-button w-button" target="_blank" rel="sponsored nofollow noopener">Check Price</a><div class="visit-text"></div></div>
+                  <div class="product-details-line"></div>
+                  <div class="verdict-box">
+                    <h3 class="verdict-title">Verdict:</h3>
+                    <p class="verdict-des">This grass-fed beef protein isolate delivers 21g of dairy-free protein with zero carbs and a stellar collagen-amino profile (glycine, proline, hydroxyproline). It's a clean, minimal-ingredient option for paleo/keto/carnivore diets — but unlike Equip Prime Protein, this powder tastes like gritty beef.</p>
+                  </div>
+                  <div class="pros-box">
+                    <h3 class="pros-title">Pros:</h3>
+                    <div class="verdict-des pros-des w-richtext">
+                      <ul role="list"><li>Just two ingredients (Beef Protein Isolate and Sunflower Lecithin)</li><li>Great protein to calorie ratio</li><li>No bloating or gas</li><li>Made from grass-fed European beef</li><li>Mechanical and thermal processes to retain nutrients</li></ul>
+                    </div>
+                  </div>
+                  <div class="cons-box">
+                    <h3 class="cons-title">Cons:</h3>
+                    <div class="verdict-des pros-des cons-des w-richtext">
+                      <ul role="list"><li>Really gritty, dry texture</li><li>Only 20 servings in the container</li><li>Tastes like meat with few redeeming qualities</li></ul>
+                      <p>‍</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="what-i-love-block what-i-love-block-2">
+              <div class="inner-block-1"><div class="what-i-love-content content--w"><h2 class="trb-sub-title">What I Love</h2><div class="trb-description w-richtext"><p>Naked is great because it's only two ingredients, which means it has great macros and a simple formula that you can feel comfortable putting into your body. Of course, this means it also doesn't leave you feeling bloated or full either. The container is also more affordable than other brands, which is a major plus, especially for those on a budget. It's also interesting that it's processed in Sweden using mechanical &amp; thermal processes to retain vital nutrients. Does that make it better?&nbsp;I'm not sure, but possibly. </p><p>‍</p></div></div><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa80824a196fd1354b15cd8_trb-6a4c2011d4a01d867a3bfc6b.webp" loading="lazy" alt="" class="what-i-love-image what-i-love-image-w" data-ph="IMG 1:1|#7 hands-on photo (author with the product, or label close-up)"></div>
+              <div class="inner-block-1"><div class="w-layout-vflex first-mobile-content better-content b-content--w"><h2 class="trb-sub-title">What Could Be Better</h2><div class="trb-description w-richtext"><p>The main downside to Naked Beef Protein is the taste. They only make an unflavored version, and it has tons of flavor...just not the flavor you want. It's very beefy and earthy. However, if you don't mind that, then the only other thing to consider is that even though it's more affordable, there are only 20 servings each container. </p><p>‍</p></div></div><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa8082be1dea3d858c82efe_trb-6a4c206ec71100ecc1a574fa.webp" loading="lazy" alt="" class="what-i-love-image what-i-love-image-w" data-ph="IMG 1:1|#7 in-use photo (product + result, labeled)"></div>
+            </div>
+          </div>
+        </div>
+        <div role="listitem" class="w-dyn-item">
+          <div>
+            <div class="product-wrapper">
+              <div class="product-details-box">
+                <div style="background-color:#aac0ff" class="product-details-rank-box">
+                  <div style="color:black" class="product-details-rank-text">Rank #8</div>
+                </div>
+                <div style="border-color:#aac0ff;background-color:#dfe7ff" class="product-details-sub-line">
+                  <div class="best-overall-text">Best Donation Match Program</div>
+                </div>
+                <div class="product-details-main-block">
+                  <div class="product-details-top"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa807da5aef0a16cbf99e4c_trb-6a4bec821720c97c64083338.webp" loading="lazy" alt="" class="product-image-1" data-ph="IMG any|#8 competitor packshot"><div class="product-inner-details"><h2 class="product-heading">Peak Performance</h2><div class="product-details-rating-star"><div class="reting-text-block"><div class="rating-text rating-value">3.7</div><div class="rating-text">/5</div></div><div class="rating-wrapper"><div class="stars-background"><div class="rating-star-2">★★★★★</div></div><div class="stars-fill"><div class="rating-star-2 fill-star-color">★★★★★</div></div></div></div><div class="product-details-table"><div class="product-details-title-row"><div class="product-details-title-col product-details-title-col-w"><h3 class="product-details-title">Specs</h3></div><div class="product-details-title-col"><h3 class="product-details-title">Details</h3></div></div><div class="product-details-row mobile-top-border-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Protein Content</div></div><div class="product-details-col"><div class="product-details-text">20g</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Protein Source</div></div><div class="product-details-col"><div class="product-details-text">Beef Protein</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Artificial Sweeteners</div></div><div class="product-details-col"><div class="product-details-text">No</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Gut Friendly</div></div><div class="product-details-col"><div class="product-details-text">Yes</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Processed Ingredients</div></div><div class="product-details-col"><div class="product-details-text">Yes</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Price Per Serving</div></div><div class="product-details-col"><div class="product-details-text">$1.67</div></div></div></div></div></div>
+                  <div class="product-details-button-block"><a style="color:white;background-color:black" href="https://www.amazon.com/dp/ASIN-8" class="product-details-button w-button" target="_blank" rel="sponsored nofollow noopener">Check Price</a><div class="visit-text"></div></div>
+                  <div class="product-details-line"></div>
+                  <div class="verdict-box">
+                    <h3 class="verdict-title">Verdict:</h3>
+                    <p class="verdict-des">This grass-fed beef protein isolate delivers 20g of dairy-free protein in an affordable jug, costing only $1.67 per serving. They also make a donation for every purchase. However, the stevia taste is way too strong, ruining the actually decent chocolate flavor.</p>
+                  </div>
+                  <div class="pros-box">
+                    <h3 class="pros-title">Pros:</h3>
+                    <div class="verdict-des pros-des w-richtext">
+                      <ul role="list"><li>Affordable Price</li><li>Rich chocolate flavor</li><li>Bloat-free beef protein</li><li>Donations made with every purchase</li><li>Third-party tested </li></ul>
+                    </div>
+                  </div>
+                  <div class="cons-box">
+                    <h3 class="cons-title">Cons:</h3>
+                    <div class="verdict-des pros-des cons-des w-richtext">
+                      <ul role="list"><li>Dry texture that requires chasing it with a separate beverage</li><li>Powerful stevia taste</li><li>Difficult to mix</li></ul>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="what-i-love-block what-i-love-block-2">
+              <div class="inner-block-1"><div class="what-i-love-content content--w"><h2 class="trb-sub-title">What I Love</h2><div class="trb-description w-richtext"><p>This beef protein isolate hits an easy price point, making it accessible for anyone who wants to add a clean protein boost without overspending. The chocolate flavor is rich and satisfying, and since it's beef-based rather than whey, it digests easily without the bloating some dairy proteins cause. Every purchase also supports a donation program, and the product is third-party tested, so you can trust what's actually in your scoop.</p></div></div><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa807e2bd0df5dfd45bfb16_trb-6a4c20c129b4ea13508b5883.webp" loading="lazy" alt="" class="what-i-love-image what-i-love-image-w" data-ph="IMG 1:1|#8 hands-on photo (author with the product, or label close-up)"></div>
+              <div class="inner-block-1"><div class="w-layout-vflex first-mobile-content better-content b-content--w"><h2 class="trb-sub-title">What Could Be Better</h2><div class="trb-description w-richtext"><p>The powder tends to have a dry, slightly gritty texture that doesn't dissolve as smoothly as other proteins, so it can take extra shaking or blending to get a drinkable consistency. The stevia used for sweetness also comes through fairly strong for some palates, giving the chocolate flavor a noticeable aftertaste. Overall, it's not the easiest protein to mix into a smooth shake without a blender or shaker ball and the aftertaste basically ruins it. </p></div></div><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa807e9722e6945a5df372f_trb-6a4c211d17280493a71b4353.webp" loading="lazy" alt="" class="what-i-love-image what-i-love-image-w" data-ph="IMG 1:1|#8 in-use photo (product + result, labeled)"></div>
+            </div>
+          </div>
+        </div>
+        <div role="listitem" class="w-dyn-item">
+          <div>
+            <div class="product-wrapper">
+              <div class="product-details-box">
+                <div style="background-color:#aac0ff" class="product-details-rank-box">
+                  <div style="color:black" class="product-details-rank-text">Rank #9</div>
+                </div>
+                <div style="border-color:#aac0ff;background-color:#dfe7ff" class="product-details-sub-line">
+                  <div class="best-overall-text">Best High Protein Content</div>
+                </div>
+                <div class="product-details-main-block">
+                  <div class="product-details-top"><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa807a3c45e3f89c8b5779b_trb-6a4bf2d81ce3c93c849cd45c.webp" loading="lazy" alt="" class="product-image-1" data-ph="IMG any|#9 competitor packshot"><div class="product-inner-details"><h2 class="product-heading">Promix</h2><div class="product-details-rating-star"><div class="reting-text-block"><div class="rating-text rating-value">3.5</div><div class="rating-text">/5</div></div><div class="rating-wrapper"><div class="stars-background"><div class="rating-star-2">★★★★★</div></div><div class="stars-fill"><div class="rating-star-2 fill-star-color">★★★★★</div></div></div></div><div class="product-details-table"><div class="product-details-title-row"><div class="product-details-title-col product-details-title-col-w"><h3 class="product-details-title">Specs</h3></div><div class="product-details-title-col"><h3 class="product-details-title">Details</h3></div></div><div class="product-details-row mobile-top-border-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Protein Content</div></div><div class="product-details-col"><div class="product-details-text">30g</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Protein Source</div></div><div class="product-details-col"><div class="product-details-text">Beef Protein</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Artificial Sweeteners</div></div><div class="product-details-col"><div class="product-details-text">No</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Gut Friendly</div></div><div class="product-details-col"><div class="product-details-text">Yes</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Processed Ingredients</div></div><div class="product-details-col"><div class="product-details-text">No</div></div></div><div class="product-details-row product-details-top-line-remove"><div class="product-details-col product-details-col-w"><div class="product-details-text">Price Per Serving</div></div><div class="product-details-col"><div class="product-details-text">$2.17</div></div></div></div></div></div>
+                  <div class="product-details-button-block"><a style="color:white;background-color:black" href="https://www.amazon.com/dp/ASIN-9" class="product-details-button w-button" target="_blank" rel="sponsored nofollow noopener">Check Price</a><div class="visit-text"></div></div>
+                  <div class="product-details-line"></div>
+                  <div class="verdict-box">
+                    <h3 class="verdict-title">Verdict:</h3>
+                    <p class="verdict-des">At 30g of protein from a single ingredient, this is the most potent protein in the lineup, but it comes at a cost. With no lecithin, sweetener, or flavor to mask it, expect a distinctly meaty taste and a powder that clumps unless you own a blender.</p>
+                  </div>
+                  <div class="pros-box">
+                    <h3 class="pros-title">Pros:</h3>
+                    <div class="verdict-des pros-des w-richtext">
+                      <ul role="list"><li>30g per serving</li><li>Clean one ingredient formula</li><li>Good amount of protein for the cost</li><li>Made with grass-fed, hormone-free European beef</li><li>Works well in baking</li></ul>
+                    </div>
+                  </div>
+                  <div class="cons-box">
+                    <h3 class="cons-title">Cons:</h3>
+                    <div class="verdict-des pros-des cons-des w-richtext">
+                      <ul role="list"><li>Absolutely terrible taste</li><li>Gritty texture that is almost unbearable</li><li>Very difficult to mix even with a blender</li></ul>
+                      <p>‍</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="what-i-love-block what-i-love-block-2">
+              <div class="inner-block-1"><div class="what-i-love-content content--w"><h2 class="trb-sub-title">What I Love</h2><div class="trb-description w-richtext"><p>There's no arguing with the specs here: 30g of protein per serving is the most in this lineup, sourced from a single ingredient: grass-fed, grass-finished beef isolate from hormone-free European cattle. Nothing else is added, refreshingly free of fillers and sweeteners. It's also naturally rich in the collagen-building aminos glycine, proline, and hydroxyproline, so it supports muscle recovery and joint health at the same time.</p></div></div><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa807ab817f88617cf980b4_trb-6a4c21eff2298903dcb11efd.webp" loading="lazy" alt="" class="what-i-love-image what-i-love-image-w" data-ph="IMG 1:1|#9 hands-on photo (author with the product, or label close-up)"></div>
+              <div class="inner-block-1"><div class="w-layout-vflex first-mobile-content better-content b-content--w"><h2 class="trb-sub-title">What Could Be Better</h2><div class="trb-description w-richtext"><p>This is where the single-ingredient purity backfires. With no sunflower lecithin, sweetener, or flavor masking to smooth it out, this powder is genuinely unpleasant to drink straight. It has a strong, unmistakably meaty taste that water or milk alone won't hide, and it clumps badly unless you've got a high-powered blender you want to use every day. Honestly, I can't imagine willingly trying this one again after my test...it's that gross. </p><p>‍</p></div></div><img src="https://cdn.prod.website-files.com/69665c587148670bbfde73b5/6aa807b1f56d1f1d9546dd1d_trb-6a4c2224b93ca7325c56cf4e.webp" loading="lazy" alt="" class="what-i-love-image what-i-love-image-w" data-ph="IMG 1:1|#9 in-use photo (product + result, labeled)"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<section class="section-24">
+  <div class="div-block-123">
+    <div class="div-block-125">
+      <h1 class="heading-35">The Review Board Newsletter</h1>
+      <p class="paragraph-6">Want to save on your new favorite thing? Sign up for discount codes, new launches, and editors' picks.</p>
+      <div class="form-block-2 w-form">
+        <form id="wf-form-Newsletter-Form" name="wf-form-Newsletter-Form" data-name="Newsletter Form" method="get" class="form"><input class="text-field-2 w-input" maxlength="256" name="email" data-name="Email" placeholder="Insert your email" type="email" id="email" required=""><input type="submit" data-wait="Please wait..." class="submit-button-2 w-button" value="Subscribe"></form>
+      </div>
+    </div>
+    <div class="div-block-124" data-ph="IMG ~5:2|Newsletter banner (CSS background of .div-block-124)"></div>
+  </div>
+</section>
+<section class="section-30">
+  <div class="div-block-147">
+    <div class="div-block-149">
+      <div class="footer-col footer-form-col"><a href="#" class="link-block-13 w-inline-block"><h2 class="heading-47">The Review Board</h2></a></div>
+      <div class="trb-footer-balanced-nav"><h4 class="trb-footer-nav-heading">Articles</h4><a href="#" class="link-4">Home</a><a href="#" class="link-4">All Stories</a><a href="#" class="link-4">Editor’s Picks</a><div class="collection-list-wrapper-54 w-dyn-list"><div role="list" class="collection-list-49 w-dyn-items"><div role="listitem" class="collection-item-48 w-dyn-item"><a href="#" class="link-4">Wellness</a></div><div role="listitem" class="collection-item-48 w-dyn-item"><a href="#" class="link-4">Beauty</a></div><div role="listitem" class="collection-item-48 w-dyn-item"><a href="#" class="link-4">Food &amp; Drink</a></div><div role="listitem" class="collection-item-48 w-dyn-item"><a href="#" class="link-4">Home &amp; Living</a></div><div role="listitem" class="collection-item-48 w-dyn-item"><a href="#" class="link-4">Culture</a></div></div></div></div>
+      <div class="footer-col footer-menu-col"><h4 class="heading-48 m-0">Social</h4><a href="#" class="link-4">Instagram</a></div>
+    </div>
+    <div class="div-block-148">
+      <div class="copyright-left-col">
+        <h4 class="heading-48 location-text">New York, NY</h4>
+        <div class="text-block-37">© 2026 All rights reserved</div>
+      </div>
+      <div class="copyright-right-col"><a href="#" class="legalmenu">Privacy Policy</a><a href="#" class="legalmenu">Terms &amp; Conditions</a></div>
+    </div>
+  </div>
+</section>
+<!-- Star rating: .stars-fill width = rating / 5 (same math as the source page). -->
+<script>
+document.querySelectorAll('.w-dyn-item').forEach(function(item){
+  var r=item.querySelector('.rating-value'),f=item.querySelector('.stars-fill');
+  if(!r||!f)return;
+  var v=parseFloat(r.textContent);
+  if(!isNaN(v))f.style.width=(v/5*100)+'%';
+});
+</script>
+<!-- Noi click-ID sang trang ban. KHONG ban cta_click o day: tags.js da co mot
+     listener bat moi click vao offer.dinosaurized.com roi, ban them lan nua se
+     lam moi cu click dem thanh hai. -->
+<script>
+(function(){
+  var sp=new URLSearchParams(location.search),keep=new URLSearchParams();
+  ['gclid','gbraid','wbraid','fbclid','twclid','msclkid','ttclid','utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(function(k){if(sp.get(k))keep.set(k,sp.get(k));});
+  var extra=keep.toString();
+  function wire(){
+    document.querySelectorAll('a[href*="offer.dinosaurized.com"]').forEach(function(a){
+      if(extra)a.href+=(a.href.indexOf('?')>-1?'&':'?')+extra;
+    });
+  }
+  if(document.readyState!=='loading')wire();else document.addEventListener('DOMContentLoaded',wire);
+})();
+</script>
+<!-- TEMPLATE ONLY: draws each [data-ph] slot's label (ratio + role) over the hotlinked reference image.
+     Delete this style + script (and every data-ph attribute) when building a real page. -->
+<style>
+[data-ph] { outline: 2px dashed #9aa58f; outline-offset: -2px; }
+.ph-l { position: absolute; z-index: 50; pointer-events: none; overflow: hidden; font: 10px/1.35 ui-monospace, Menlo, monospace; letter-spacing: 0; text-align: left; }
+.ph-l b { display: inline-block; max-width: 100%; background: #2b3920; color: #fff; padding: 2px 6px; border-radius: 4px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; vertical-align: top; }
+.ph-l span { display: block; width: max-content; max-width: 100%; margin-top: 4px; background: rgba(255, 255, 255, .9); color: #2b3920; padding: 3px 6px; border-radius: 6px; }
+.ph-l.ph-s span { display: none; }
+.ph-l.ph-s b { font-size: 9px; padding: 1px 4px; }
+</style>
+<script>
+(function(){
+  var els=[].slice.call(document.querySelectorAll('[data-ph]')),labs=[];
+  els.forEach(function(el){
+    var p=el.getAttribute('data-ph').split('|'),l=document.createElement('div');
+    l.className='ph-l';l.innerHTML='<b></b><span></span>';l.lastChild.textContent=p[1];l.k=p;
+    if(!el.title)el.title=p[0]+' · '+p[1];
+    document.body.appendChild(l);labs.push(l);
+    el.addEventListener('load',soon);
+  });
+  // a slot scrolled out of an overflow box (the hero strip) keeps its label hidden
+  function clipped(el,r){
+    for(var p=el.parentElement;p&&p!==document.body;p=p.parentElement){
+      var s=getComputedStyle(p);
+      if(s.overflowX!=='visible'){var q=p.getBoundingClientRect();if(r.left<q.left-1||r.right>q.right+1)return true;}
+    }
+    return false;
+  }
+  function place(){
+    var vw=document.documentElement.clientWidth;
+    els.forEach(function(el,i){
+      var r=el.getBoundingClientRect(),l=labs[i];
+      if(r.width<40||r.left<-1||r.right>vw+1||clipped(el,r)){l.style.display='none';return;}
+      var small=r.height<150;
+      l.style.display='';l.classList.toggle('ph-s',small);
+      l.firstChild.textContent=small?l.k[0]+' · '+l.k[1]:l.k[0];
+      l.style.left=(r.left+scrollX+6)+'px';l.style.top=(r.top+scrollY+6)+'px';
+      l.style.maxWidth=(r.width-12)+'px';l.style.maxHeight=Math.max(16,r.height-12)+'px';
+    });
+  }
+  var q=false;function soon(){if(!q){q=true;requestAnimationFrame(function(){q=false;place();});}}
+  addEventListener('resize',soon);addEventListener('load',soon);addEventListener('scroll',soon,{capture:true,passive:true});place();
+})();
+</script>
+</body>
+</html>
