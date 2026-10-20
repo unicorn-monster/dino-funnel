@@ -203,6 +203,27 @@ def result_urls(record: dict[str, Any]) -> list[str]:
     return urls
 
 
+def upload_file(api_key: str, path: str | Path, upload_path: str = "images/dino-refs") -> str:
+    """Upload a local file to Kie temp storage and return its public URL (deleted after ~24h).
+    Use for local refs (a sheet, a last frame) passed to a job as a URL."""
+    resp = _request(
+        "POST", "https://kieai.redpandaai.co/api/file-stream-upload",
+        headers={"Authorization": f"Bearer {api_key}"},
+        files={"file": open(path, "rb")}, data={"uploadPath": upload_path}, timeout=180,
+    )
+    _raise_for_status(resp)
+    body = resp.json().get("data") or {}
+    url = body.get("downloadUrl") or body.get("fileUrl")
+    if not url:
+        raise KieError(f"kie.ai upload returned no URL for {path}: {resp.text[:300]}")
+    return url
+
+
+def ref_urls(api_key: str, refs: list[str]) -> list[str]:
+    """Public URLs pass through; local paths are uploaded first."""
+    return [r if r.startswith(("http://", "https://")) else upload_file(api_key, r) for r in refs]
+
+
 def download(url: str, dest_path: str | Path, timeout: float = 180.0) -> Path:
     """Stream a result URL to disk. Result URLs expire after ~24h, so call soon."""
     import requests

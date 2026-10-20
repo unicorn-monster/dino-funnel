@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<!--
+# Template: 10r-hw
+
+Source: live page `https://offers.hike-footwear.com/l/li06` (Hike Footwear, HF Stride barefoot shoe; Webflow + Aeroflows), cloned 2026-10-19. Same site and design system as `listical&quiz` (li12), but a different format.
+Format: first-person **"10 reasons" benefit listicle, one long scroll** (no steps, everything visible): sticky sale bar (offer line + countdown to midnight) with a reading-progress bar under it → publication header → H1 "I Tried 7 Different X. Only One Actually Worked." + intro listing everything the author tried + Note callout + author box → **10 numbered benefits of OUR product** (1:1 media left / text right on desktop, heading-media-text stacked on mobile) → offer card after #5 → offer card again at the end. Mobile-only sticky CTA bar with a social-proof line. Competitors are only named in the intro and in #10 (prices); there are no competitor cards.
+
+How it was built (code, not visuals): the server HTML (pre-JS) of the live page, cart drawer / tracking / Webflow + Aeroflows runtime removed, hidden sidebar + hidden "New Flavors" blocks removed. CSS = the site's shared Webflow stylesheet + every inline `<style>`, pruned in Chrome to the selectors (and selector parts) that match this DOM (417 rules). Verified against the live page in Chrome at 390px and 1280px: every element's box within 3px (mobile drifts up to 5px down the page because Webflow's zero-width joiners after `<br><br>` were dropped). Sticky bar + progress behave like the live page (bar on after 600px, off at the final CTA).
+
+## Placeholders to replace globally
+
+| Token | Replace with |
+|---|---|
+| `/SLUG/` | `/<slug>/` (fonts + any asset paths you add) |
+| `https://offer.dinosaurized.com/OFFER-SLUG` | offer URL (5 places: arrow links in #1 and #2, mid offer button, final offer button, sticky bar button). Funnelish: `#next-step` |
+| `FOOT` / `INSIDER` (`.nav-foots h1`: `<strong>FOOT</strong>-<strong>INSIDER</strong>`) | publication name for the site (TopReviewKing / Queen, or a niche "insider" name) |
+
+## Fonts (self-hosted, `public/<slug>/assets/fonts/`)
+
+Only the faces the live page actually renders (Barlow, Gilroy, Circular Std, Figtree). `D=public/<slug>/assets/fonts; mkdir -p $D` then:
+
+```
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Barlow-Light.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/683f5bd7bbeb6397c01b9c98_Barlow-Light.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Barlow-Regular.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/683f5bd79d49e0448d6f5185_Barlow-Regular.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Barlow-SemiBold.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/683f5bd7a54ab09042994089_Barlow-SemiBold.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Barlow-ExtraBold.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/683f5bd793f1101a776da641_Barlow-ExtraBold.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Barlow-Black.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/683f5bd7e9136178590d39bd_Barlow-Black.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Gilroy-Medium.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6a1dfe16626ad4377417632d_Gilroy-Medium.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Gilroy-SemiBold.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6a1dfe16353650911b965260_Gilroy-SemiBold.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Gilroy-Bold.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6a1dfe16218b61c0e3507aa8_Gilroy-Bold.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Gilroy-ExtraBold.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6a1dfe16945274efe59f3deb_Gilroy-ExtraBold.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/CircularStd-Bold.woff2" "https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6a47b55edb0895002185ace1_CircularStd-Bold.woff2"
+curl -sL -A "Mozilla/5.0 (Macintosh) Chrome/154" -o "$D/Figtree-800.woff2" "https://fonts.gstatic.com/s/figtree/v9/_Xmz-HUzqDCFdgfMsYiV_F7wfS-Bs_f_R25ZyEA25WTzVOw.woff2"
+```
+
+(offers.hike-footwear.com sits behind Cloudflare: a plain curl gets a 403 page, the Chrome UA above passes. Check `file $D/*` says "Web Open Font Format".)
+
+## Slot map (in page order)
+
+Copy style: first person, a real-sounding woman ~60 who tried everything, short punchy sentences ("These? Just step in."), `<strong>` on the feature phrase of each paragraph. Each benefit = 2 short paragraphs inside ONE `div.p-listicle` separated by `<br><br>` (keep that, not separate `<p>`s): the old pain in her words, then what ours does about it. The heading is the benefit as she felt it ("I Could Actually Put Them On"), not a spec.
+
+| Block (selector) | What to write | Original size |
+|---|---|---|
+| `<title>` | same as the H1 | |
+| `.navbar-one-title-4 strong` | sale name (`Warehouse Sale`) | 2 words |
+| `.text-block-978` | offer line (`UP TO 57% OFF + FREE SHIPPING`), from the offer page | 6 words |
+| `.lowest-price-check p` | trust line under the bar (`Verified Lowest Price of the Year. Shop Now!`) | 8 words |
+| `.nav-foots h1` | publication name, 2 `<strong>` | 1-2 words |
+| `h1.display-xl` | `<strong class="bold-text-1781">` claim + plain green payoff ("I Tried N Different X. / Only One Actually Worked.") | 10 words |
+| `.blogpost1_title-wrapper p.p-listicle` | hook line, then everything she tried with prices (one `<strong>` on the priciest), then "N-1 failures. One winner. Here's the difference:" | 3 paras, 62 words |
+| `.adv-callout .text-block-490` | `<strong>Note: </strong>` + "Read this BEFORE you [buy another X]!" | 10 words |
+| `.blogpost1_author-text` | name (`.text-weight-semibold-2`) + role (`.text-size-small-copy-2`, e.g. `Barefoot Shoe Enthusiast`); the Verified badge stays | |
+| Benefits 1-10 `[data-item-id]` `h2.display-md` | `N. [Benefit as felt]` (**twice per item**, see traps) | 4-9 words |
+| Benefits 1-10 `div.p-listicle` | 2 paras, old pain → what ours does | 24-72 words (#1 41, #2 38, #3 50, #4 72, #5 50, #6 45, #7 34, #8 31, #9 24, #10 31) |
+| #1, #2 `.p-listicle-3 a strong` | `👉` + soft CTA ("See the slip-on shoe I swear by", "See the non-slip sole in action") | 6-7 words |
+| #10 (`b10`) | money recap: what she spent on the failures (each with price + "didn't work"), then ours at its price, "the only ones that actually worked" | 31 words |
+| Offer card x2 (`[data-item-id=offer]` and `#customer-reviews`, identical) | `.style-guide-card` kicker (`BUY MORE, SAVE MORE`); `h1.adv_cta_heading-2` = `<span class="span-red">UP TO 57% OFF</span> FOR A LIMITED TIME ONLY!`; `.adv_cta_subtitle_text` reassurance ("I was skeptical too. But with free shipping and a 120-day guarantee, there's nothing to lose."); `.text-block-580` button `TRY THEM RISK-FREE`; `.bot_cta_badge_div` `Sell-Out Risk: High | FREE shipping`; `.text-size-tiny` guarantee line; `.listicle-banner-sale-badge` sale name | |
+| `#sticky_bar .text-block-581` | sticky button, the reader's wish in caps (`YES! PAIN-FREE FEET`) | 3-4 words |
+| `#sticky_bar .text-349` x2 | first name + initial of a customer (`Christine K.`) / `AND +[N] HAPPY CUSTOMERS` (a real number from the user, else drop the line) | |
+| `.listicle-head-count` (hidden) | optional comparison table + TLDR line, see traps | |
+
+**Dinosaurized guarantee is 120 days**, not 30: both `.adv_cta_subtitle_text`, both `.text-size-tiny`.
+
+## Media placeholders (`.ph`)
+
+Every image/video is a `<div class="… ph" data-ph="image|video|avatar">` that keeps the original element's classes, so the box is already the right size. Inside it:
+- `.ph-ref` = the **original media, hotlinked** from the source page (images from offers.hike-footwear.com, videos from cdn.shopify.com) so you can SEE what goes in each slot. Reference only: they are a competitor's files and can disappear any day. Never ship them.
+- `.ph-t` = type + displayed ratio, `.ph-d` = the slot's role, product-agnostic. If a hotlink dies, these two still say what belongs there.
+
+Swap each `.ph` (with its `.ph-ref` and labels) for the real element, then delete the `.ph` CSS block at the end of `<style>` once none are left (it also holds 1 template-only width fix for the offer cards, gone with the placeholders):
+
+- **benefit slot** (inside `.image-wrapper.cc-1x1`, a 1:1 box with overflow hidden, 8px radius): image `<img src="/<slug>/assets/<file>.webp" loading="lazy" alt="" class="image" style="height:100%" width="800" height="800">`; video `<video class="image" style="height:100%" autoplay muted loop playsinline webkit-playsinline preload="metadata"><source src="/<slug>/assets/<file>.mp4" type="video/mp4"></video>`. Use square sources (non-square gets cropped by `object-fit:cover`).
+- **offer card** (`image-89 baresandals`, 1:1 on a light green panel): `<img src="…" loading="lazy" alt="" class="image-89 baresandals" width="800" height="800">`, product/bundle cut-out. Same file in both cards.
+- **author avatar** (`.blogpost1_author-image`, 56px circle): `<img … class="blogpost1_author-image glb">`, square source.
+- **sticky-bar avatar** (23px circle): `<img … class="_611447c74d1e8c7665470be5_pp4png" width="23" height="23">`.
+- **logo** (hidden comparison table only): `<img … class="compare2-javvy-logo sp4">`.
+
+Keep the slot class on every real `<img>`: the source CSS has a global `img { max-width: 50% }`, the slot classes override it.
+
+| Slot | `.ph-t` | `.ph-d` (role) |
+|---|---|---|
+| author | IMG 1:1 | Author avatar |
+| #1 `b1` | VIDEO 1:1 | Benefit 1 shown in use (UGC video, close-up) |
+| #2 `b2` | VIDEO 1:1 | Benefit 2 shown in use (UGC video) |
+| #3 `b3` | VIDEO 1:1 | Benefit 3: author using it all day, relaxed (UGC video) |
+| #4 `b4` | VIDEO 1:1 | Benefit 4: the body-level payoff (UGC video) |
+| #5 `b5` | VIDEO 1:1 | Benefit 5: key design feature, close-up (video) |
+| offer card x2 | IMG 1:1 | Our product packshot / bundle on a plain background |
+| #6 `b6` | IMG 1:1 | Benefit 6: product close-up in real use |
+| #7 `b7` | IMG 1:1 | Benefit 7: product being cleaned / easy care |
+| #8 `b8` | VIDEO 1:1 | Benefit 8: feature demo (video) |
+| #9 `b9` | IMG 1:1 | Benefit 9: expert / authority with the product |
+| #10 `b10` | IMG 1:1 | Benefit 10: old products piled up vs ours (value) |
+| sticky bar | IMG 1:1 (23px) | Happy customer avatar |
+| hidden table | LOGO | Our brand logo, dark on transparent |
+
+Small UI icons (lowest-price check, gift, Verified badge, blue verified tick) are generic and inlined as data URIs: keep them.
+
+## Do not touch
+
+- `id="js-clock"` + the countdown script inside it (counts down to local midnight).
+- `data-quiz="progress-pct"`, `#sticky_bar`, `#customer-reviews a.button` (the sticky bar turns off when that button shows): the sticky/progress script at the end of `<body>` reads them. The bar only shows below 992px, by CSS (same as live).
+- `<head>`: `/tags.js`, favicons, `noindex, nofollow`. The click-ID passthrough script at the end (selector `a[href*="offer.dinosaurized.com"]`).
+- The CSS is pruned to this DOM. A NEW class added to the HTML has no rule: reuse the classes already on the page (to add a benefit, copy a whole `[data-item-id]` block).
+
+## Leftover grep
+
+grep -inE '\bhike\b|cdn\.shopify|ph-ref|HF Stride|HF-Flow|Athena Hudson|Christine K|Brooks|Sketchers|orthotic|podiatrist|barefoot|warehouse sale|57%|\$59\.95|\$69\.95|\$700|30.day|1,450,000|>FOOT<|OFFER-SLUG|/SLUG/' index.html   # must be empty
+grep -c 'data-ph=' index.html                                                                                          # 0 when all media are in
+
+## Template-specific traps
+
+| Trap | Fix |
+|---|---|
+| Every benefit heading is in the HTML **twice**: `.show-tablet h2` (above the media, mobile/tablet) and `.hide-tablet h2` (next to the text, desktop) | edit both. The source even has two different #9 titles ("A Podiatrist Actually Recommends Them" / "Recommended by Podiatrists"): make them the same |
+| The two offer cards are identical copies | change both together (heading, subtitle, button, badge, guarantee, image) |
+| #4 in the source is a health claim for people (back pain, plantar fasciitis, neuropathy) | no health claims for people (SKILL.md copy rules): turn it into a product benefit the listing supports |
+| #9 "a podiatrist recommends them" | only with a real expert/endorsement the user gives; otherwise swap for another benefit (or a real rating/award), keep the slot |
+| H1 number = items in the intro list ("I tried 7 … six failures"); "10" = benefit count | keep the intro list, "N-1 failures" and #10's price recap consistent. Competitor prices never the real Amazon price (the user: floor price): high but believable, all above ours so "the only ones that worked" holds |
+| Adding/removing a benefit | copy/delete a whole `[data-item-id]` div (the offer card sits between #5 and #6), renumber both h2 copies |
+| Hidden comparison table (`.listicle-head-count.hide`, first child of `.listicle_reasons`) | an A/B variant on the live page, hidden in the control. Optional: remove `hide` to show it (ours vs 2 alternative categories, 4 rows: Time to Put On / Shift Comfort / Weight / Price + a TLDR line). Left hidden = delete it or leave it, it's invisible |
+| `.p-listicle-3` arrow links exist only in #1 and #2 | to add one elsewhere, copy that div into the item's `.listicle1_content` |
+| Funnelish hosting | `.main-wrapper.publisher` clashes with Funnelish's `core.min.css`: same fix as listical&quiz (SKILL.md *Hosting on Funnelish*) |
+
+## Changes vs the live page
+
+- Removed: Shopify cart drawer (every CTA links to the offer page), Aeroflows/Klaviyo/GTM/pixels, Webflow runtime + jQuery, hidden desktop sidebar ("DEAL OF dAY" box), hidden "New Flavors Just Released" Lottie blocks, A/B attributes, Webflow `w-node` ids (their only rule was the default grid-area), WebFont loader (fonts self-hosted), prefetch links.
+- Sticky bar + progress script rewritten (the original `li.js` is obfuscated and served behind a token): same thresholds as measured on the live page.
+- All media → `.ph` placeholders with the original hotlinked inside as a reference (above).
+
+This comment is template notes only: drop it from the built index.html (it would ship to a public page).
+-->
+
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light">
+<title>I Tried 7 Different 'Comfort' Shoes. Only One Actually Worked.</title>
+<script src="/tags.js?v=8d6afa76" defer></script>
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>
+@font-face { font-family: Barlow; src: url("/SLUG/assets/fonts/Barlow-Light.woff2") format("woff2"); font-weight: 300; font-style: normal; font-display: swap; }
+@font-face { font-family: Barlow; src: url("/SLUG/assets/fonts/Barlow-Regular.woff2") format("woff2"); font-weight: 400; font-style: normal; font-display: swap; }
+@font-face { font-family: Barlow; src: url("/SLUG/assets/fonts/Barlow-SemiBold.woff2") format("woff2"); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: Barlow; src: url("/SLUG/assets/fonts/Barlow-ExtraBold.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: Barlow; src: url("/SLUG/assets/fonts/Barlow-Black.woff2") format("woff2"); font-weight: 900; font-style: normal; font-display: swap; }
+@font-face { font-family: Gilroy; src: url("/SLUG/assets/fonts/Gilroy-Medium.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
+@font-face { font-family: Gilroy; src: url("/SLUG/assets/fonts/Gilroy-SemiBold.woff2") format("woff2"); font-weight: 600; font-style: normal; font-display: swap; }
+@font-face { font-family: Gilroy; src: url("/SLUG/assets/fonts/Gilroy-Bold.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: Gilroy; src: url("/SLUG/assets/fonts/Gilroy-ExtraBold.woff2") format("woff2"); font-weight: 800; font-style: normal; font-display: swap; }
+@font-face { font-family: "Circular Std"; src: url("/SLUG/assets/fonts/CircularStd-Bold.woff2") format("woff2"); font-weight: 700; font-style: normal; font-display: swap; }
+@font-face { font-family: Figtree; src: url("/SLUG/assets/fonts/Figtree-800.woff2") format("woff2"); font-weight: 800; font-style: normal; font-display: swap; }
+html { text-size-adjust: 100%; font-family: sans-serif; }
+body { margin: 0px; }
+section { display: block; }
+video { vertical-align: baseline; display: inline-block; }
+a { background-color: rgba(0, 0, 0, 0); }
+a:active, a:hover { outline: 0px; }
+strong { font-weight: 700; }
+h1 { margin: 0.67em 0px; font-size: 2em; }
+img { border: 0px; }
+svg:not(:root) { overflow: hidden; }
+* { box-sizing: border-box; }
+html { height: 100%; }
+body { color: rgb(51, 51, 51); background-color: rgb(255, 255, 255); min-height: 100%; margin: 0px; font-family: Arial, sans-serif; font-size: 14px; line-height: 20px; }
+img { vertical-align: middle; max-width: 100%; display: inline-block; }
+.w-inline-block { max-width: 100%; display: inline-block; }
+h1, h2 { margin-bottom: 10px; font-weight: 700; }
+h1 { margin-top: 20px; font-size: 38px; line-height: 44px; }
+h2 { margin-top: 20px; font-size: 32px; line-height: 36px; }
+p { margin-top: 0px; margin-bottom: 10px; }
+.w-embed::before, .w-embed::after { content: " "; grid-area: 1 / 1 / 2 / 2; display: table; }
+.w-embed::after { clear: both; }
+:root { --aeroflows-library---os--color--rating: #ffa600; --aeroflows-library---os--border--radius: var(--aeroflows-library---os--radius--md); --aeroflows-library---os--color--neutral-50: #f1f1f1; --aeroflows-library---os--state--selected-border: #31392b; --aeroflows-library---os--state--focus-ring: #50008a21; --brand--color--background: white; --_text---font-family--primary: Barlow,Arial,sans-serif; --brand--color--secondary: #273c17; --_text---font-family--heading: Barlow,Arial,sans-serif; --text-color--text-primary\<deleted\|relume-variable-text-color-1\>: var(--brand--25\<deleted\|relume-variable-color-neutral-1\>); --_text---font-family--secondary: Barlow,Arial,sans-serif; --brand--color--text-inverse: white; --brand--color--primary-foreground: white; --brand--25\<deleted\|relume-variable-color-neutral-1\>: #f8f8f8; --neutral--25: #fcfcfd; --background-color--background-error\<deleted\|relume-variable-background-color-8\>: var(--base-color-system--error-red-light\<deleted\|relume-variable-system-color-6\>); --text-color--text-error\<deleted\|relume-variable-text-color-5\>: var(--system-color--error\<deleted\|relume-variable-system-color-5\>); --spacing--4: 2rem; --spacing--3: 3rem; --spacing--2: 2rem; --radius--image: var(--radius-size--md); --radius-size--sm: 4px; --brand--color--border: #eee; --brand--color--primary: #4b7826; --radius-size--md: 8px; --brand--color--accent: #3d3d3d; --brand--color--rating-star: #ffb700; --brand--color--complementary-1: #fff5de; --brand--color--cta-primary: var(--brand--color--primary); --radius--button: var(--radius-size--buttons); --brand--color--primary-light: #f8faf8; --brand--color--text-primary: var(--_labels---brand--color--label-status); --brand--color--tertiary: #da6d00; --brand--color--surface: #f8f8f8; --brand--color--tertiary-light: #fff0e0; --neutral--300: #d0d5dd; --aeroflows-library---os--color--primary: #303030; --aeroflows-library---os--color--primary-foreground: white; --aeroflows-library---os--color--primary-hover: #3f006e; --aeroflows-library---os--color--primary-light: #f3e6ff; --aeroflows-library---os--color--primary-lighter: #fdfaff; --aeroflows-library---os--color--primary-dark: #2d004d; --aeroflows-library---os--color--secondary: #00bfa5; --aeroflows-library---os--color--secondary-foreground: white; --aeroflows-library---os--color--secondary-hover: #00a08a; --aeroflows-library---os--color--secondary-light: #ccf5ed; --aeroflows-library---os--color--secondary-dark: #007a65; --aeroflows-library---os--color--secondary-lighter: #e2f6f3; --aeroflows-library---os--color--tertiary: #ff6b6b; --aeroflows-library---os--color--tertiary-foreground: white; --aeroflows-library---os--color--tertiary-hover: #ff5252; --aeroflows-library---os--color--tertiary-dark: #c55; --aeroflows-library---os--color--tertiary-light: #ffe0e0; --aeroflows-library---os--color--tertiary-lighter: #fff1f1; --aeroflows-library---os--color--accent: #ce1f22; --aeroflows-library---os--color--accent-foreground: white; --aeroflows-library---os--color--accent-hover: #ff8c1a; --aeroflows-library---os--color--accent-light: #fff3e0; --aeroflows-library---os--color--neutral-100: #f4f3f6; --aeroflows-library---os--color--neutral-200: #e8e6eb; --aeroflows-library---os--color--neutral-300: #d4d1d9; --aeroflows-library---os--color--neutral-400: #a39bb0; --aeroflows-library---os--color--neutral-500: #746b84; --aeroflows-library---os--color--neutral-600: #564e65; --aeroflows-library---os--color--neutral-700: #3e3749; --aeroflows-library---os--color--neutral-800: #292330; --aeroflows-library---os--color--neutral-900: #1a161f; --aeroflows-library---os--color--neutral-950: #2c3839; --aeroflows-library---os--color--radio: var(--aeroflows-library---os--color--primary); --aeroflows-library---os--color--error: #ff4757; --aeroflows-library---os--color--error-foreground: #ffe9ed; --aeroflows-library---os--color--error-light: #ffe0e3; --aeroflows-library---os--color--error-dark: #cc3945; --aeroflows-library---os--color--warning: #fa0; --aeroflows-library---os--color--warning-light: #fff5cc; --aeroflows-library---os--color--warning-dark: #c80; --aeroflows-library---os--color--warning-foreground: #fffaea; --aeroflows-library---os--color--success: #00c896; --aeroflows-library---os--color--success-foreground: white; --aeroflows-library---os--card--padding: 1rem; --aeroflows-library---os--state--hover: var(--aeroflows-library---os--color--primary-light); --aeroflows-library---os--text--primary: var(--aeroflows-library---os--color--neutral-900); --aeroflows-library---os--surface--base: white; --aeroflows-library---os--card--padding-mobile: .75rem; --aeroflows-library---os--card--gap: .75rem; --aeroflows-library---os--card--gap-mobile: .5rem; --aeroflows-library---os--card--radius: var(--aeroflows-library---os--radius--base); --aeroflows-library---os--card--border-width: 1px; --aeroflows-library---os--card--border-color: #e2e8f0; --aeroflows-library---os--card--selected-border-width: 2px; --aeroflows-library---os--card--selected-border-color: var(--aeroflows-library---os--color--primary); --aeroflows-library---os--card--selected-background: var(--aeroflows-library---os--color--primary-lighter); --aeroflows-library---os--card--radio-color: var(--aeroflows-library---os--color--primary); --aeroflows-library---os--state--selected: var(--aeroflows-library---os--color--primary-light); --aeroflows-library---os--state--focus: var(--aeroflows-library---os--color--primary); --aeroflows-library---os--state--disabled: var(--aeroflows-library---os--color--neutral-300); --aeroflows-library---os--state--disabled-text: var(--aeroflows-library---os--color--neutral-500); --aeroflows-library---os--space--0: 0px; --aeroflows-library---os--space--1: .25rem; --aeroflows-library---os--space--2: .5rem; --aeroflows-library---os--space--3: .75rem; --aeroflows-library---os--space--4: 1rem; --aeroflows-library---os--space--5: 1.25rem; --aeroflows-library---os--space--6: 1.5rem; --aeroflows-library---os--space--8: 2rem; --aeroflows-library---os--space--10: 2.5rem; --aeroflows-library---os--space--12: 3rem; --aeroflows-library---os--text--secondary: var(--aeroflows-library---os--color--neutral-600); --aeroflows-library---os--text--muted: var(--aeroflows-library---os--color--neutral-500); --aeroflows-library---os--text--success: var(--aeroflows-library---os--color--success); --aeroflows-library---os--text--error: var(--aeroflows-library---os--color--error); --aeroflows-library---os--text--link: var(--aeroflows-library---os--color--primary); --aeroflows-library---os--text--link-hover: var(--aeroflows-library---os--color--primary-hover); --aeroflows-library---os--surface--base-foreground: var(--aeroflows-library---os--color--neutral-900); --aeroflows-library---os--surface--subtle: #faf9fc; --aeroflows-library---os--surface--subtle-foreground: var(--aeroflows-library---os--color--neutral-900); --aeroflows-library---os--surface--muted: var(--aeroflows-library---os--color--neutral-100); --aeroflows-library---os--surface--muted-foreground: var(--aeroflows-library---os--color--neutral-700); --aeroflows-library---os--surface--elevated: white; --aeroflows-library---os--surface--elevated-foreground: var(--aeroflows-library---os--color--neutral-900); --aeroflows-library---os--surface--overlay: #50008a1a; --aeroflows-library---os--surface--overlay-foreground: #1a161fb3; --aeroflows-library---os--color--success-light: #ccf7ec; --aeroflows-library---os--color--success-dark: #00a078; --aeroflows-library---os--color--info: #5f7fff; --aeroflows-library---os--color--info-foreground: white; --aeroflows-library---os--color--info-light: #e6ebff; --aeroflows-library---os--color--info-dark: #4c66cc; --aeroflows-library---os--size: 0px; --_text---size: 0px; --_text---scale--min: .8; --_text---scale--max: 1.15; --_text---scale--viewport: 2; --_sizes---container--max-width: 80rem; --_sizes---container--padding: 2.5rem; --_labels---brand--color--label-status: black; --aeroflows-library---os--card-radius: .25rem; --aeroflows-library---os--card-gap: .75rem; --aeroflows-library---os--gap-vertical: 1rem; --aeroflows-library---os--gap-horizontal: 1rem; --aeroflows-library---os--border: 1px; --aeroflows-library---os--border-active: 2px; --aeroflows-library---os--card-padding: 1rem; --brand--color--accent-foreground: white; --brand--color--foreground: #1a1a1a; --brand--color--secondary-light: #636363; --brand--color--complementary-2: var(--brand--color--surface); --brand--color--text-secondary: #4a5568; --brand--color--text-muted: #718096; --brand--color--cta-primary-hover: #7b55d3; --brand--color--link: var(--brand--color--accent); --brand--color--link-hover: var(--brand--color--complementary-1); --brand--color--icons: var(--brand--color--primary); --brand--color--icons-inverse: white; --_labels---brand--color--label-status-background: white; --_labels---brand--color--label-status-border: #e2e8f0; --_labels---brand--color--label-urgency: #6b46c1; --_labels---brand--color--label-urgency-background: #f7f1ff; --_labels---brand--color--label-stock-warning: #f44; --_labels---brand--color--label-stock-warning-background: #fff2f2; --_labels---brand--color--label-savings: white; --_labels---brand--color--label-savings-background: #6b46c1; --_labels---brand--color--label-best-deal: black; --_labels---brand--color--label-best-deal-text: white; --_labels---brand--color--label-discount: #15803d; --_labels---brand--color--label-discount-background: #dcfce7; --_labels---brand--color--label-discount-text: #166534; --_labels---brand--color--label-new: #6b46c1; --_labels---brand--color--label-new-background: #f7f1ff; --_labels---brand--color--label-soldout: #718096; --_labels---brand--color--label-soldout-background: #edf2f7; --_labels---brand--color--label-preorder: white; --_labels---brand--color--label-preorder-background: white; --component--color--swiper-buttons-background: var(--brand--color--primary); --component--color--swiper-button-text: #fff; --component--color--swiper-thumbnail-border: #000; --component--color--outline: var(--brand--color--primary); --component--color--radio: var(--brand--color--primary); --component--color--label-background: #000; --component--color--label: white; --radius--radius: 0px; --radius--selector: var(--radius-size--sm); --radius--label: var(--radius-size--sm); --borders--current-option: 2px; --aeroflows-library---os--border--width: 2px; --aeroflows-library---os--border--color: var(--aeroflows-library---os--color--neutral-200); --radius-size--base: 8px; --aeroflows-library---os--radius--sm: .25rem; --aeroflows-library---os--radius--base: .375rem; --aeroflows-library---os--radius--md: .5rem; --aeroflows-library---os--radius--lg: .75rem; --aeroflows-library---os--radius--xl: 1rem; --aeroflows-library---os--radius--full: 9999px; --radius-size--buttons: 8px; --aeroflows-library---os--radius--buttons: 8px; --radius--cards: var(--radius-size--base); --system-colors--success-text: #074d31; --system-colors--success: #ecfdf3; --system-colors--destructive-text: #8f0000; --system-colors--destructive: #ffe4e4; --system-colors--white: white; --system-colors--attention: #fff7d9; --system-colors--attention-text: #93370d; --system-colors--info: #e4f9fd; --system-colors--info-text: #00586b; --system-colors--glass: #fff9; --system-colors--transparent: transparent; --system-colors--transparent-white: #fff0; --brand--font-display: Interdisplay,Arial,sans-serif; --aeroflows-library---os--font--display: Interdisplay,Arial,sans-serif; --brand--font-text: Inter,Arial,sans-serif; --aeroflows-library---os--font--text: "Circular Std",Arial,sans-serif; --brand--color-destructive: #ffd0d0; --brand--color-destructive-foreground: #ac0000; --brand--size-radius: 8px; --brand--color-success: #eee; --brand--color-success-foreground: #000; --container-max-width--width-s: 0px; --aeroflows-library---container-max-width--width-s: 0px; --container-max-width--width-m: 0px; --aeroflows-library---container-max-width--width-m: 0px; --container-max-width--width-l: 70rem; --aeroflows-library---container-max-width--width-l: 70rem; --container-max-width--size: 0px; --aeroflows-library---container-max-width--size: 0px; --container-max-width--width-xl: 82rem; --aeroflows-library---container-max-width--width-xl: 82rem; --container-padding--desktop: 2.5rem; --aeroflows-library---container-padding--desktop: 2.5rem; --container-padding--mobile: 1.25rem; --aeroflows-library---container-padding--mobile: 1.25rem; --font-size--paragraph: 1rem; --font-size--heading-xxl: 4rem; --font-size--heading-xl: 3rem; --font-size--heading-l: 2rem; --font-size--heading-m: 1.5rem; --font-size--heading-s: 1rem; --font-size--paragraph-s: .75rem; --font-size--paragraph-l: 1.125rem; --font-size--paragraph-xl: 1.5rem; --font-size--paragraph-m: .875rem; --neutral--50: #f9fafb; --neutral--100: #f2f4f7; --neutral--200: #eaecf0; --neutral--400: #98a2b3; --neutral--500: #667085; --neutral--600: #475467; --neutral--700: #344054; --neutral--800: #182230; --neutral--900: #101828; --neutral--950: #0c111d; --pb-component--color-error: #ffe4e4; --pb-component--color-error-foreground: #8f0000; --pb-component--color-success: #f6fef9; --pb-component--color-success-foreground: #053321; --pb-component--border-radius: 4px; --pb-component--border-size: 1px; --spacing--max-width-small: 70rem; --spacing--0-25: .25rem; --spacing--0-5: .5rem; --spacing--0-75: .75rem; --spacing--1: 1rem; --spacing--1-5: 0rem; --spacing--5: 5rem; --spacing--6: 6rem; --spacing--8: 8rem; --spacing--none: 0px; --section--padding: var(--spacing--2); --aeroflows-library---section--padding: 2rem; --section--padding-tablet: var(--spacing--1-5); --aeroflows-library---section--padding-tablet: 1.5rem; --section--padding-mobile: var(--spacing--1); --aeroflows-library---section--padding-mobile: 1rem; --spacing-new--unit: 4px; --site--gutter: 4rem; --aeroflows-library---site--gutter: 4rem; --site--width: 67.5rem; --aeroflows-library---site--width: 67.5rem; --site--margin: 0px; --aeroflows-library---site--margin: 0px; --site--gutter-mobile: 2rem; --aeroflows-library---site--gutter-mobile: 2rem; --base-color-system--error-red-light\<deleted\|relume-variable-system-color-6\>: #fef3f2; --system-color--error\<deleted\|relume-variable-system-color-5\>: #f04438; }
+body { background-color: var(--brand--color--background); font-family: var(--_text---font-family--primary); color: var(--brand--color--secondary); letter-spacing: -0.28px; overscroll-behavior: none; font-size: 1rem; line-height: 1.5; }
+h1 { font-family: var(--_text---font-family--heading); letter-spacing: -0.04em; margin-top: 0px; margin-bottom: 0px; font-size: 3.5rem; font-weight: 700; line-height: 1.2; }
+h2 { font-family: var(--_text---font-family--heading); margin-top: 0px; margin-bottom: 0px; font-size: 3rem; font-weight: 700; line-height: 1.2; }
+p { margin-bottom: 0px; }
+a { color: rgb(0, 0, 0); text-decoration: none; }
+img { object-fit: contain; max-width: 50%; display: inline-block; }
+.hide { display: none; }
+.page-wrapper { overflow: clip; }
+.button { width: 100%; min-height: 4.5rem; font-family: var(--_text---font-family--secondary); color: var(--brand--color--text-inverse); text-align: center; letter-spacing: 0px; background-color: rgb(84, 129, 37); border: 2px solid rgba(83, 116, 57, 0.8); border-radius: 10px; justify-content: center; align-items: center; padding: 0.75rem 2rem 1rem; font-size: 1.25rem; font-weight: 700; text-decoration: none; transition: border 0.12s; display: flex; position: relative; }
+.button:hover { background-color: rgb(87, 125, 56); }
+.display-md { color: rgb(47, 53, 35); text-wrap: balance; margin-top: 0px; margin-bottom: 0px; font-family: Gilroy, Arial, sans-serif; font-size: 2rem; font-weight: 800; line-height: 1.2; }
+.display-md.publisher { color: rgb(37, 51, 25); font-family: Gilroy, Arial, sans-serif; font-weight: 800; }
+.image { aspect-ratio: auto; vertical-align: baseline; object-fit: cover; border-radius: 10px; width: 100%; max-width: none; height: auto; display: block; }
+.display-xl { color: rgb(47, 53, 35); letter-spacing: -0.02em; text-transform: capitalize; margin-top: 0px; margin-bottom: 0px; font-family: Gilroy, Arial, sans-serif; font-size: 2.25rem; font-weight: 800; line-height: 1.3; }
+.display-xl.os-black { color: rgb(48, 99, 54); font-weight: 800; }
+.button_spinner { width: 100%; height: 100%; transition: opacity 0.2s; position: absolute; }
+.section { padding-top: var(--spacing--4); padding-bottom: var(--spacing--4); background-color: rgb(254, 255, 252); position: relative; overflow: clip; }
+.section.cc-top-sm { background-color: rgb(253, 255, 251); padding-top: 2.5rem; }
+.section.cc-listicle { background-color: rgb(253, 255, 251); padding-bottom: 0px; }
+.image-wrapper { border-radius: var(--radius--image); align-self: flex-start; width: 100%; position: relative; overflow: hidden; }
+.image-wrapper.cc-1x1 { aspect-ratio: 1 / 1; }
+.button_content { column-gap: 0.5rem; justify-content: center; align-items: center; width: 100%; height: 100%; transition: opacity 0.2s; display: flex; }
+.container { z-index: 1; width: 100%; max-width: 80rem; margin-left: auto; margin-right: auto; padding-left: 2.5rem; padding-right: 2.5rem; display: block; position: relative; }
+.container.cc-small { gap: 17px; flex-flow: row; justify-content: center; align-items: center; max-width: 58rem; display: flex; }
+.blogpost1_title-wrapper { gap: 1rem; flex-direction: column; justify-content: flex-start; align-items: flex-start; margin-left: auto; margin-right: auto; display: flex; }
+.blogpost1_content-top { justify-content: space-between; align-items: flex-end; width: 100%; display: flex; }
+.listicle_reasons { row-gap: 4rem; flex-direction: column; margin-bottom: 4rem; display: flex; }
+.content-listicle { column-gap: 3rem; align-items: center; display: flex; }
+.listicle-image { flex: 0 0 auto; width: 45%; }
+.show-tablet { display: none; }
+.padding-bottom, .padding-bottom.padding-xsmall, .padding-bottom.padding-xsmall { padding-top: 0px; padding-left: 0px; padding-right: 0px; }
+.listicle1_content { gap: 1rem; flex-direction: column; display: flex; position: relative; }
+.listicle__grid { gap: 2rem; display: flex; }
+.button_icon { flex-direction: column; justify-content: center; align-items: center; width: 1.5rem; height: 1.5rem; display: block; position: absolute; inset: auto 1.5rem auto auto; }
+.adv-callout { background-color: rgb(228, 243, 251); border-radius: 8px; overflow: clip; }
+.adv-callout.adv-callout--quote { background-color: rgb(238, 245, 233); border-width: 0px 0px 0px 3px; border-style: solid; border-color: rgb(78, 107, 54); border-image: none; border-radius: 0px; width: 55%; }
+.adv-callout.adv-callout--quote.publisher { background-color: rgb(237, 245, 237); border-left-color: rgb(49, 66, 33); width: 61%; }
+.adv-callout__wrapper { gap: 0.5rem; flex-flow: column; padding: 0.5rem 0.4rem 0.5rem 1rem; line-height: 1.7; display: flex; }
+.display-col { column-gap: 0.5rem; text-align: left; align-items: center; padding-top: 2px; padding-bottom: 2px; display: flex; }
+.sticky-headers { z-index: 800; position: sticky; top: 0px; }
+.navbar-countdown-4 { z-index: 999; color: rgb(1, 1, 1); background-color: rgb(42, 37, 82); flex-direction: column; justify-content: center; align-items: stretch; height: 50px; min-height: 50px; max-height: 50px; font-size: 1rem; font-weight: 700; display: flex; }
+.navbar-countdown-4.greeen { background-color: rgb(67, 87, 49); }
+.navbar-countdown-4.greeen.publisher, .navbar-countdown-4.greeen.publisher.listicle { background-color: rgb(43, 57, 33); }
+.navbar-smaller { gap: 1rem; color: rgb(255, 255, 255); justify-content: center; align-items: center; font-weight: 400; display: flex; }
+.navbar-one-inner { gap: 0.5rem; color: rgb(255, 255, 255); flex-direction: row; justify-content: center; align-items: center; line-height: 1.3; display: flex; position: relative; }
+.holiday-clock { color: rgb(0, 0, 0); background-color: rgb(149, 90, 188); border-radius: 7px; justify-content: center; align-items: center; padding: 0.25rem 0.5rem; display: flex; }
+.holiday-clock.os-green { background-color: rgba(255, 255, 255, 0.07); }
+.box-hrs-2 { gap: 0.15rem; outline-offset: 0px; color: rgb(0, 0, 0); background-color: rgba(255, 255, 255, 0); border-radius: 0px; outline: rgba(255, 255, 255, 0.08) 3px; flex-flow: column; justify-content: center; align-items: center; width: auto; height: auto; min-height: auto; margin-left: 2px; margin-right: 2px; padding: 0.25rem; font-size: 1rem; line-height: 20px; display: flex; }
+.blogpost1_author-wrapper { background-color: rgb(255, 255, 255); border: 1px solid rgb(208, 213, 221); border-radius: 9px; align-items: center; margin-top: 10px; padding: 5px 40px 5px 15px; display: flex; box-shadow: rgba(20, 35, 8, 0.08) 0px 1px 0.2px; }
+.blogpost1_author-image-wrapper { margin-right: 1rem; }
+.blogpost1_author-image { object-fit: cover; border-radius: 100%; width: 3.5rem; min-width: 3.5rem; height: 3.5rem; min-height: 3.5rem; }
+.blogpost1_author-text { font-size: 0.85rem; }
+.blogpost1_date-wrapper { font-size: 0.75rem; display: flex; }
+.blogpost1_date-wrapper._2 { gap: 35px; justify-content: center; margin-top: 4px; margin-bottom: 0px; }
+.text-weight-semibold-2 { color: rgb(36, 36, 36); font-size: 1rem; font-weight: 600; }
+.image-44 { width: 90px; max-width: 90%; }
+.text-size-small-copy-2 { color: rgba(51, 51, 51, 0.89); margin-top: 5px; font-size: 1rem; }
+.text-size-small-copy-2.glb { color: rgb(74, 99, 48); letter-spacing: 0px; font-family: Gilroy, Arial, sans-serif; font-weight: 600; }
+.header { z-index: 90; }
+.text-align-center-5 { text-align: center; }
+.text-weight-semibold-2 { font-weight: 600; }
+.health-dscvry-nav-10 { color: rgb(255, 255, 255); margin-top: 0px; margin-bottom: 0px; font-size: 50px; line-height: 50px; }
+.health-dscvry-nav-10.hf.lst { font-family: Barlow, Arial, sans-serif; font-size: 28px; }
+.health-dscvry-nav-10.hf { color: rgb(248, 250, 248); font-family: Barlow, Arial, sans-serif; font-size: 30px; font-weight: 700; display: flex; }
+._611447c74d1e8c7665470be5_pp4png { object-fit: cover; border-radius: 60px; flex-direction: column; justify-content: flex-start; align-items: flex-start; width: 21px; height: 21px; text-decoration: none; display: flex; overflow: hidden; }
+.text { color: rgb(78, 107, 54); text-align: center; margin-top: 0px; margin-bottom: 0px; font-family: Barlow, sans-serif; font-size: 14px; font-weight: 600; line-height: 21.6px; text-decoration: none; }
+.li-compare2-category-title-w { justify-content: center; align-items: center; height: 56px; display: flex; }
+.li-compare2-category-title-w.sp4 { color: rgb(200, 32, 47); }
+.compare2-p-category { opacity: 1; color: rgba(48, 51, 40, 0.86); font-family: Figtree, sans-serif; font-size: 1rem; font-weight: 600; }
+.std_empty { gap: 4px; justify-content: center; align-items: center; width: 100%; display: flex; }
+.std_empty.listicle { color: rgb(255, 255, 255); background-color: rgb(42, 37, 82); border-right: 1px solid rgba(255, 255, 255, 0.06); height: 44px; }
+.std_empty.listicle.compare2 { color: rgb(0, 0, 0); background-color: rgba(255, 255, 255, 0); border-bottom: 1px dashed rgb(201, 201, 201); flex-flow: column; justify-content: flex-end; align-items: center; height: auto; font-weight: 500; position: relative; }
+.std_empty.listicle.compare2.sp4 { background-color: rgb(255, 245, 245); border-top: 1px rgb(201, 201, 201); border-bottom-style: none; }
+.std_empty.listicle.compare2.text { border-bottom-style: dashed; justify-content: center; align-items: flex-start; padding-top: 47px; padding-bottom: 20px; padding-left: 22px; }
+.std_empty.listicle.compare2.text.sp4 { border-top-style: none; padding-top: 28px; }
+.std_empty.listicle.compare2.text.sp4.white { background-color: rgb(255, 255, 255); border-bottom-color: rgb(234, 238, 230); }
+.std_compare { border-bottom: 1px dashed rgb(201, 201, 201); justify-content: center; align-items: center; height: 56px; padding-top: 16px; padding-bottom: 16px; display: flex; }
+.std_compare._3 { background-color: rgb(255, 255, 255); border-bottom-color: rgb(234, 238, 230); height: 56px; }
+.std_compare.category { justify-content: flex-start; align-items: center; padding-left: 22px; }
+.std_compare.category.noborder { border-bottom-style: none; }
+.std_compare.category.compare2 { border-bottom-color: rgb(234, 238, 230); height: 56px; }
+.std_compare.compare2-green { border-bottom-style: solid; border-bottom-color: rgba(52, 74, 35, 0.22); height: 56px; margin-left: 12px; margin-right: 12px; position: relative; }
+.std_compare.compare2-green.noborder { border-bottom-style: none; }
+.std_compare.compare2-green.scooptxt { flex-flow: column; }
+.std_compare.compare2-green.scooptxt.noborder { border-bottom-style: none; }
+.std_compare.header { border-bottom-style: none; height: 70px; font-weight: 500; }
+.std_compare.header.listicle { height: 44px; }
+.std_compare.header.listicle.compare2 { height: auto; padding-top: 0px; padding-bottom: 0px; }
+.std_compare.header.listicle.compare2.letscompare { border-bottom-style: none; padding-top: 0px; }
+.std_compare.grey { color: rgb(201, 52, 52); border-bottom-style: solid; border-bottom-color: rgb(231, 231, 231); font-size: 1rem; }
+.std_compare.grey.noborder { border-bottom-style: none; }
+.std_compare.grey.noborder.compare2 { flex-flow: column; }
+.std_compare.grey.noborder.compare2._3 { background-color: rgba(255, 255, 255, 0); flex-flow: column; }
+.std_compare.compare2 { border-bottom-color: rgb(234, 238, 230); height: 56px; }
+.std_compare.compare2.small-txt { gap: 2px; flex-flow: column; padding-top: 14px; padding-bottom: 18px; }
+.compare2_hike-others { color: rgb(112, 109, 133); font-family: Figtree, sans-serif; font-size: 0.875rem; }
+.std_comparison-table { justify-content: center; align-items: flex-end; width: 100%; display: flex; }
+.std_comparison-table.listicle { box-shadow: none; border: 1px solid rgb(231, 231, 231); }
+.std_comparison-table.listicle.compare2 { border-style: none; border-color: rgb(0, 0, 0); justify-content: center; align-items: flex-start; margin-top: 16px; }
+.std_comparison-table.listicle.compare2.sp4 { margin-top: 4px; margin-bottom: 14px; }
+.std_compare-column { width: 25%; padding-top: 24px; padding-bottom: 8px; }
+.std_compare-column.compet { padding-top: 15px; }
+.std_compare-column.cc-mains { backdrop-filter: blur(12px); text-align: center; background-color: rgb(255, 255, 255); border: 1.5px solid rgb(238, 240, 238); border-radius: 10px; padding-top: 15px; box-shadow: rgba(0, 0, 0, 0.07) 0px 2px 9px; }
+.compare_prod-flex { gap: 8px; justify-content: flex-start; align-items: center; height: 32px; display: flex; }
+.compare2-javvy-logo { width: 100%; max-height: 40px; }
+.compare2-javvy-logo.sp4 { max-height: 30px; margin-bottom: 20px; }
+.paragraph-123 { font-family: Figtree, sans-serif; font-weight: 600; }
+.style-guide-card { color: rgb(37, 51, 25); text-align: center; letter-spacing: 1px; text-transform: uppercase; flex: 0 0 auto; font-family: Gilroy, Arial, sans-serif; font-size: 0.75rem; font-weight: 700; }
+.div-block-900 { justify-content: center; align-items: center; width: 80%; height: 40px; margin-left: auto; margin-right: auto; display: flex; position: absolute; inset: -1.5rem 0% auto; }
+.div-block-2 { align-items: baseline; display: flex; }
+.gift-icon { width: 12px; }
+.text-block { font-family: Gilroy, Arial, sans-serif; font-weight: 500; line-height: 18px; }
+.cta-content-2 { border: 1px dashed rgba(37, 64, 15, 0.21); border-radius: 6px; flex-direction: column; align-items: center; display: flex; position: relative; }
+.div-block-764 { align-items: baseline; display: flex; }
+.divider { z-index: 10; column-gap: 1rem; color: rgb(0, 0, 0); justify-content: center; align-items: center; width: 100%; margin-left: auto; margin-right: auto; display: flex; position: relative; }
+.divider.bf { gap: 0.5rem; }
+.divider.bf { column-gap: 0.5rem; }
+.div-block-766 { margin-left: 8px; }
+.text-block-4 { font-size: 18px; font-weight: 200; }
+.image-89 { width: 100%; max-width: none; height: auto; display: block; }
+.text-size-tiny { color: rgb(37, 51, 25); font-size: 0.75rem; }
+.text-size-tiny.text-align-center { color: rgba(12, 32, 22, 0.9); font-family: Gilroy, Arial, sans-serif; font-weight: 500; }
+.adv_cta_div { text-align: left; background-color: rgb(255, 255, 255); border: 2px rgb(255, 255, 255); border-radius: 8px; justify-content: space-between; display: flex; position: relative; overflow: hidden; box-shadow: rgba(0, 0, 0, 0.06) 0px 4px 12px; }
+.text-span-6 { color: rgb(200, 32, 47); font-weight: 800; }
+.adv_cta_right_div { gap: 0.5rem; text-align: center; flex-flow: column; width: 50%; padding: 3rem; display: flex; }
+.section_cta-protein { background-color: rgb(248, 244, 238); }
+.section_cta-protein.gradient-sale { background-color: rgb(39, 60, 23); }
+.section_cta-protein.gradient-sale.publisher { background-color: rgb(253, 255, 251); }
+.adv_cta_subtitle_text { color: rgb(30, 46, 32); text-align: center; font-family: Gilroy, Arial, sans-serif; font-size: 14px; font-weight: 500; line-height: 18px; }
+.div-block-1351 { gap: 6px; display: flex; }
+.div-block-767 { margin-left: 8px; }
+.adv_cta_top_div { gap: 0.25rem; flex-direction: column; align-items: center; display: flex; }
+.span-red { color: rgb(82, 117, 53); }
+.text-block-279 { font-family: Gilroy, Arial, sans-serif; font-weight: 500; line-height: 18px; }
+.photo-wrappers { background-color: rgb(244, 244, 244); justify-content: center; align-items: center; width: 50%; display: flex; position: relative; }
+.photo-wrappers.dark-grey { background-color: rgb(241, 247, 240); }
+.div-block-765 { margin-left: 13px; margin-right: 13px; }
+.divider-line { background-color: rgba(0, 0, 0, 0.11); width: 100%; height: 1px; }
+.divider-line.expand { flex: 1 1 0%; }
+.max-width-medium-2 { flex-flow: column; justify-content: center; align-items: center; max-width: 73rem; display: flex; }
+.bot_cta_badge_div { width: 100%; font-family: var(--_text---font-family--heading); color: rgba(12, 32, 22, 0.9); background-color: rgb(245, 247, 242); border: 1px rgb(215, 255, 224); border-radius: 4px; justify-content: center; align-items: center; padding: 0.5rem 1rem; font-size: 0.75rem; display: flex; }
+.padding-section-cta { padding-top: 0px; padding-bottom: 5rem; }
+.text-span-7 { font-weight: 800; }
+.adv_cta_heading-2 { color: rgb(37, 51, 25); text-align: center; font-family: Gilroy, Arial, sans-serif; font-size: 2.1rem; font-weight: 800; line-height: 1.2; }
+.listicle-banner-sale-badge { color: rgb(255, 255, 255); text-transform: uppercase; background-color: rgb(149, 90, 188); border-radius: 7px; padding: 0.44rem 1rem; font-family: Gilroy, Arial, sans-serif; font-weight: 800; }
+.nav-foots { background-color: rgb(44, 57, 33); padding-top: 10px; padding-bottom: 10px; position: static; top: 0px; overflow: clip; }
+.nav-foots.publisher.authority { background-color: rgb(37, 51, 25); border-width: 1px; border-style: none none solid; border-color: rgba(10, 10, 10, 0.1); border-image: none; border-radius: 0px; padding-top: 10px; padding-bottom: 10px; box-shadow: rgba(0, 0, 0, 0.07) 0px 4px 4px; }
+.nav-foots.publisher.authority { color: rgb(0, 93, 86); font-family: Figtree, sans-serif; }
+.nav-foots.publisher { background-color: rgb(37, 51, 25); }
+.nav-foots.publisher.authority { box-shadow: none; background-color: rgb(37, 51, 25); border-width: 1px; border-style: none none solid; border-color: rgba(10, 10, 10, 0.1); border-image: none; border-radius: 0px; padding-top: 4px; padding-bottom: 4px; }
+.lowest-price-icon { gap: 10px; color: rgb(255, 255, 255); justify-content: center; align-items: center; height: 18px; padding-bottom: 2px; font-weight: 500; display: flex; }
+.lowest-price-check { gap: 10px; color: rgb(255, 255, 255); background-color: rgb(18, 115, 22); justify-content: center; align-items: center; height: 34px; padding-bottom: 2px; font-weight: 500; display: none; }
+.compare_hike-2 { font-family: var(--_text---font-family--secondary); font-size: 18px; font-weight: 500; }
+.compare_hike { font-size: 18px; font-weight: 500; }
+.compare_hike.small { opacity: 0.6; font-size: 12px; font-weight: 400; line-height: 1; }
+.os-pair { font-size: 0.875rem; }
+.listicle-head-count { gap: 1rem; flex-flow: column; width: 100%; display: flex; }
+.p-listicle { color: rgb(37, 51, 25); letter-spacing: 0px; font-family: Gilroy, Arial, sans-serif; font-size: 1.1rem; font-weight: 500; line-height: 1.7; }
+.p-listicle.publisher { color: rgb(37, 51, 25); letter-spacing: 0px; font-family: Gilroy, Arial, sans-serif; font-size: 1.1rem; font-weight: 500; }
+.div-block-1356 { justify-content: center; align-items: center; width: 100%; margin-top: 4px; padding-top: 4px; padding-bottom: 4px; display: flex; }
+.padding-global-20 { padding-left: 2.5rem; padding-right: 2.5rem; }
+.container-small-5 { width: 100%; max-width: 54rem; margin-left: auto; margin-right: auto; }
+.listicle-holder { flex-direction: column; display: flex; position: sticky; bottom: 0px; }
+.sticky_bar { gap: 16px; grid-template-rows: auto auto; grid-template-columns: 1fr 1fr; grid-auto-columns: 1fr; padding-top: 1rem; padding-bottom: 0.2rem; display: none; }
+.text-block-490 { font-family: var(--_text---font-family--secondary); color: rgb(52, 74, 35); font-weight: 500; }
+.text-block-490.publisher { color: rgb(49, 66, 33); font-family: Gilroy, Arial, sans-serif; font-weight: 600; }
+.quiz_progress_wrapper { z-index: 50; background-color: rgb(255, 255, 255); flex-flow: column; justify-content: center; height: 36px; display: flex; position: sticky; top: 50px; box-shadow: rgba(43, 57, 32, 0.19) 0px 2px 5px; }
+.quiz_progress-bar { background-color: rgba(62, 108, 24, 0.24); border-radius: 100px; align-items: center; width: 100%; height: 10px; display: flex; position: relative; }
+.quiz_progress-pct { background-color: rgb(69, 106, 37); border-radius: 100px; width: 0%; height: 4px; margin-left: 3px; transition: width 0.2s; position: absolute; inset: auto 0%; }
+.bold-text-1781 { color: rgb(47, 53, 35); text-align: center; font-weight: 800; }
+.publisher { color: rgb(48, 99, 54); font-weight: 800; }
+.body { background-color: rgb(252, 252, 252); }
+.frame-6791 { column-gap: 6px; flex: 0 1 auto; justify-content: flex-start; align-items: flex-end; padding-top: 0px; padding-bottom: 0px; text-decoration: none; display: flex; }
+.frame-6789 { flex: 0 1 auto; justify-content: flex-start; align-items: center; text-decoration: none; display: flex; }
+.text-349 { color: rgba(30, 30, 30, 0.7); letter-spacing: 0.04em; text-transform: uppercase; margin-top: 0px; margin-bottom: 0px; padding-right: 4px; font-size: 12px; font-weight: 600; line-height: 21px; text-decoration: none; }
+.text-349._2 { color: rgba(12, 32, 22, 0.8); background-color: rgb(255, 255, 255); border-color: rgb(241, 179, 19); font-family: Inter, Arial, sans-serif; }
+.group-1000009911 { object-fit: cover; justify-content: center; align-items: center; width: 12px; height: 12px; text-decoration: none; display: flex; }
+.frame-6790 { column-gap: 10px; flex: 0 1 auto; justify-content: center; align-items: center; text-decoration: none; display: flex; }
+._2 { background-color: rgb(254, 255, 251); }
+.text-block-580 { font-family: Gilroy, Arial, sans-serif; font-size: 1.2rem; font-weight: 800; }
+.text-block-581 { padding-top: 4px; font-family: Gilroy, Arial, sans-serif; font-size: 1.1rem; font-weight: 800; }
+.link-2 { text-underline-offset: 2px; text-decoration: none; }
+.navbar-one-title-4 { color: rgb(255, 255, 255); text-transform: uppercase; font-family: Barlow, Arial, sans-serif; font-size: 1rem; font-weight: 700; }
+.text-block-978 { color: rgb(255, 255, 255); font-family: Barlow, Arial, sans-serif; font-size: 1rem; font-weight: 700; display: inline-flex; }
+.text-block-980 { color: rgb(255, 255, 255); padding-left: 0.15rem; padding-right: 0.15rem; font-weight: 700; }
+.div-block-2628 { flex-direction: row; flex: 1 1 0%; display: flex; }
+.number-label-3 { color: rgb(255, 255, 255); letter-spacing: 0px; text-transform: uppercase; font-family: Gilroy, Arial, sans-serif; font-size: 0.5rem; font-weight: 600; line-height: 1; }
+.clock-number-7 { color: rgb(255, 255, 255); font-family: Gilroy, Arial, sans-serif; font-size: 0.9rem; font-weight: 800; line-height: 1; }
+.navbar-sale-inner-10 { column-gap: 0.5rem; color: rgb(42, 37, 82); flex-direction: column; justify-content: center; align-items: flex-start; display: flex; position: relative; }
+.div-block-2630 { background-color: rgb(255, 255, 255); width: 1px; height: 1rem; }
+.div-block-2632 { column-gap: 0.5rem; align-items: center; display: flex; position: relative; }
+.p-listicle-3 { font-family: Barlow, Arial, sans-serif; font-size: 1.1rem; font-weight: 500; line-height: 1.7; }
+.p-listicle-3.publisher { color: rgb(37, 51, 25); letter-spacing: 0px; font-family: Gilroy, Arial, sans-serif; font-size: 1.1rem; font-weight: 500; }
+.bold-text-1965 { color: rgb(37, 51, 25); text-underline-offset: 3px; font-size: 1rem; font-weight: 700; text-decoration: 1.4px; }
+.bold-text-1984, .bold-text-1985, .bold-text-1986, .bold-text-1987, .bold-text-1988, .bold-text-1989, .bold-text-1990, .bold-text-1991, .bold-text-1992, .bold-text-1993, .bold-text-1994, .bold-text-1995, .bold-text-1996, .bold-text-1997, .bold-text-1998, .bold-text-1999, .bold-text-2000, .bold-text-2001, .bold-text-2002, .bold-text-2005 { font-weight: 800; }
+@media screen and (min-width: 1440px) {
+.button { background-color: rgb(87, 125, 56); }
+.display-md.publisher { font-family: Gilroy, Arial, sans-serif; }
+.image { width: 100%; }
+.adv-callout.adv-callout--quote.publisher { width: 61%; }
+.navbar-countdown-4.greeen.publisher { background-color: rgb(43, 57, 33); }
+.text-size-small-copy-2.glb { font-family: Gilroy, Arial, sans-serif; }
+.health-dscvry-nav-10.hf { font-family: Barlow, Arial, sans-serif; font-weight: 800; }
+.std_compare-column.cc-mains { font-family: Figtree, sans-serif; }
+.listicle-head-count { width: 100%; }
+.p-listicle.publisher { font-family: Gilroy, Arial, sans-serif; }
+.text-block-490.publisher { font-family: Gilroy, Arial, sans-serif; font-weight: 500; }
+.clock-number-7 { font-family: Gilroy, Arial, sans-serif; }
+.p-listicle-3.publisher { font-family: Gilroy, Arial, sans-serif; }
+.bold-text-1984, .bold-text-1985, .bold-text-1986, .bold-text-1987, .bold-text-1988, .bold-text-1989, .bold-text-1990, .bold-text-1991, .bold-text-1992, .bold-text-1993, .bold-text-1994, .bold-text-1995, .bold-text-1996, .bold-text-1997, .bold-text-1998, .bold-text-1999, .bold-text-2000 { font-weight: 800; }
+}
+@media screen and (max-width: 991px) {
+body { --_sizes---container--max-width: 80rem; --_sizes---container--padding: 2.5rem; --_text---font-family--primary: Barlow,Arial,sans-serif; --_text---font-family--heading: Barlow,Arial,sans-serif; --_text---font-family--secondary: Barlow,Arial,sans-serif; --_text---size: 0px; --_text---scale--min: .8; --_text---scale--max: 1.15; --_text---scale--viewport: 2; }
+h1 { font-size: 3.25rem; }
+h2 { font-size: 2.75rem; }
+.display-md { font-size: 1.875rem; }
+.display-xl { color: rgb(47, 53, 35); font-size: 2.25rem; }
+.section { padding-top: var(--spacing--3); padding-bottom: var(--spacing--2); }
+.section.cc-top-sm { padding-top: 2rem; }
+.container { padding-left: 1.25rem; padding-right: 1.25rem; }
+.listicle_reasons { row-gap: 3rem; }
+.content-listicle { row-gap: 1rem; flex-direction: column; align-items: stretch; }
+.listicle-image { gap: 1rem; flex-flow: column; width: 100%; display: flex; }
+.show-tablet { display: block; }
+.padding-bottom { padding-top: 0px; padding-left: 0px; padding-right: 0px; }
+.hide-tablet { display: none; }
+.listicle__grid { flex-flow: column; }
+.navbar-countdown-4 { font-size: 0.8rem; }
+.navbar-smaller { flex-direction: row; justify-content: center; }
+.navbar-one-inner { row-gap: 0rem; flex-direction: column; flex: 1 1 0%; align-items: center; font-size: 1rem; }
+.health-dscvry-nav-10 { text-align: left; }
+.std_empty { padding-bottom: 2px; font-size: 14px; }
+.std_empty.listicle.compare2.text { padding-top: 6px; padding-bottom: 14px; }
+.std_compare.header.listicle.compare2.letscompare { padding-top: 47px; }
+.std_compare.header.listicle.compare2.letscompare.sp4 { padding-top: 6px; }
+.compare2-javvy-logo { max-height: 34px; }
+.adv_cta_right_div { padding-top: 2rem; padding-left: 2rem; padding-right: 2rem; }
+.padding-section-cta { padding-top: 2.5rem; padding-bottom: 2.5rem; }
+.nav-foots { max-width: 100%; }
+.listicle-head-count { width: 100%; }
+.div-block-1356 { gap: 0px; justify-content: center; align-items: center; height: auto; margin-top: 0px; display: flex; }
+.padding-global-20.m-1 { padding-left: 1rem; padding-right: 1rem; }
+.sticky_bar { z-index: 50; background-color: rgb(255, 255, 255); width: 100%; padding-bottom: 1rem; display: none; position: fixed; inset: auto 0% 0%; transform: translateY(100%); }
+.sticky_bar.is-active { z-index: 5; width: 100%; transition: transform 0.2s; display: block; position: fixed; transform: none; box-shadow: rgba(0, 0, 0, 0.12) 0px -2px 10px; }
+.navbar-one-title-4 { letter-spacing: -0.015rem; font-size: 1rem; font-style: normal; }
+.text-block-978 { letter-spacing: -0.015rem; text-transform: uppercase; font-size: 0.95rem; font-weight: 600; }
+.div-block-2628 { gap: 1rem; flex-direction: row; justify-content: center; align-self: stretch; align-items: center; }
+.navbar-sale-inner-10 { font-size: 1rem; }
+.div-block-2630 { display: none; }
+}
+@media screen and (max-width: 767px) {
+body { --_sizes---container--max-width: 80rem; --_sizes---container--padding: 1.25rem; --_text---font-family--primary: Barlow,Arial,sans-serif; --_text---font-family--heading: Barlow,Arial,sans-serif; --_text---font-family--secondary: Barlow,Arial,sans-serif; --_text---size: 0px; --_text---scale--min: .8; --_text---scale--max: 1.1; --_text---scale--viewport: 2; }
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2.25rem; }
+.display-md { font-size: 1.75rem; }
+.display-xl { font-size: 2rem; }
+.padding-bottom { padding-top: 0px; padding-left: 0px; padding-right: 0px; }
+.navbar-countdown-4 { font-size: 0.75rem; }
+.navbar-one-inner { flex-direction: column; flex: 1 1 0%; justify-content: center; align-items: center; }
+.health-dscvry-nav-10 { font-size: 40px; display: flex; }
+.li-compare2-category-title-w { text-align: center; max-width: 80px; padding-top: 6px; font-size: 13px; line-height: 1.3; }
+.compare2-p-category { font-size: 15px; }
+.std_empty { flex-flow: column; font-size: 12px; }
+.std_empty.listicle { height: 36px; }
+.std_empty.listicle.compare2.text { padding-bottom: 14px; padding-left: 16px; }
+.std_empty.listicle.compare2.text.sp4 { padding-top: 18px; }
+.std_compare { font-size: 13px; }
+.std_compare.category { padding-left: 14px; }
+.std_compare.header.listicle { height: 36px; }
+.std_compare.header.listicle.compare2.letscompare { padding-top: 36px; }
+.std_compare.grey { height: 44px; font-size: 0.9rem; }
+.std_compare.grey.noborder.compare2 { height: 56px; }
+.std_compare-column { width: 27%; }
+.std_compare-column.points { width: 20%; }
+.compare_prod-flex { gap: 6px; position: relative; }
+.compare2-javvy-logo { max-height: 32px; }
+.text-size-tiny.text-align-center { font-size: 0.8rem; }
+.adv_cta_div { flex-direction: column; }
+.adv_cta_right_div { width: 100%; }
+.photo-wrappers { width: 100%; }
+.padding-section-cta { padding-top: 3rem; padding-bottom: 3rem; }
+.compare_hike-2, .compare_hike { font-size: 16px; }
+.padding-global-20 { padding-left: 2rem; padding-right: 2rem; }
+.navbar-one-title-4 { font-size: 1rem; }
+.text-block-978 { font-size: 0.8rem; font-weight: 600; }
+.div-block-2628 { width: 100%; max-width: 100%; margin-left: auto; margin-right: auto; }
+}
+@media screen and (max-width: 479px) {
+body { --_sizes---container--max-width: 80rem; --_sizes---container--padding: 1.25rem; --_text---font-family--primary: Barlow,Arial,sans-serif; --_text---font-family--heading: Barlow,Arial,sans-serif; --_text---font-family--secondary: Barlow,Arial,sans-serif; --_text---size: 0px; --_text---scale--min: .8; --_text---scale--max: 1.05; --_text---scale--viewport: 2; }
+h1 { font-size: 2.5rem; }
+.button { min-height: 4rem; padding: 1.2rem 1.5rem; font-size: 1.15rem; }
+.display-md { font-weight: 800; }
+.display-md.publisher { color: rgb(47, 53, 35); font-family: Gilroy, Arial, sans-serif; }
+.image { width: 100%; }
+.display-xl { color: rgb(47, 53, 35); font-size: 1.75rem; font-weight: 800; }
+.display-xl.os-black { font-size: 1.75rem; }
+.section { padding-top: var(--spacing--2); }
+.section.cc-top-sm { padding-top: 1.5rem; padding-bottom: 1rem; }
+.blogpost1_content-top { flex-direction: column; align-items: flex-start; }
+.padding-bottom { padding-top: 0px; padding-left: 0px; padding-right: 0px; }
+.button_icon { position: absolute; right: 1rem; }
+.adv-callout.adv-callout--quote, .adv-callout.adv-callout--quote.publisher { width: 100%; }
+.navbar-countdown-4 { font-size: 0.7rem; }
+.navbar-smaller { gap: 1rem; text-align: center; justify-content: center; padding-left: 0.5rem; padding-right: 0.5rem; }
+.navbar-one-inner { gap: 0.35rem; text-align: center; align-items: center; font-size: 0.66rem; line-height: 0.7; }
+.holiday-clock { z-index: 1; flex-wrap: wrap; position: relative; }
+.blogpost1_author-wrapper { gap: 0px; justify-content: flex-start; align-items: center; width: 100%; height: 100%; padding: 10px 5px 10px 10px; }
+.blogpost1_author-text { width: 100%; }
+.blogpost1_date-wrapper { gap: 10px; justify-content: flex-start; align-items: center; margin-top: 2px; }
+.blogpost1_date-wrapper._2.mobile { gap: 4%; grid-template-rows: auto auto; grid-template-columns: 1fr 1fr; grid-auto-columns: 1fr; place-content: start; place-items: center baseline; display: flex; position: relative; }
+.text-weight-semibold-2 { font-family: Barlow, Arial, sans-serif; }
+.image-44 { max-width: 100%; }
+.text-size-small-copy-2 { margin-top: 5px; font-family: Barlow, Arial, sans-serif; font-size: 1rem; font-weight: 500; }
+.text-size-small-copy-2.glb { font-family: Gilroy, Arial, sans-serif; }
+.health-dscvry-nav-10 { text-align: left; flex-flow: wrap; justify-content: space-between; align-items: center; font-family: Barlow, Arial, sans-serif; font-size: 30px; line-height: 40px; display: block; }
+.health-dscvry-nav-10.hf.lst { font-size: 26px; }
+.health-dscvry-nav-10.hf { padding-left: 0px; font-size: 26px; }
+.li-compare2-category-title-w { height: 46px; font-size: 12px; }
+.li-compare2-category-title-w.sp4 { letter-spacing: -0.05em; font-size: 12px; font-weight: 600; }
+.compare2-p-category { letter-spacing: -0.05em; font-family: Figtree, sans-serif; font-size: 13px; font-weight: 600; }
+.std_empty { height: 54px; line-height: 1.2; }
+.std_empty.listicle.compare2.sp4 { padding-top: 0px; padding-bottom: 2px; }
+.std_empty.listicle.compare2.text { padding-bottom: 14px; padding-left: 0px; }
+.std_empty.listicle.compare2.text.sp4.white { height: 44px; }
+.std_compare { text-align: center; padding-left: 4px; padding-right: 4px; font-size: 12px; }
+.std_compare.category { padding-left: 0px; }
+.std_compare.category.compare2 { min-height: 56px; }
+.std_compare.category.compare2.ss { height: 55px; min-height: 55px; }
+.std_compare.compare2-green { height: 58px; min-height: 58px; margin-left: 3px; margin-right: 3px; }
+.std_compare.compare2-green.scooptxt { height: 57px; min-height: 57px; padding-top: 8px; padding-bottom: 8px; }
+.std_compare.compare2-green.aaa { height: 48px; min-height: 48px; padding-top: 0px; padding-bottom: 0px; }
+.std_compare.header.listicle { padding-left: 0px; padding-right: 0px; }
+.std_compare.header.listicle.compare2._3 { padding-left: 4px; }
+.std_compare.header.listicle.compare2._3.sp4 { padding-left: 0px; }
+.std_compare.header.listicle.compare2.letscompare { padding-top: 27px; }
+.std_compare.header.listicle.compare2.letscompare.sp4 { padding-top: 0px; }
+.std_compare.grey { font-size: 0.7rem; }
+.compare2_hike-others { text-align: center; letter-spacing: -0.04em; font-size: 12px; }
+.std_comparison-table.listicle.compare2 { margin-top: 8px; }
+.std_comparison-table.listicle.compare2.sp4 { margin-top: 0px; }
+.std_compare-column.points { width: 24%; }
+.std_compare-column.compet { width: 22%; }
+.std_compare-column.cc-mains { width: 30%; }
+.compare_prod-flex { gap: 4px; text-align: left; justify-content: flex-start; align-items: flex-start; height: 100%; line-height: 1.2; }
+.compare2-javvy-logo { width: 80%; }
+.compare2-javvy-logo.sp4 { max-height: 34px; margin-bottom: 14px; }
+.paragraph-123 { padding-left: 4px; }
+.div-block-900 { width: 100%; }
+.cta-content-2 { width: 100%; padding-top: 0px; padding-bottom: 0px; }
+.text-size-tiny.text-align-center { font-size: 0.9rem; }
+.adv_cta_div { border-style: none; border-radius: 8px; flex-direction: column; }
+.adv_cta_right_div { width: 100%; padding: 1rem; }
+.adv_cta_subtitle_text { text-align: center; }
+.photo-wrappers { background-color: rgb(255, 255, 255); }
+.divider-line { flex: 1 1 0%; width: 20%; }
+.padding-section-cta { padding-top: 2rem; padding-bottom: 2rem; }
+.adv_cta_heading-2 { text-align: center; font-size: 2rem; }
+.listicle-banner-sale-badge { border-radius: 8px; font-size: 4vw; }
+.nav-foots, .nav-foots.publisher.authority { padding-top: 10px; padding-bottom: 10px; }
+.nav-foots.publisher.authority { padding-top: 10px; padding-bottom: 10px; }
+.lowest-price-icon { height: 16px; font-size: 13px; }
+.lowest-price-check { height: 28px; font-size: 13px; }
+.compare_hike-2, .compare_hike { text-align: center; font-size: 14px; }
+.compare_hike.small { font-size: 9px; }
+.p-listicle { font-size: 1.1rem; }
+.p-listicle.publisher { font-family: Gilroy, Arial, sans-serif; }
+.padding-global-20.m-1 { padding-left: 1rem; padding-right: 1rem; }
+.sticky_bar { --_sizes---container--max-width: 80rem; --_sizes---container--padding: 1.25rem; --_text---font-family--primary: Barlow,Arial,sans-serif; --_text---font-family--heading: Barlow,Arial,sans-serif; --_text---font-family--secondary: Barlow,Arial,sans-serif; --_text---size: 0px; --_text---scale--min: .8; --_text---scale--max: 1.05; --_text---scale--viewport: 2; padding-bottom: 1rem; display: none; bottom: 0px; transform: none; box-shadow: rgba(0, 0, 0, 0.12) 0px -4px 10px; }
+.sticky_bar.is-active { border-top: 1px solid rgba(0, 0, 0, 0.09); display: block; transform: none; box-shadow: rgba(0, 0, 0, 0.12) 0px -2px 10px; }
+.text-block-490.publisher { font-family: Gilroy, Arial, sans-serif; font-weight: 600; }
+.quiz_progress_wrapper { height: 24px; }
+.quiz_progress-bar { gap: 0px; grid-template-rows: auto auto; grid-template-columns: 1fr 1fr; grid-auto-columns: 1fr; height: 8px; display: grid; }
+.quiz_progress-pct { height: 2px; }
+.frame-6791 { padding-top: 0px; }
+.text-349 { font-size: 11px; font-weight: 600; }
+.text-349._2 { font-family: "Circular Std", Arial, sans-serif; font-weight: 700; }
+.group-1000009911 { margin-top: 2px; }
+.text-block-581 { padding-top: 2px; font-weight: 800; }
+.navbar-one-title-4 { letter-spacing: -0.03rem; text-transform: uppercase; font-family: Barlow, Arial, sans-serif; font-size: 1rem; font-weight: 700; line-height: 1; }
+.text-block-978 { letter-spacing: 0px; text-transform: capitalize; font-size: 0.8rem; font-weight: 600; }
+.text-block-980 { padding-left: 0px; padding-right: 0px; }
+.div-block-2628 { gap: 0.5rem; justify-content: center; max-width: 100%; }
+.number-label-3 { font-size: 0.5rem; font-weight: 600; }
+.clock-number-7 { font-family: Gilroy, Arial, sans-serif; font-size: 0.9rem; }
+.navbar-sale-inner-10 { gap: 0.25rem; font-size: 0.66rem; line-height: 0.7; }
+.p-listicle-3 { font-size: 1.1rem; }
+.p-listicle-3.publisher { font-family: Gilroy, Arial, sans-serif; }
+.bold-text-1984, .bold-text-1985, .bold-text-1986, .bold-text-1987, .bold-text-1988, .bold-text-1989, .bold-text-1990, .bold-text-1991, .bold-text-1992, .bold-text-1993, .bold-text-1994, .bold-text-1995, .bold-text-1997, .bold-text-1998, .bold-text-1999, .bold-text-2000 { font-weight: 800; }
+.bold-text-2013 { font-size: 1rem; }
+}
+body { -webkit-font-smoothing: antialiased; }
+::selection { background: rgb(209, 68, 36); color: rgb(255, 255, 255); }
+html { overflow-y: scroll !important; }
+body { -webkit-font-smoothing: antialiased; text-rendering: optimizelegibility; }
+html { font-size: 1rem; }
+html:not(.wf-design-mode) ::selection { background: rgb(0, 0, 0); color: rgb(255, 255, 255); }
+body * { text-decoration-thickness: clamp(0.75px, 0.075em, 0.25rem); }
+[tabindex]:focus-visible, input[type="file"]:focus-visible { outline: rgb(77, 101, 255) solid 0.125rem; outline-offset: 0.125rem; }
+.container { margin-right: auto !important; margin-left: auto !important; }
+.padding-bottom { padding-top: 0rem !important; padding-right: 0rem !important; padding-left: 0rem !important; }
+.hide { display: none !important; }
+@media screen and (max-width: 991px) {
+.hide, .hide-tablet { display: none !important; }
+}
+:root { --modal-animation-duration: 0.3s; --modal-animation-easing: cubic-bezier(0.22, 1, 0.36, 1); --modal-overlay-bg: rgba(0, 0, 0, 0.35); --modal-overlay-blur: 5px; --modal-bg: #fff; --modal-shadow: 0 10px 40px rgba(0, 0, 0, 0.12), 0 0 10px rgba(0, 0, 0, 0.08); --modal-border-radius: 16px; --modal-max-width: 500px; --modal-side-panel-width: 400px; }
+/* ---- media placeholders: template only. .ph = the slot (right size), .ph-ref = the ORIGINAL media
+   hotlinked from the source page as a visual reference, .ph-t/.ph-d = what goes there. Swap every .ph for
+   your real <img>/<video> and delete this block (see notes). Hover/tap a slot for its full caption. ---- */
+.ph { position: relative; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 6px; padding: 8px; box-sizing: border-box; overflow: hidden; background: repeating-linear-gradient(45deg, #eef1ea 0 12px, #e3e8dd 12px 24px); outline: 2px dashed #9aa58f; outline-offset: -2px; color: #3d4a33; font: 11px/1.35 ui-monospace, Menlo, monospace; letter-spacing: 0; text-align: left; }
+.ph-ref { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; border-radius: inherit; }
+.ph:has(.ph-ref) { background: none; }
+.ph-t, .ph-d { position: absolute; z-index: 1; left: 8px; transition: opacity .2s; }
+.ph-t { top: 8px; right: 8px; width: fit-content; max-width: calc(100% - 16px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 10px; font-weight: 700; background: #2b3920; color: #fff; padding: 2px 6px; border-radius: 4px; }
+.ph-d { right: 8px; bottom: 8px; font-size: 10px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; box-sizing: content-box; max-height: 2.7em; overflow: hidden; background: rgba(255, 255, 255, .9) padding-box; padding: 0 6px; border: 4px solid rgba(255, 255, 255, .9); border-width: 4px 0; border-radius: 6px; }
+.ph:hover .ph-t { white-space: normal; }
+.ph:hover .ph-d { -webkit-line-clamp: unset; max-height: none; }
+.blogpost1_author-image.ph, ._611447c74d1e8c7665470be5_pp4png.ph, .compare2-javvy-logo.ph { padding: 0; gap: 0; outline-width: 1px; }
+._611447c74d1e8c7665470be5_pp4png.ph { width: 23px; height: 23px; border-radius: 100%; }
+.compare2-javvy-logo.ph { width: 87px; }
+.blogpost1_author-image.ph .ph-t, .blogpost1_author-image.ph .ph-d, ._611447c74d1e8c7665470be5_pp4png.ph .ph-t, ._611447c74d1e8c7665470be5_pp4png.ph .ph-d, .compare2-javvy-logo.ph .ph-d { display: none; }
+.padding-section-cta:has(.image-89.ph), .cta-content-2:has(.image-89.ph), .text-align-center-5:has(.image-89.ph), .max-width-medium-2:has(.image-89.ph), .adv_cta_div:has(.image-89.ph) { width: 100%; } /* the real image's intrinsic width does this: without it the offer card shrinks on desktop */
+
+</style>
+</head>
+<body class="body"><div class="page-wrapper"><div class="main-wrapper publisher"><div class="sticky-headers"><div class="sticky-headers"><div class="navbar-countdown-4 greeen publisher listicle"><div class="navbar-smaller"><div class="navbar-sale-inner-10"><div class="navbar-one-inner"><div class="div-block-2628"><div class="navbar-one-title-4"><strong class="bold-text-2013">Warehouse Sale</strong></div></div><div class="div-block-2630"></div><div class="text-block-978">UP TO 57% OFF + FREE SHIPPING</div></div></div><div class="div-block-2632"><div class="holiday-clock os-green" id="js-clock"><div class="box-hrs-2"><div class="clock-number-7" id="js-clock-hours">00</div><div class="number-label-3">Hrs</div></div><div class="text-block-980">:</div><div class="box-hrs-2"><div class="clock-number-7" id="js-clock-minutes">00</div><div class="number-label-3">Min</div></div><div class="text-block-980">:</div><div class="box-hrs-2"><div class="clock-number-7" id="js-clock-seconds">00</div><div class="number-label-3">Sec</div></div><div class="hide w-embed w-script"><script>
+(function () {
+    function getNextMidnight() {
+        var midnight = new Date();
+        midnight.setHours(24,0,0,0);
+        return midnight;
+    }
+
+    var deadline = getNextMidnight();
+
+    function pad(num) {
+        var s = "0" + num;
+        return s.substr(s.length - 2);
+    }
+
+    function getTimeRemaining(endtime) {
+        var total = Date.parse(endtime) - Date.parse(new Date());
+        var seconds = Math.floor((total / 1000) % 60);
+        var minutes = Math.floor((total / 1000 / 60) % 60);
+        var hours = Math.floor((total / (1000 * 60 * 60)) % 24);
+        return { total, hours, minutes, seconds };
+    }
+
+    function clock(id, endtime) {
+        var hours = document.getElementById(id + '-hours');
+        var minutes = document.getElementById(id + '-minutes');
+        var seconds = document.getElementById(id + '-seconds');
+
+        var timeinterval = setInterval(function () {
+            var time = getTimeRemaining(endtime);
+            if (time.total <= 0) {
+                clearInterval(timeinterval);
+                deadline = getNextMidnight();
+                clock(id, deadline);
+            } else {
+                hours.innerHTML = pad(time.hours);
+                minutes.innerHTML = pad(time.minutes);
+                seconds.innerHTML = pad(time.seconds);
+            }
+        }, 1000);
+    }
+
+    clock('js-clock', deadline);
+})();
+</script></div></div></div></div></div></div><div class="lowest-price-check"><img alt="" class="lowest-price-icon" loading="lazy" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTQiIGhlaWdodD0iMTQiIHZpZXdCb3g9IjAgMCAxNCAxNCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTUuMzYxOTcgNi41MDgxNkM1LjIzMDE2IDYuMzc2MzUgNS4wNTEzOCA2LjMwMjI5IDQuODY0OTcgNi4zMDIyOUM0LjY3ODU2IDYuMzAyMjkgNC40OTk3OSA2LjM3NjM1IDQuMzY3OTcgNi41MDgxNkM0LjIzNjE2IDYuNjM5OTcgNC4xNjIxMSA2LjgxODc1IDQuMTYyMTEgNy4wMDUxNkM0LjE2MjExIDcuMTkxNTcgNC4yMzYxNiA3LjM3MDM1IDQuMzY3OTcgNy41MDIxNkw2LjQ2Nzk3IDkuNjAyMTZDNi41MzMzOCA5LjY2NzA0IDYuNjEwOTUgOS43MTgzNiA2LjY5NjI0IDkuNzUzMkM2Ljc4MTUzIDkuNzg4MDMgNi44NzI4NSA5LjgwNTY5IDYuOTY0OTcgOS44MDUxNkM3LjA2MDggOS44MDIxMiA3LjE1NDk5IDkuNzc5NDIgNy4yNDE2OCA5LjczODQ4QzcuMzI4MzggOS42OTc1NCA3LjQwNTc0IDkuNjM5MjMgNy40Njg5NyA5LjU2NzE2TDEyLjM2OSAzLjk2NzE2QzEyLjQ4MjEgMy44MjY2OSAxMi41MzY3IDMuNjQ3OTcgMTIuNTIxMyAzLjQ2ODI2QzEyLjUwNTggMy4yODg1NSAxMi40MjE3IDMuMTIxNzIgMTIuMjg2MyAzLjAwMjU2QzEyLjE1MDggMi44ODM0MSAxMS45NzQ3IDIuODIxMTIgMTEuNzk0NSAyLjgyODY4QzExLjYxNDMgMi44MzYyNCAxMS40NDM5IDIuOTEzMDggMTEuMzE5IDMuMDQzMTZMNi45NjQ5NyA4LjA4MzE2TDUuMzYxOTcgNi41MDgxNloiIGZpbGw9IndoaXRlIi8+CjxwYXRoIGQ9Ik0xMy4yNjM2IDYuMzA1MTlDMTMuMDc4IDYuMzA1MTkgMTIuODk5OSA2LjM3ODk0IDEyLjc2ODcgNi41MTAyMUMxMi42Mzc0IDYuNjQxNDkgMTIuNTYzNiA2LjgxOTU0IDEyLjU2MzYgNy4wMDUxOUMxMi41NjM2IDguNDkwNCAxMS45NzM2IDkuOTE0NzggMTAuOTIzNCAxMC45NjVDOS44NzMyMyAxMi4wMTUyIDguNDQ4ODUgMTIuNjA1MiA2Ljk2MzY0IDEyLjYwNTJDNS44NTc3IDEyLjYwNDcgNC43NzY2NyAxMi4yNzY3IDMuODU2ODcgMTEuNjYyN0MyLjkzNzA3IDExLjA0ODYgMi4yMTk2OSAxMC4xNzU5IDEuNzk1MTggOS4xNTQ3M0MxLjM3MDY3IDguMTMzNTEgMS4yNTgwNCA3LjAwOTQ1IDEuNDcxNSA1LjkyNDMxQzEuNjg0OTYgNC44MzkxNyAyLjIxNDk1IDMuODQxNTMgMi45OTQ2NCAzLjA1NzE5QzMuNTEzMTMgMi41MzE3NiA0LjEzMTIxIDIuMTE1MDIgNC44MTI3MiAxLjgzMTM2QzUuNDk0MjIgMS41NDc3IDYuMjI1NDYgMS40MDI4MSA2Ljk2MzY0IDEuNDA1MTlDNy40MTEyNSAxLjQwNzk5IDcuODU3MjMgMS40NTk2MyA4LjI5MzY0IDEuNTU5MTlDOC4zODQ5NiAxLjU4NzQ0IDguNDgxMTEgMS41OTY2OCA4LjU3NjE1IDEuNTg2MzVDOC42NzExOCAxLjU3NjAyIDguNzYzMDkgMS41NDYzMyA4Ljg0NjIyIDEuNDk5MTFDOC45MjkzNCAxLjQ1MTkgOS4wMDE5MSAxLjM4ODE2IDkuMDU5NDUgMS4zMTE4MkM5LjExNyAxLjIzNTQ5IDkuMTU4MyAxLjE0ODE4IDkuMTgwODEgMS4wNTUyN0M5LjIwMzMyIDAuOTYyMzYgOS4yMDY1NiAwLjg2NTgyNiA5LjE5MDMzIDAuNzcxNjE4QzkuMTc0MSAwLjY3NzQxIDkuMTM4NzUgMC41ODc1MjQgOS4wODY0NSAwLjUwNzUwMkM5LjAzNDE1IDAuNDI3NDggOC45NjYwMiAwLjM1OTAxOCA4Ljg4NjI1IDAuMzA2MzM2QzguODA2NDggMC4yNTM2NTQgOC43MTY3NyAwLjIxNzg2OSA4LjYyMjY0IDAuMjAxMTg4QzguMDc4ODQgMC4wNzMyNTc5IDcuNTIyMjggMC4wMDc1MDMxOSA2Ljk2MzY0IDAuMDA1MTg3OTlDNS41ODA2OCAwLjAxMjM3MjUgNC4yMzA4MyAwLjQyOTA1MiAzLjA4NDQ1IDEuMjAyNjRDMS45MzgwNiAxLjk3NjI0IDEuMDQ2NTIgMy4wNzIwNyAwLjUyMjMyMiA0LjM1MTg2Qy0wLjAwMTg3NDI1IDUuNjMxNjUgLTAuMTM1MjMgNy4wMzgwMyAwLjEzOTA4MyA4LjM5MzU0QzAuNDEzMzk2IDkuNzQ5MDQgMS4wODMwOSAxMC45OTI5IDIuMDYzNjQgMTEuOTY4MkMzLjM2MzMyIDEzLjI2ODUgNS4xMjUyIDE0LjAwMDkgNi45NjM2NCAxNC4wMDUyQzguODIwMTUgMTQuMDA1MiAxMC42MDA2IDEzLjI2NzcgMTEuOTEzNCAxMS45NTQ5QzEzLjIyNjEgMTAuNjQyMiAxMy45NjM2IDguODYxNyAxMy45NjM2IDcuMDA1MTlDMTMuOTYzNiA2LjgxOTU0IDEzLjg4OTkgNi42NDE0OSAxMy43NTg2IDYuNTEwMjFDMTMuNjI3MyA2LjM3ODk0IDEzLjQ0OTMgNi4zMDUxOSAxMy4yNjM2IDYuMzA1MTlaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K"/><p>Verified Lowest Price of the Year. Shop Now!</p></div></div><section class="nav-foots publisher authority"><div class="container cc-small"><h1 class="health-dscvry-nav-10 hf lst"><strong>FOOT</strong>-<strong>INSIDER</strong><br/></h1></div></section><div class="quiz_progress_wrapper"><div class="container cc-small"><div class="quiz_progress-bar"><div class="quiz_progress-pct" data-quiz="progress-pct"></div></div></div></div><section class="section cc-listicle"><div class="container cc-small"><div class="blogpost1_title-wrapper"><h1 class="display-xl os-black"><strong class="bold-text-1781">I Tried 7 Different 'Comfort' Shoes. </strong>Only One Actually Worked.<br/></h1><p class="p-listicle">Let me save you the time and money I wasted. <br/><br/>Over the past 3 years, I've tried $180 Brooks running shoes, <strong class="bold-text-2001">$220 custom orthotics</strong>, $95 memory foam sneakers, those ugly Sketchers my mom recommended, two different "orthopedic" brands, some $40 Amazon shoes with 5-star reviews, and finally, these barefoot shoes everyone kept talking about.<br/><br/><strong class="bold-text-2002">Six failures. One winner.</strong> Here's the difference:</p><div class="adv-callout adv-callout--quote publisher"><div class="adv-callout__wrapper publisher"><div class="display-col"><div class="text-block-490 publisher"><strong class="bold-text-2005">Note: </strong>Read this BEFORE you struggle with another pair of shoes!</div></div></div></div><div class="blogpost1_author-wrapper"><div class="blogpost1_author-image-wrapper"><div class="blogpost1_author-image glb ph" data-ph="avatar" style="aspect-ratio:1/1"><img alt="" class="ph-ref" loading="lazy" src="https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/684f2753593d5a0b9c6206c4_Lorax%20Pro%20Barefoot%20Shoes.jpg"/><span class="ph-t">IMG 1:1</span><span class="ph-d">Author avatar</span></div></div><div class="blogpost1_author-text"><div class="blogpost1_date-wrapper _2 mobile"><div class="text-weight-semibold-2">Athena Hudson<br/></div><img alt="" class="image-44" height="21" loading="eager" src="data:image/webp;base64,UklGRgwJAABXRUJQVlA4WAoAAAAQAAAA5wAAPwAAQUxQSDQBAAABgJVtb93mhyAIgmAIhlAGM4OGwcxgYeAwCIRAMARBEAT1mNNF/md3ETEB+EeXVIZ6rUuW80lpFpfc50HPlJe49L3oOeTX4/o3PcHdg8OmB+kSNFo55O7BZNPdpAWZpjtpDzo97aIWjP7soBacpm09SHXd8he0mqy7B7HzKnVmYljTglqXbyXIbd+MnUifStA7f+r8hLylILi+NYb8zRiKDKSguAIDRwswc+SCzlEkBMklsVQzSyNNrfw73WjKLI3KUgVLNxhJCRNHDgwcLYByNAAwihKAypABQGKovGEhSD9kfho+L/Tol8zOiO8TN6YrxKkpWJuZGbG+8mKyARMrptgqnRNXbJfOiCfsKTMfpti5stEVuxejYsSROvFgGQcX48Cr4PjSr59XwTnzZJduuQn2BFZQOCCyBwAAcCMAnQEq6ABAAD5tMJNGpCMhoSm4C5iADYlqRHcgMC23/fAec1ZH77x3VO+W3yz/0f7T5x3sf/PXsAeMl6pfMB+2vUN9A7+d/73rJf3O9iDy5fZO/dr0qsw57U/8N0ono72o5ebJL8x4vd4O1f/it4JAB9Se+11I1W2gB+jPQMzrvV/sI/rv1Xv3D9js92r732xhDc97xoYj01DtH93q9B081WZSOkFaqvVQNJ4jV8GC9TEnjqgrCX5fQ92W1aqsUMUOT7p5C1VDQpvk/7DHZ/qtD6+uev3U4YPOIkqoRYz2YhjuXUbvs7Cv6Rq69doeAa6dT4HqH5c2YxH8WrAYrJmDxpo5IukXHuBGg14pn72OPCt3HtbH/yAVs1SLeP/kj9MnIAD+8qD//tgf/9pC//+1bZ5Tt2Qpwtboz2omNSgW+dhqT0o/oCmlQYLgoDZRf6MT//+pqeVTvGpKttz3neZe2X/2bL3aO06cJMJUt9F7Wra8vMspgcZCPjx9EWaX2Rs8NgmJZxf4PWp6P+t3MOAD14/M+FdYp8L7NAry0O9QgFJoHeNzZ2LOW+rZsGIWIYdfh5thRkO+vzUOWcxWZRVHL6DklxkUSSlBvZQ4bvFD38X+4UoW169suZt1z8ZkmzYsiR6qnkb7bcr38BluxyIXZIkENCB0VY9f2k4ajCWXhKdCGQZuAf4VKdtr/9qx+DtNIvCMeCEsp8TrPCdXhq4K86QSoBQrUmx9BjyP1qzsOs0NZV7ORS5wvwdy46ardYkTFIeJKbr2zPxUqN2uEqe+aZBqgIIuDlQ8vNyuk+fqYrVbUNlwKrVkAPI4SWIT8YgT4otlKXbNCXXNjWNWQvKyLvQ1Q82ifQ97j+Omycq0VD5e9b5Liit97w/lLat3cGaW7Sy8PXXwJoAc3wtZzVOsn2qCQpPtlG5iOTCL2vYhiQx+TAJnNc/kWnrk2ahA+9samxDzwhVQhbE2ecsT6UUQUucgzpOG5McJ4uzunlMJCKfL5i39YZULO1f7zAq2YgaMoBGk96CM7B+iiZq7RH0eh3jgXuMCni1bo4zwUvKwF3984BYq12OQCfrNuGBAz6YQampLIZRLh/6N2eLNDheUkVXBcP721N3vQu97vS0LfpQCbWqLs1Y8peq7mK7Bp8MGfXoosgZIsAdrqNElT7p6gZt3T7vmEOB140G2cRS1kZMHdwzUXlsnJaPWCdueB/CEpdf4lTV9mn34aqSJ3mGHMVZndS5cbdM/9JkacfKiy+n6G7LUu98JXe5FvfebhpJk0DSY9xVj9/8Y2gAPL5vuztcwbwbWiCOLZWc0I1xEzZbA9m0GsbwfGZKOCSCnl1ZtXUKWfY8pggJIQQaLZhnXRtGueVz8+3iw40X5D3Jg5Se+R2yPJHAuUhxWcUWA2+apvzPIHihe2sssieuDH6ZOf0zABse5cVOPTocyX9MXk25DJCoWFb15Za2xmSg8FnkoVaCESlOcxFH+uRa6PyYbkZHUg35XJWBv8nZnvUCuKSiHEGB8qg9c8T2WmSYvLbwSWEjyTCh2TGws2FtLfluDanjDzwjJVWeXfMx7VPYWQhLLjcNnz+mDA91sEkdykp0h+SHcShNDSR2zPG9MrvCQkLZi5OFQRowO6v6cH5FmDJd1N0ViJFQUgb2l24wDQXwH64g0rn/UHD2CFSNY6cIkKLXb/pKAogn9ZCxMmblXfRs8TJLe4fiTDuWvOYn9dO620C9SggJOzUaRdIQ0ed9qGpLx74TVF9Ua/RL3exK7i122yHly3LnH2nOmBtbV3eRUeFOMRclSMUvXJy0Hm12WQ1/2nNqFkdRH9IOpUPvHaRQr9cDQt0R8qzdBk+HNExD00jJrvPzmks8sVIpDeIQCO3GQMLNUa3E38o7LLPwixElFIZ8SF4ms1yqGxt/jQp6HZDgq/lbEzk0UjhjD7ud3ECYCfrdJIPgH7q+hqXJM7/n/mO0Cn6ooyp8u/QNCNU4zVQTHExp+d1tGZ53D7EqzxK0pzTkIEf+k+4TtVkkSR9sKd453IuxneTQh2JarwMuDhI1sdx2wTQ7NOXm3k17KcEoyasIbCXmUvXFP9mXLYN+qZYQ/5qatt4gHsupGnmetzZ1J5zbWLENjp/bgD+XREyDfTIx4HqS8EkHcfWShgxmZFDiz8Ir8E6rXC2T9Kpperf4kI+zDY+SmCun7B7IEly0nwFZNXkhBzaFbLStNQeReW8dzHfW4cREuAu3AFRZooaTmCnWB5d//3dda1b9eSsc7BKb0zPGF2pyGmoYcIZAEiLlth5Ui2ExAGHI3+xLeHaf8Bu7DxtlfoU0YUxrrEJLh7CE8moIWk79CMAhkbOEtkCdPEOgxfmEZ9Z5pXevqVh4vQNFDRMP23wpBaEPAXehGa9TXH/mZY/XZ/e1lGeZLLj3UGt8kOvDfOtICIrM964d7Oj894SMf7EBVxlg3ThUvu2xBd8nrN9f3IkYobWVwcnLAeYfDRXS+5NlOoGXxf/T0eS6pH3MqFNPXGC6uVUYz0o9VPgovlGRVg4w7CVUaXUKqsK7Qmr7f/O5GAs9ylpjoQ8rKrHh1J7x7L3oEOrPYIwW228xI0Ube5d71VnjsT/yrY//6iUYY+ptgAAA=" width="92"/></div><div class="blogpost1_date-wrapper"><div class="text-size-small-copy-2 glb">Barefoot Shoe Enthusiast</div></div></div></div><div class="blogpost1_content-top"></div></div></div></section><section class="section cc-top-sm"><div class="container cc-small"><div class="listicle__grid"><div class="listicle_reasons" data-bullet-container="benefits"><div class="listicle-head-count hide" data-item-id="head"><div class="std_comparison-table listicle compare2 sp4"><div class="std_compare-column points"><div class="std_compare header listicle compare2 letscompare sp4"><div class="std_empty listicle compare2 text sp4 white"></div></div><div class="std_compare category compare2 ss"><div class="compare_prod-flex"><p class="compare2-p-category">Time to Put On</p></div></div><div class="std_compare category compare2"><div class="compare_prod-flex"><p class="compare2-p-category">Shift Comfort</p></div></div><div class="std_compare category compare2"><div class="compare_prod-flex"><p class="compare2-p-category">Weight</p></div></div><div class="std_compare category noborder compare2"><div class="compare_prod-flex"><p class="compare2-p-category"><strong>Price</strong></p></div></div></div><div class="std_compare-column cc-mains"><div class="std_compare compare2-green aaa"><div class="std_empty"><div class="compare2-javvy-logo sp4 ph" data-ph="image" style="aspect-ratio:87/30"><img alt="" class="ph-ref" loading="lazy" src="https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/684246af07fe04fae3aea92c_HIKE_FOOTWEAR_BLACK_1_87x%402x.avif"/><span class="ph-t">LOGO</span><span class="ph-d">Our brand logo, dark on transparent</span></div></div></div><div class="std_compare compare2-green scooptxt"><p class="compare_hike-2">10 seconds</p><p class="compare_hike small">hands-free</p></div><div class="std_compare compare2-green scooptxt"><p class="compare_hike-2">Natural alignment</p></div><div class="std_compare compare2-green scooptxt"><p class="compare_hike-2">Under 6 oz</p><p class="compare_hike small">ultra-light</p></div><div class="std_compare compare2-green scooptxt noborder"><p class="compare_hike-2"><strong>$59.95</strong><span class="os-pair">/pair</span></p><p class="compare_hike small">(3-pack deal)</p></div></div><div class="std_compare-column compet"><div class="std_compare header listicle compare2 _3 sp4"><div class="std_empty listicle compare2 sp4"><div class="li-compare2-category-title-w sp4"><p class="paragraph-123"><strong>Nursing Clogs</strong></p></div></div></div><div class="std_compare _3"><p class="compare2_hike-others">30-60 seconds</p></div><div class="std_compare"><p class="compare2_hike-others">Rigid foot bed</p></div><div class="std_compare _3"><p class="compare2_hike-others">14-16 oz</p></div><div class="std_compare grey noborder compare2 _3"><p class="compare_hike-2">$120-$160</p></div></div><div class="std_compare-column compet"><div class="std_compare header listicle compare2"><div class="std_empty listicle compare2 sp4"><div class="li-compare2-category-title-w sp4"><p><strong>Athletic Sneakers</strong></p></div></div></div><div class="std_compare compare2"><p class="compare2_hike-others">1-2 minutes</p></div><div class="std_compare compare2"><p class="compare2_hike-others">Cushioned heel</p></div><div class="std_compare compare2 small-txt"><p class="compare2_hike-others">10-12 oz</p></div><div class="std_compare grey noborder compare2"><p class="compare_hike-2">$80-$130</p></div></div></div><div><strong>TLDR: HF Stride barefoot shoes have 10+ benefits that make 12-hour shifts feel like 6 👇</strong></div></div><div class="content-listicle" data-item-id="b1"><div class="listicle-image"><div class="show-tablet"><h2 class="display-md">1. I Could Actually Put Them On<br/></h2></div><div class="image-wrapper cc-1x1"><div class="image ph" data-ph="video" style="width:100%;height:100%"><video autoplay="" class="ph-ref" loop="" muted="" playsinline="" preload="metadata" src="https://cdn.shopify.com/videos/c/o/v/5bbd7760d956499f883cc37bc2675c79.mp4"></video><span class="ph-t">VIDEO 1:1</span><span class="ph-d">Benefit 1 shown in use (UGC video, close-up)</span></div></div></div><div class="listicle1_content"><div class="hide-tablet"><h2 class="display-md">1. I Could Actually Put Them On<br/></h2></div><div class="p-listicle">This sounds small, but bending down to tie shoes was agony for my back. These? Just step in. <strong class="bold-text-1984">No bending, no laces, no struggle.<br/><br/></strong>The first time I put them on, I actually laughed. Why didn't anyone think of this sooner?<br/></div><div class="p-listicle-3 publisher">👉 <a class="link-2" href="https://offer.dinosaurized.com/OFFER-SLUG"><strong class="bold-text-1965">See the slip-on shoe I swear by</strong></a><br/></div></div></div><div class="content-listicle" data-item-id="b2"><div class="listicle-image"><div class="show-tablet"><h2 class="display-md">2. My Balance Felt Different<br/></h2></div><div class="image-wrapper cc-1x1"><div class="image ph" data-ph="video" style="width:100%;height:100%"><video autoplay="" class="ph-ref" loop="" muted="" playsinline="" preload="metadata" src="https://cdn.shopify.com/videos/c/o/v/f46284f8498f4afd84c284777547ee77.mp4"></video><span class="ph-t">VIDEO 1:1</span><span class="ph-d">Benefit 2 shown in use (UGC video)</span></div></div></div><div class="listicle1_content"><div class="hide-tablet"><h2 class="display-md">2. My Balance Felt Different<br/></h2></div><div class="p-listicle">I used to feel wobbly on wet floors or uneven sidewalks. That nervous feeling when you step on a slippery surface.<br/><br/>These have a <strong class="bold-text-1985">non-slip sole</strong> that actually works. Sounds dramatic, but I stopped being scared of slipping.<br/></div><div class="p-listicle-3 publisher">👉 <a class="link-2" href="https://offer.dinosaurized.com/OFFER-SLUG"><strong class="bold-text-1965">See the non-slip sole in action</strong></a><br/></div></div></div><div class="content-listicle" data-item-id="b3"><div class="listicle-image"><div class="show-tablet"><h2 class="display-md">3. Comfortable All Day Without Foot Pain<br/></h2></div><div class="image-wrapper cc-1x1"><div class="image ph" data-ph="video" style="width:100%;height:100%"><video autoplay="" class="ph-ref" loop="" muted="" playsinline="" preload="metadata" src="https://cdn.shopify.com/videos/c/o/v/c42f289bbb134fcbbaff3897e8d562a9.mp4"></video><span class="ph-t">VIDEO 1:1</span><span class="ph-d">Benefit 3: author using it all day, relaxed (UGC video)</span></div></div></div><div class="listicle1_content"><div class="hide-tablet"><h2 class="display-md">3. Comfortable All Day Without Foot Pain<br/></h2></div><div class="p-listicle">Usually by noon my feet were screaming. I'd find excuses to sit down. With these, I'd look at the clock and realize I'd been on my feet for hours. <strong class="bold-text-1986">No pain. No fatigue.<br/><br/></strong>The <strong class="bold-text-1987">thin soles</strong> let your feet move naturally, while the <strong class="bold-text-1988">flexible material</strong> ensures every step feels effortless.</div></div></div><div class="content-listicle" data-item-id="b4"><div class="listicle-image"><div class="show-tablet"><h2 class="display-md">4. Relief for Back Pain, Stiff Joints &amp; Foot Pain<br/></h2></div><div class="image-wrapper cc-1x1"><div class="image ph" data-ph="video" style="width:100%;height:100%"><video autoplay="" class="ph-ref" loop="" muted="" playsinline="" preload="metadata" src="https://cdn.shopify.com/videos/c/o/v/8febc68ad7164ff8ada5b87457987a4d.mp4"></video><span class="ph-t">VIDEO 1:1</span><span class="ph-d">Benefit 4: the body-level payoff (UGC video)</span></div></div></div><div class="listicle1_content"><div class="hide-tablet"><h2 class="display-md">4. Relief for Back Pain, Stiff Joints &amp; Foot Pain<br/></h2></div><div class="p-listicle">I didn't expect a shoe to help my back. But foot alignment affects your entire body. When your feet are off, your <strong class="bold-text-1989">knees, hips, and lower back</strong> compensate. HF-Flow's <strong class="bold-text-1990">hands-off design</strong> eliminates the need to bend down, making it perfect for those with <strong class="bold-text-1991">back pain or mobility issues.<br/><br/></strong>The <strong class="bold-text-1992">enhanced arch support</strong> provides extra comfort and stability. Many users report relief from conditions like <strong class="bold-text-1993">plantar fasciitis, neuropathy, and swollen or stiff feet.</strong><br/></div></div></div><div class="content-listicle" data-item-id="b5"><div class="listicle-image"><div class="show-tablet"><h2 class="display-md">5. My Bunions Finally Had Room<br/></h2></div><div class="image-wrapper cc-1x1"><div class="image ph" data-ph="video" style="width:100%;height:100%"><video autoplay="" class="ph-ref" loop="" muted="" playsinline="" preload="metadata" src="https://cdn.shopify.com/videos/c/o/v/517a7006223546a9a6727b668b56769e.mp4"></video><span class="ph-t">VIDEO 1:1</span><span class="ph-d">Benefit 5: key design feature, close-up (video)</span></div></div></div><div class="listicle1_content"><div class="hide-tablet"><h2 class="display-md">5. My Bunions Finally Had Room<br/></h2></div><div class="p-listicle">Tired of squeezing your feet into tight, narrow shoes? HF-Flow's <strong class="bold-text-1994">wide toe box</strong> lets your toes spread naturally, giving you the space they need to stay comfortable and pain-free.<br/><br/>No more pinching. No more throbbing by the end of the day. First time in years my feet didn't feel squeezed.<br/></div></div></div><div class="cta-content-2" data-item-id="offer"><div class="text-align-center-5"><div class="max-width-medium-2"><div class="adv_cta_div"><div class="photo-wrappers dark-grey"><div class="image-89 baresandals ph" data-ph="image" style="aspect-ratio:1/1"><img alt="" class="ph-ref" loading="lazy" src="https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6944373e1650e3575da8104d_6894897cb47d40036c6424d4_1%201.avif"/><span class="ph-t">IMG 1:1</span><span class="ph-d">Our product packshot / bundle on a plain background</span></div></div><div class="adv_cta_right_div"><div class="divider bf"><div class="divider-line expand"></div><div class="div-block-1351"><img alt="" class="gift-icon" loading="lazy" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTMiIGhlaWdodD0iMTMiIHZpZXdCb3g9IjAgMCAxMyAxMyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTExLjkwMTggMy45NzU1OVY1Ljc5MDk3QzExLjkwMTggNS45MDIyMiAxMS44NTc2IDYuMDA4OSAxMS43NzkgNi4wODc1NkMxMS43MDAzIDYuMTY2MjIgMTEuNTkzNiA2LjIxMDQxIDExLjQ4MjQgNi4yMTA0MUgxMC44NzIxVjEyLjE2MTJDMTAuODcyMSAxMi4yNzI0IDEwLjgyNzkgMTIuMzc5MSAxMC43NDkyIDEyLjQ1NzhDMTAuNjcwNiAxMi41MzY0IDEwLjU2MzkgMTIuNTgwNiAxMC40NTI3IDEyLjU4MDZIMS44Njg4NEMxLjc1NzYgMTIuNTgwNiAxLjY1MDkxIDEyLjUzNjQgMS41NzIyNSAxMi40NTc4QzEuNDkzNTkgMTIuMzc5MSAxLjQ0OTQgMTIuMjcyNCAxLjQ0OTQgMTIuMTYxMlY2LjIxMDQxSDAuODM5MTE3QzAuNzI3ODc0IDYuMjEwNDEgMC42MjExODkgNi4xNjYyMiAwLjU0MjUyOCA2LjA4NzU2QzAuNDYzODY4IDYuMDA4OSAwLjQxOTY3OCA1LjkwMjIyIDAuNDE5Njc4IDUuNzkwOTdWMy45NzU1OUMwLjQxOTY3OCAzLjg2NDM1IDAuNDYzODY4IDMuNzU3NjYgMC41NDI1MjggMy42NzlDMC42MjExODkgMy42MDAzNCAwLjcyNzg3NCAzLjU1NjE1IDAuODM5MTE3IDMuNTU2MTVIMTEuNDgyNEMxMS41OTM2IDMuNTU2MTUgMTEuNzAwMyAzLjYwMDM0IDExLjc3OSAzLjY3OUMxMS44NTc2IDMuNzU3NjYgMTEuOTAxOCAzLjg2NDM1IDExLjkwMTggMy45NzU1OVoiIGZpbGw9IiNGRTRGNjAiLz4KPHBhdGggZD0iTTExLjQ4MjQgMy41NTYxNUgwLjgzOTExN0MwLjcyNzg3NCAzLjU1NjE1IDAuNjIxMTg5IDMuNjAwMzQgMC41NDI1MjggMy42NzlDMC40NjM4NjggMy43NTc2NiAwLjQxOTY3OCAzLjg2NDM1IDAuNDE5Njc4IDMuOTc1NTlWNS43OTA5N0MwLjQxOTY3OCA1LjkwMjIyIDAuNDYzODY4IDYuMDA4OSAwLjU0MjUyOCA2LjA4NzU2QzAuNjIxMTg5IDYuMTY2MjIgMC43Mjc4NzQgNi4yMTA0MSAwLjgzOTExNyA2LjIxMDQxSDQuNTM1NDJWNy4yNjMyQzQuNTM1NSA3LjMzNDI4IDQuNTUzNjMgNy40MDQxNiA0LjU4ODEzIDcuNDY2MzFDNC42MjI2MiA3LjUyODQ1IDQuNjcyMzQgNy41ODA4MSA0LjczMjYxIDcuNjE4NDZDNC43OTI4OSA3LjY1NjEyIDQuODYxNzQgNy42Nzc4NSA0LjkzMjcyIDcuNjgxNkM1LjAwMzY5IDcuNjg1MzUgNS4wNzQ0NSA3LjY3MTAxIDUuMTM4MzYgNy42Mzk5MUw1Ljk3NzI0IDcuMjI5NjVDNi4wMzQ2OSA3LjIwMTUgNi4wOTc4MiA3LjE4Njg3IDYuMTYxNzkgNy4xODY4N0M2LjIyNTc3IDcuMTg2ODcgNi4yODg5IDcuMjAxNSA2LjM0NjM1IDcuMjI5NjVMNy4xODMxMyA3LjYzOTkxQzcuMjQ3MDQgNy42NzEwMSA3LjMxNzggNy42ODUzNSA3LjM4ODc3IDcuNjgxNkM3LjQ1OTc1IDcuNjc3ODUgNy41Mjg2IDcuNjU2MTIgNy41ODg4OCA3LjYxODQ2QzcuNjQ5MTUgNy41ODA4MSA3LjY5ODg3IDcuNTI4NDUgNy43MzMzNiA3LjQ2NjMxQzcuNzY3ODYgNy40MDQxNiA3Ljc4NTk5IDcuMzM0MjggNy43ODYwNyA3LjI2MzJWNi4yMTA0MUgxMS40ODI0QzExLjU5MzYgNi4yMTA0MSAxMS43MDAzIDYuMTY2MjIgMTEuNzc5IDYuMDg3NTZDMTEuODU3NiA2LjAwODkgMTEuOTAxOCA1LjkwMjIyIDExLjkwMTggNS43OTA5N1YzLjk3NTU5QzExLjkwMTggMy44NjQzNSAxMS44NTc2IDMuNzU3NjYgMTEuNzc5IDMuNjc5QzExLjcwMDMgMy42MDAzNCAxMS41OTM2IDMuNTU2MTUgMTEuNDgyNCAzLjU1NjE1WiIgZmlsbD0iI0ZGNkQ3QSIvPgo8cGF0aCBkPSJNMTEuOTAxOCAzLjk3NTU5VjQuMzQyNkgxLjYyNTU2QzEuNTE0MzIgNC4zNDI2IDEuNDA3NjQgNC4zODY3OSAxLjMyODk4IDQuNDY1NDVDMS4yNTAzMiA0LjU0NDExIDEuMjA2MTMgNC42NTA4IDEuMjA2MTMgNC43NjIwNFY2LjIxMDQxSDAuODM5MTE3QzAuNzI3ODc0IDYuMjEwNDEgMC42MjExODkgNi4xNjYyMiAwLjU0MjUyOCA2LjA4NzU2QzAuNDYzODY4IDYuMDA4OSAwLjQxOTY3OCA1LjkwMjIyIDAuNDE5Njc4IDUuNzkwOTdWMy45NzU1OUMwLjQxOTY3OCAzLjg2NDM1IDAuNDYzODY4IDMuNzU3NjYgMC41NDI1MjggMy42NzlDMC42MjExODkgMy42MDAzNCAwLjcyNzg3NCAzLjU1NjE1IDAuODM5MTE3IDMuNTU2MTVIMTEuNDgyNEMxMS41OTM2IDMuNTU2MTUgMTEuNzAwMyAzLjYwMDM0IDExLjc3OSAzLjY3OUMxMS44NTc2IDMuNzU3NjYgMTEuOTAxOCAzLjg2NDM1IDExLjkwMTggMy45NzU1OVoiIGZpbGw9IiNGRTkyOUYiLz4KPHBhdGggZD0iTTEuNDQ4NzMgNi4yMTAzM0gxMC44Nzg4VjcuMDIyOTlIMS40NDg3M1Y2LjIxMDMzWiIgZmlsbD0iI0U4NDg1NyIvPgo8cGF0aCBkPSJNNy43ODU2NSAzLjU1NjE1VjcuMjYzMkM3Ljc4NTY1IDcuNTUzNjcgNy40ODY1NCA3Ljc5MDkxIDcuMTU2NDkgNy42MjY4MVYxMi41ODA2SDUuMTY0MTZWNy42MjYwMkM0LjgzMTIzIDcuNzkwNjUgNC41MzM2OSA3LjU1MTMxIDQuNTMzNjkgNy4yNjI0MlYzLjU1NjE1SDcuNzg1NjVaIiBmaWxsPSIjRDZGNEZDIi8+CjxwYXRoIGQ9Ik03Ljc4NTgxIDcuMjYzMkM3Ljc4NTczIDcuMzM0MjggNy43Njc1OSA3LjQwNDE2IDcuNzMzMSA3LjQ2NjMxQzcuNjk4NjEgNy41Mjg0NSA3LjY0ODg5IDcuNTgwODEgNy41ODg2MSA3LjYxODQ2QzcuNTI4MzQgNy42NTYxMiA3LjQ1OTQ4IDcuNjc3ODUgNy4zODg1MSA3LjY4MTZDNy4zMTc1NCA3LjY4NTM1IDcuMjQ2NzcgNy42NzEwMSA3LjE4Mjg2IDcuNjM5OTFMNi4zNDM5OSA3LjIyOTY1QzYuMjg2NTQgNy4yMDE1IDYuMjIzNDEgNy4xODY4NyA2LjE1OTQzIDcuMTg2ODdDNi4wOTU0NiA3LjE4Njg3IDYuMDMyMzMgNy4yMDE1IDUuOTc0ODggNy4yMjk2NUw1LjEzODEgNy42Mzk5MUM1LjA3NDE5IDcuNjcxMDEgNS4wMDM0MyA3LjY4NTM1IDQuOTMyNDUgNy42ODE2QzQuODYxNDggNy42Nzc4NSA0Ljc5MjYyIDcuNjU2MTIgNC43MzIzNSA3LjYxODQ2QzQuNjcyMDcgNy41ODA4MSA0LjYyMjM2IDcuNTI4NDUgNC41ODc4NiA3LjQ2NjMxQzQuNTUzMzcgNy40MDQxNiA0LjUzNTIzIDcuMzM0MjggNC41MzUxNiA3LjI2MzJWMy41NTYxNUg3Ljc4NTgxVjcuMjYzMloiIGZpbGw9IiNFOEY4RkMiLz4KPHBhdGggZD0iTTQuNTM0NjcgMy41NTYxNUg3Ljc4NjM3VjQuMzQyNkg0LjUzNDY3VjMuNTU2MTVaIiBmaWxsPSIjRjFGQUZDIi8+CjxwYXRoIGQ9Ik0xMS45MDE2IDMuMTM2NjRIOS44NzI4QzEwLjEyNDcgMi43NzQ3MSAxMC4yNDcyIDIuMzM4NDIgMTAuMjIwNSAxLjg5ODI2QzEwLjE5MzkgMS40NTgxMSAxMC4wMTk1IDEuMDM5ODEgOS43MjU3NCAwLjcxMDk3QzguNTc4MzEgLTAuNTY4NTgxIDYuODIwMDcgMC4wMjc4MDg5IDYuMTYwNTEgMS4zNTI3MUM1LjQ3NDIgLTAuMDI1OTMxNyAzLjY4NjM0IC0wLjUwNTkyNyAyLjY1MTkgMC42NDg4NEMxLjkxOTk4IDEuNDY1NyAxLjk3MjY3IDIuNDU0NTIgMi40NDgyMSAzLjEzNjY0SDAuNDE5NDM5QzAuMzA4MTk3IDMuMTM2NjQgMC4yMDE1MTEgMy4xODA4MyAwLjEyMjg1MSAzLjI1OTQ5QzAuMDQ0MTkwNyAzLjMzODE1IDAgMy40NDQ4MyAwIDMuNTU2MDhWNi4yMTAzNEMwIDYuMzIxNTggMC4wNDQxOTA3IDYuNDI4MjYgMC4xMjI4NTEgNi41MDY5MkMwLjIwMTUxMSA2LjU4NTU4IDAuMzA4MTk3IDYuNjI5NzcgMC40MTk0MzkgNi42Mjk3N0gxLjAyOTcyVjEyLjU4MDZDMS4wMjk3MiAxMi42OTE4IDEuMDczOTEgMTIuNzk4NSAxLjE1MjU3IDEyLjg3NzFDMS4yMzEyMyAxMi45NTU4IDEuMzM3OTIgMTMgMS40NDkxNiAxM0gxMC44NzE5QzEwLjk4MzEgMTMgMTEuMDg5OCAxMi45NTU4IDExLjE2ODQgMTIuODc3MUMxMS4yNDcxIDEyLjc5ODUgMTEuMjkxMyAxMi42OTE4IDExLjI5MTMgMTIuNTgwNlY2LjYyOTc3SDExLjkwMTZDMTIuMDEyOCA2LjYyOTc3IDEyLjExOTUgNi41ODU1OCAxMi4xOTgyIDYuNTA2OTJDMTIuMjc2OCA2LjQyODI2IDEyLjMyMSA2LjMyMTU4IDEyLjMyMSA2LjIxMDM0VjMuNTU2MDhDMTIuMzIxIDMuNDQ0ODMgMTIuMjc2OCAzLjMzODE1IDEyLjE5ODIgMy4yNTk0OUMxMi4xMTk1IDMuMTgwODMgMTIuMDEyOCAzLjEzNjY0IDExLjkwMTYgMy4xMzY2NFpNNi43NDkyOSAyLjI2MDhDNi45MDIzOSAxLjA2ODAyIDguMjg5MTYgMC4zNjU3MTkgOS4wNDQxNSAxLjIwODc5TDkuMDk5NzIgMS4yNzA5MkM5Ljc0NDYxIDEuOTkwNTIgOS4yMzA4IDMuMTM2NjQgOC4yNjYzNSAzLjEzNjY0SDYuNjM3MDlMNi43NDkyOSAyLjI2MDhaTTcuMzY2MzkgNy4yNjMxM0M2LjI1NzI0IDYuNzE5OTUgNi4yODk3NSA2LjcxOTk1IDYuMTYwNTEgNi43MTk5NUM2LjAzMTI3IDYuNzE5OTUgNi4wNjM3NyA2LjcxOTk1IDQuOTU0NjIgNy4yNjMxM1YzLjk3NTUxSDcuMzY2MzlWNy4yNjMxM1pNMy4yMjEwMyAxLjI3MDkyTDMuMjc2ODcgMS4yMDg3OUM0LjAzNSAwLjM2MjMxMSA1LjQxOTE1IDEuMDcwOSA1LjU3MTk4IDIuMjYwOEw1LjY4NDE4IDMuMTM2NjRINC4wNTQ0QzMuMDg4MTIgMy4xMzY2NCAyLjU3NzQ1IDEuOTg5NzMgMy4yMjEwMyAxLjI3MDkyWk0wLjgzODg3NyAzLjk3NTUxSDQuMTE1NzRWNS43OTA5SDAuODM4ODc3VjMuOTc1NTFaTTEuODY4NiA2LjYyOTc3SDQuMTE1NzRWNy45MzU1NEM0LjExNTc0IDguMjIxNTQgNC40MDk2MSA4LjQ2NDI5IDQuNzQ2MjEgOC4yOTk0VjEyLjE2MTFIMS44Njg2VjYuNjI5NzdaTTEwLjQ1MjQgMTIuMTYxMUg3LjU3NjExVjkuMjc3NDhDNy41NzYxMSA5LjE2NjI0IDcuNTMxOTIgOS4wNTk1NSA3LjQ1MzI2IDguOTgwODlDNy4zNzQ2IDguOTAyMjMgNy4yNjc5MiA4Ljg1ODA0IDcuMTU2NjcgOC44NTgwNEM3LjA0NTQzIDguODU4MDQgNi45Mzg3NSA4LjkwMjIzIDYuODYwMDkgOC45ODA4OUM2Ljc4MTQyIDkuMDU5NTUgNi43MzcyMyA5LjE2NjI0IDYuNzM3MjMgOS4yNzc0OFYxMi4xNjExSDUuNTgzNzhWNy44ODgwOUw2LjE2MDUxIDcuNjA2MDJDNy43MzM0IDguMzc2NzQgNy42NTM0NSA4LjM1NDcyIDcuNzg1ODMgOC4zNTQ3MkM3Ljg5NzA3IDguMzU0NzIgOC4wMDM3NiA4LjMxMDUzIDguMDgyNDIgOC4yMzE4N0M4LjE2MTA4IDguMTUzMjEgOC4yMDUyNyA4LjA0NjUyIDguMjA1MjcgNy45MzUyOFY2LjYyOTc3SDEwLjQ1MTlMMTAuNDUyNCAxMi4xNjExWk0xMS40ODIxIDUuNzkwOUg4LjIwNTI3VjMuOTc1NTFIMTEuNDgyMVY1Ljc5MDlaIiBmaWxsPSJibGFjayIvPgo8L3N2Zz4K"/><div class="style-guide-card">BUY MORE, SAVE MORE</div></div><div class="divider-line expand"></div></div><h1 class="adv_cta_heading-2"><span class="span-red">UP TO 57% OFF</span> FOR A LIMITED TIME ONLY!</h1><div class="adv_cta_top_div"><div class="padding-bottom padding-xsmall"></div><div class="adv_cta_subtitle_text">I was skeptical too. But with free shipping and a 30-day guarantee, there's nothing to lose.</div><div class="padding-bottom padding-small"></div><a class="button w-inline-block" href="https://offer.dinosaurized.com/OFFER-SLUG"><div class="button_content" data-button="content"><div class="text-block-580" id="cta_text">TRY THEM RISK-FREE</div><div class="button_icon w-embed" data-button="icon"><svg aria-hidden="true" class="iconify iconify--heroicons" height="100%" preserveaspectratio="xMidYMid meet" role="img" viewbox="0 0 20 20" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path clip-rule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z" fill="currentColor" fill-rule="evenodd" height="100%" width="100%"></path></svg></div></div><svg class="button_spinner button_spinner" data-button="spinner" viewbox="0 0 50 50"><circle class="path path" cx="25" cy="25" fill="none" r="20" stroke-width="5"></circle></svg></a><div class="bot_cta_badge_div"><div class="div-block-2"><div class="div-block-766"><div class="text-block">Sell-Out Risk: <span class="text-span-6">High</span></div></div></div><div class="div-block-765"><div class="text-block-4">|</div></div><div class="div-block-764"><div class="div-block-767"><div class="text-block-279"><span class="text-span-7">FREE</span> shipping</div></div></div></div></div><div class="padding-bottom padding-xsmall"></div><div class="text-size-tiny text-align-center">Try it today with a 30-Day Money Back Guarantee!</div></div></div></div></div><div class="div-block-900"><div class="listicle-banner-sale-badge">Warehouse Sale</div></div></div><div class="content-listicle" data-item-id="b6"><div class="listicle-image"><div class="show-tablet"><h2 class="display-md publisher">6. That Barefoot Feeling (But Protected)<br/></h2></div><div class="image-wrapper cc-1x1"><div class="image ph" data-ph="image" style="width:100%;height:100%"><img alt="" class="ph-ref" loading="lazy" src="https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6944397d754a5005a106e3d1_2C%20-%20Close-up%20of%20feet.webp"/><span class="ph-t">IMG 1:1</span><span class="ph-d">Benefit 6: product close-up in real use</span></div></div></div><div class="listicle1_content"><div class="hide-tablet"><h2 class="display-md publisher">6. That Barefoot Feeling (But Protected)<br/></h2></div><div class="p-listicle publisher">I always heard barefoot walking was healthy but didn't want to destroy my feet on concrete. These give you that <strong class="bold-text-1995">natural barefoot feeling</strong> with actual protection.<br/><br/>The <strong class="bold-text-1996">ultra-thin soles</strong> let you feel the ground beneath you. My feet actually got stronger after a few weeks.<br/></div></div></div><div class="content-listicle" data-item-id="b7"><div class="listicle-image"><div class="show-tablet"><h2 class="display-md publisher">7. Easy to Clean<br/></h2></div><div class="image-wrapper cc-1x1"><div class="image ph" data-ph="image" style="width:100%;height:100%"><img alt="" class="ph-ref" loading="lazy" src="https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6944397f8b3ba41865d1c590_4A%20-%20Tying%20Shoes%20(1).webp"/><span class="ph-t">IMG 1:1</span><span class="ph-d">Benefit 7: product being cleaned / easy care</span></div></div></div><div class="listicle1_content"><div class="hide-tablet"><h2 class="display-md publisher">7. Easy to Clean<br/></h2></div><div class="p-listicle publisher">I'm not gentle with shoes. Mud, puddles, grass stains, they see it all. These just wipe down with a damp cloth. Tougher stains? <br/><br/><strong class="bold-text-1997">Toss them in the washing machine.</strong> Still look new after months.<br/></div></div></div><div class="content-listicle" data-item-id="b8"><div class="listicle-image"><div class="show-tablet"><h2 class="display-md publisher">8. Breathable for All-Day Freshness<br/></h2></div><div class="image-wrapper cc-1x1"><div class="image ph" data-ph="video" style="width:100%;height:100%"><video autoplay="" class="ph-ref" loop="" muted="" playsinline="" preload="metadata" src="https://cdn.shopify.com/videos/c/o/v/87dbc7aa723d4cfa9cf378f5cd49b258.mp4"></video><span class="ph-t">VIDEO 1:1</span><span class="ph-d">Benefit 8: feature demo (video)</span></div></div></div><div class="listicle1_content"><div class="hide-tablet"><h2 class="display-md publisher">8. Breathable for All-Day Freshness<br/></h2></div><div class="p-listicle publisher">Sweaty feet were my embarrassing secret. By midday, I'd be self-conscious. The <strong class="bold-text-1998">breathable material</strong> actually works. Ventilation holes keep your feet cool and dry. <br/><br/>No more damp, uncomfortable feet by lunch.<br/></div></div></div><div class="content-listicle" data-item-id="b9"><div class="listicle-image"><div class="show-tablet"><h2 class="display-md publisher">9. A Podiatrist Actually Recommends Them<br/></h2></div><div class="image-wrapper cc-1x1"><div class="image ph" data-ph="image" style="width:100%;height:100%"><img alt="" class="ph-ref" loading="lazy" src="https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/69443c3243d61ec1cce0d7f1_PDP_Podiatrist_Recommended_Marta_-_HF_Cloud.webp"/><span class="ph-t">IMG 1:1</span><span class="ph-d">Benefit 9: expert / authority with the product</span></div></div></div><div class="listicle1_content"><div class="hide-tablet"><h2 class="display-md publisher">9.  Recommended by Podiatrists<br/></h2></div><div class="p-listicle publisher">A real podiatrist, specifically recommends these for people with foot pain. <br/><br/>Not a paid celebrity. An actual doctor who treats feet for a living.<br/></div></div></div><div class="content-listicle" data-item-id="b10"><div class="listicle-image"><div class="show-tablet"><h2 class="display-md publisher">10. Best Value for What Actually Works<br/></h2></div><div class="image-wrapper cc-1x1"><div class="image ph" data-ph="image" style="width:100%;height:100%"><img alt="" class="ph-ref" loading="lazy" src="https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/694443c1d55c2f4e4b83aaba_C18727BB-D484-438F-B5C9-DB6D09237297.webp"/><span class="ph-t">IMG 1:1</span><span class="ph-d">Benefit 10: old products piled up vs ours (value)</span></div></div></div><div class="listicle1_content"><div class="hide-tablet"><h2 class="display-md publisher">10. Best Value for What Actually Works<br/></h2></div><div class="p-listicle publisher">I spent <strong class="bold-text-1999">over $700</strong> on shoes that didn't help: Custom orthotics: $220, didn't work. Brooks: $180, didn't work."Orthopedic" shoes: $150, didn't work.<br/><br/>These: <strong class="bold-text-2000">$69.95</strong>, the only ones that actually worked.<br/></div></div></div></div></div></div></section><section class="section_cta-protein gradient-sale publisher" id="customer-reviews"><div><div class="container cc-small"><div class="padding-section-cta"><div class="cta-content-2"><div class="text-align-center-5"><div class="max-width-medium-2"><div class="adv_cta_div"><div class="photo-wrappers dark-grey"><div class="image-89 baresandals ph" data-ph="image" style="aspect-ratio:1/1"><img alt="" class="ph-ref" loading="lazy" src="https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/6944373e1650e3575da8104d_6894897cb47d40036c6424d4_1%201.avif"/><span class="ph-t">IMG 1:1</span><span class="ph-d">Our product packshot / bundle on a plain background</span></div></div><div class="adv_cta_right_div"><div class="divider bf"><div class="divider-line expand"></div><div class="div-block-1351"><img alt="" class="gift-icon" loading="lazy" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTMiIGhlaWdodD0iMTMiIHZpZXdCb3g9IjAgMCAxMyAxMyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTExLjkwMTggMy45NzU1OVY1Ljc5MDk3QzExLjkwMTggNS45MDIyMiAxMS44NTc2IDYuMDA4OSAxMS43NzkgNi4wODc1NkMxMS43MDAzIDYuMTY2MjIgMTEuNTkzNiA2LjIxMDQxIDExLjQ4MjQgNi4yMTA0MUgxMC44NzIxVjEyLjE2MTJDMTAuODcyMSAxMi4yNzI0IDEwLjgyNzkgMTIuMzc5MSAxMC43NDkyIDEyLjQ1NzhDMTAuNjcwNiAxMi41MzY0IDEwLjU2MzkgMTIuNTgwNiAxMC40NTI3IDEyLjU4MDZIMS44Njg4NEMxLjc1NzYgMTIuNTgwNiAxLjY1MDkxIDEyLjUzNjQgMS41NzIyNSAxMi40NTc4QzEuNDkzNTkgMTIuMzc5MSAxLjQ0OTQgMTIuMjcyNCAxLjQ0OTQgMTIuMTYxMlY2LjIxMDQxSDAuODM5MTE3QzAuNzI3ODc0IDYuMjEwNDEgMC42MjExODkgNi4xNjYyMiAwLjU0MjUyOCA2LjA4NzU2QzAuNDYzODY4IDYuMDA4OSAwLjQxOTY3OCA1LjkwMjIyIDAuNDE5Njc4IDUuNzkwOTdWMy45NzU1OUMwLjQxOTY3OCAzLjg2NDM1IDAuNDYzODY4IDMuNzU3NjYgMC41NDI1MjggMy42NzlDMC42MjExODkgMy42MDAzNCAwLjcyNzg3NCAzLjU1NjE1IDAuODM5MTE3IDMuNTU2MTVIMTEuNDgyNEMxMS41OTM2IDMuNTU2MTUgMTEuNzAwMyAzLjYwMDM0IDExLjc3OSAzLjY3OUMxMS44NTc2IDMuNzU3NjYgMTEuOTAxOCAzLjg2NDM1IDExLjkwMTggMy45NzU1OVoiIGZpbGw9IiNGRTRGNjAiLz4KPHBhdGggZD0iTTExLjQ4MjQgMy41NTYxNUgwLjgzOTExN0MwLjcyNzg3NCAzLjU1NjE1IDAuNjIxMTg5IDMuNjAwMzQgMC41NDI1MjggMy42NzlDMC40NjM4NjggMy43NTc2NiAwLjQxOTY3OCAzLjg2NDM1IDAuNDE5Njc4IDMuOTc1NTlWNS43OTA5N0MwLjQxOTY3OCA1LjkwMjIyIDAuNDYzODY4IDYuMDA4OSAwLjU0MjUyOCA2LjA4NzU2QzAuNjIxMTg5IDYuMTY2MjIgMC43Mjc4NzQgNi4yMTA0MSAwLjgzOTExNyA2LjIxMDQxSDQuNTM1NDJWNy4yNjMyQzQuNTM1NSA3LjMzNDI4IDQuNTUzNjMgNy40MDQxNiA0LjU4ODEzIDcuNDY2MzFDNC42MjI2MiA3LjUyODQ1IDQuNjcyMzQgNy41ODA4MSA0LjczMjYxIDcuNjE4NDZDNC43OTI4OSA3LjY1NjEyIDQuODYxNzQgNy42Nzc4NSA0LjkzMjcyIDcuNjgxNkM1LjAwMzY5IDcuNjg1MzUgNS4wNzQ0NSA3LjY3MTAxIDUuMTM4MzYgNy42Mzk5MUw1Ljk3NzI0IDcuMjI5NjVDNi4wMzQ2OSA3LjIwMTUgNi4wOTc4MiA3LjE4Njg3IDYuMTYxNzkgNy4xODY4N0M2LjIyNTc3IDcuMTg2ODcgNi4yODg5IDcuMjAxNSA2LjM0NjM1IDcuMjI5NjVMNy4xODMxMyA3LjYzOTkxQzcuMjQ3MDQgNy42NzEwMSA3LjMxNzggNy42ODUzNSA3LjM4ODc3IDcuNjgxNkM3LjQ1OTc1IDcuNjc3ODUgNy41Mjg2IDcuNjU2MTIgNy41ODg4OCA3LjYxODQ2QzcuNjQ5MTUgNy41ODA4MSA3LjY5ODg3IDcuNTI4NDUgNy43MzMzNiA3LjQ2NjMxQzcuNzY3ODYgNy40MDQxNiA3Ljc4NTk5IDcuMzM0MjggNy43ODYwNyA3LjI2MzJWNi4yMTA0MUgxMS40ODI0QzExLjU5MzYgNi4yMTA0MSAxMS43MDAzIDYuMTY2MjIgMTEuNzc5IDYuMDg3NTZDMTEuODU3NiA2LjAwODkgMTEuOTAxOCA1LjkwMjIyIDExLjkwMTggNS43OTA5N1YzLjk3NTU5QzExLjkwMTggMy44NjQzNSAxMS44NTc2IDMuNzU3NjYgMTEuNzc5IDMuNjc5QzExLjcwMDMgMy42MDAzNCAxMS41OTM2IDMuNTU2MTUgMTEuNDgyNCAzLjU1NjE1WiIgZmlsbD0iI0ZGNkQ3QSIvPgo8cGF0aCBkPSJNMTEuOTAxOCAzLjk3NTU5VjQuMzQyNkgxLjYyNTU2QzEuNTE0MzIgNC4zNDI2IDEuNDA3NjQgNC4zODY3OSAxLjMyODk4IDQuNDY1NDVDMS4yNTAzMiA0LjU0NDExIDEuMjA2MTMgNC42NTA4IDEuMjA2MTMgNC43NjIwNFY2LjIxMDQxSDAuODM5MTE3QzAuNzI3ODc0IDYuMjEwNDEgMC42MjExODkgNi4xNjYyMiAwLjU0MjUyOCA2LjA4NzU2QzAuNDYzODY4IDYuMDA4OSAwLjQxOTY3OCA1LjkwMjIyIDAuNDE5Njc4IDUuNzkwOTdWMy45NzU1OUMwLjQxOTY3OCAzLjg2NDM1IDAuNDYzODY4IDMuNzU3NjYgMC41NDI1MjggMy42NzlDMC42MjExODkgMy42MDAzNCAwLjcyNzg3NCAzLjU1NjE1IDAuODM5MTE3IDMuNTU2MTVIMTEuNDgyNEMxMS41OTM2IDMuNTU2MTUgMTEuNzAwMyAzLjYwMDM0IDExLjc3OSAzLjY3OUMxMS44NTc2IDMuNzU3NjYgMTEuOTAxOCAzLjg2NDM1IDExLjkwMTggMy45NzU1OVoiIGZpbGw9IiNGRTkyOUYiLz4KPHBhdGggZD0iTTEuNDQ4NzMgNi4yMTAzM0gxMC44Nzg4VjcuMDIyOTlIMS40NDg3M1Y2LjIxMDMzWiIgZmlsbD0iI0U4NDg1NyIvPgo8cGF0aCBkPSJNNy43ODU2NSAzLjU1NjE1VjcuMjYzMkM3Ljc4NTY1IDcuNTUzNjcgNy40ODY1NCA3Ljc5MDkxIDcuMTU2NDkgNy42MjY4MVYxMi41ODA2SDUuMTY0MTZWNy42MjYwMkM0LjgzMTIzIDcuNzkwNjUgNC41MzM2OSA3LjU1MTMxIDQuNTMzNjkgNy4yNjI0MlYzLjU1NjE1SDcuNzg1NjVaIiBmaWxsPSIjRDZGNEZDIi8+CjxwYXRoIGQ9Ik03Ljc4NTgxIDcuMjYzMkM3Ljc4NTczIDcuMzM0MjggNy43Njc1OSA3LjQwNDE2IDcuNzMzMSA3LjQ2NjMxQzcuNjk4NjEgNy41Mjg0NSA3LjY0ODg5IDcuNTgwODEgNy41ODg2MSA3LjYxODQ2QzcuNTI4MzQgNy42NTYxMiA3LjQ1OTQ4IDcuNjc3ODUgNy4zODg1MSA3LjY4MTZDNy4zMTc1NCA3LjY4NTM1IDcuMjQ2NzcgNy42NzEwMSA3LjE4Mjg2IDcuNjM5OTFMNi4zNDM5OSA3LjIyOTY1QzYuMjg2NTQgNy4yMDE1IDYuMjIzNDEgNy4xODY4NyA2LjE1OTQzIDcuMTg2ODdDNi4wOTU0NiA3LjE4Njg3IDYuMDMyMzMgNy4yMDE1IDUuOTc0ODggNy4yMjk2NUw1LjEzODEgNy42Mzk5MUM1LjA3NDE5IDcuNjcxMDEgNS4wMDM0MyA3LjY4NTM1IDQuOTMyNDUgNy42ODE2QzQuODYxNDggNy42Nzc4NSA0Ljc5MjYyIDcuNjU2MTIgNC43MzIzNSA3LjYxODQ2QzQuNjcyMDcgNy41ODA4MSA0LjYyMjM2IDcuNTI4NDUgNC41ODc4NiA3LjQ2NjMxQzQuNTUzMzcgNy40MDQxNiA0LjUzNTIzIDcuMzM0MjggNC41MzUxNiA3LjI2MzJWMy41NTYxNUg3Ljc4NTgxVjcuMjYzMloiIGZpbGw9IiNFOEY4RkMiLz4KPHBhdGggZD0iTTQuNTM0NjcgMy41NTYxNUg3Ljc4NjM3VjQuMzQyNkg0LjUzNDY3VjMuNTU2MTVaIiBmaWxsPSIjRjFGQUZDIi8+CjxwYXRoIGQ9Ik0xMS45MDE2IDMuMTM2NjRIOS44NzI4QzEwLjEyNDcgMi43NzQ3MSAxMC4yNDcyIDIuMzM4NDIgMTAuMjIwNSAxLjg5ODI2QzEwLjE5MzkgMS40NTgxMSAxMC4wMTk1IDEuMDM5ODEgOS43MjU3NCAwLjcxMDk3QzguNTc4MzEgLTAuNTY4NTgxIDYuODIwMDcgMC4wMjc4MDg5IDYuMTYwNTEgMS4zNTI3MUM1LjQ3NDIgLTAuMDI1OTMxNyAzLjY4NjM0IC0wLjUwNTkyNyAyLjY1MTkgMC42NDg4NEMxLjkxOTk4IDEuNDY1NyAxLjk3MjY3IDIuNDU0NTIgMi40NDgyMSAzLjEzNjY0SDAuNDE5NDM5QzAuMzA4MTk3IDMuMTM2NjQgMC4yMDE1MTEgMy4xODA4MyAwLjEyMjg1MSAzLjI1OTQ5QzAuMDQ0MTkwNyAzLjMzODE1IDAgMy40NDQ4MyAwIDMuNTU2MDhWNi4yMTAzNEMwIDYuMzIxNTggMC4wNDQxOTA3IDYuNDI4MjYgMC4xMjI4NTEgNi41MDY5MkMwLjIwMTUxMSA2LjU4NTU4IDAuMzA4MTk3IDYuNjI5NzcgMC40MTk0MzkgNi42Mjk3N0gxLjAyOTcyVjEyLjU4MDZDMS4wMjk3MiAxMi42OTE4IDEuMDczOTEgMTIuNzk4NSAxLjE1MjU3IDEyLjg3NzFDMS4yMzEyMyAxMi45NTU4IDEuMzM3OTIgMTMgMS40NDkxNiAxM0gxMC44NzE5QzEwLjk4MzEgMTMgMTEuMDg5OCAxMi45NTU4IDExLjE2ODQgMTIuODc3MUMxMS4yNDcxIDEyLjc5ODUgMTEuMjkxMyAxMi42OTE4IDExLjI5MTMgMTIuNTgwNlY2LjYyOTc3SDExLjkwMTZDMTIuMDEyOCA2LjYyOTc3IDEyLjExOTUgNi41ODU1OCAxMi4xOTgyIDYuNTA2OTJDMTIuMjc2OCA2LjQyODI2IDEyLjMyMSA2LjMyMTU4IDEyLjMyMSA2LjIxMDM0VjMuNTU2MDhDMTIuMzIxIDMuNDQ0ODMgMTIuMjc2OCAzLjMzODE1IDEyLjE5ODIgMy4yNTk0OUMxMi4xMTk1IDMuMTgwODMgMTIuMDEyOCAzLjEzNjY0IDExLjkwMTYgMy4xMzY2NFpNNi43NDkyOSAyLjI2MDhDNi45MDIzOSAxLjA2ODAyIDguMjg5MTYgMC4zNjU3MTkgOS4wNDQxNSAxLjIwODc5TDkuMDk5NzIgMS4yNzA5MkM5Ljc0NDYxIDEuOTkwNTIgOS4yMzA4IDMuMTM2NjQgOC4yNjYzNSAzLjEzNjY0SDYuNjM3MDlMNi43NDkyOSAyLjI2MDhaTTcuMzY2MzkgNy4yNjMxM0M2LjI1NzI0IDYuNzE5OTUgNi4yODk3NSA2LjcxOTk1IDYuMTYwNTEgNi43MTk5NUM2LjAzMTI3IDYuNzE5OTUgNi4wNjM3NyA2LjcxOTk1IDQuOTU0NjIgNy4yNjMxM1YzLjk3NTUxSDcuMzY2MzlWNy4yNjMxM1pNMy4yMjEwMyAxLjI3MDkyTDMuMjc2ODcgMS4yMDg3OUM0LjAzNSAwLjM2MjMxMSA1LjQxOTE1IDEuMDcwOSA1LjU3MTk4IDIuMjYwOEw1LjY4NDE4IDMuMTM2NjRINC4wNTQ0QzMuMDg4MTIgMy4xMzY2NCAyLjU3NzQ1IDEuOTg5NzMgMy4yMjEwMyAxLjI3MDkyWk0wLjgzODg3NyAzLjk3NTUxSDQuMTE1NzRWNS43OTA5SDAuODM4ODc3VjMuOTc1NTFaTTEuODY4NiA2LjYyOTc3SDQuMTE1NzRWNy45MzU1NEM0LjExNTc0IDguMjIxNTQgNC40MDk2MSA4LjQ2NDI5IDQuNzQ2MjEgOC4yOTk0VjEyLjE2MTFIMS44Njg2VjYuNjI5NzdaTTEwLjQ1MjQgMTIuMTYxMUg3LjU3NjExVjkuMjc3NDhDNy41NzYxMSA5LjE2NjI0IDcuNTMxOTIgOS4wNTk1NSA3LjQ1MzI2IDguOTgwODlDNy4zNzQ2IDguOTAyMjMgNy4yNjc5MiA4Ljg1ODA0IDcuMTU2NjcgOC44NTgwNEM3LjA0NTQzIDguODU4MDQgNi45Mzg3NSA4LjkwMjIzIDYuODYwMDkgOC45ODA4OUM2Ljc4MTQyIDkuMDU5NTUgNi43MzcyMyA5LjE2NjI0IDYuNzM3MjMgOS4yNzc0OFYxMi4xNjExSDUuNTgzNzhWNy44ODgwOUw2LjE2MDUxIDcuNjA2MDJDNy43MzM0IDguMzc2NzQgNy42NTM0NSA4LjM1NDcyIDcuNzg1ODMgOC4zNTQ3MkM3Ljg5NzA3IDguMzU0NzIgOC4wMDM3NiA4LjMxMDUzIDguMDgyNDIgOC4yMzE4N0M4LjE2MTA4IDguMTUzMjEgOC4yMDUyNyA4LjA0NjUyIDguMjA1MjcgNy45MzUyOFY2LjYyOTc3SDEwLjQ1MTlMMTAuNDUyNCAxMi4xNjExWk0xMS40ODIxIDUuNzkwOUg4LjIwNTI3VjMuOTc1NTFIMTEuNDgyMVY1Ljc5MDlaIiBmaWxsPSJibGFjayIvPgo8L3N2Zz4K"/><div class="style-guide-card">BUY MORE, SAVE MORE</div></div><div class="divider-line expand"></div></div><h1 class="adv_cta_heading-2"><span class="span-red">UP TO 57% OFF</span> FOR A LIMITED TIME ONLY!</h1><div class="adv_cta_top_div"><div class="padding-bottom padding-xsmall"></div><div class="adv_cta_subtitle_text">I was skeptical too. But with free shipping and a 30-day guarantee, there's nothing to lose.</div><div class="padding-bottom padding-small"></div><a class="button w-inline-block" href="https://offer.dinosaurized.com/OFFER-SLUG"><div class="button_content" data-button="content"><div class="text-block-580" id="cta_text">TRY THEM RISK-FREE</div><div class="button_icon w-embed" data-button="icon"><svg aria-hidden="true" class="iconify iconify--heroicons" height="100%" preserveaspectratio="xMidYMid meet" role="img" viewbox="0 0 20 20" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path clip-rule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z" fill="currentColor" fill-rule="evenodd" height="100%" width="100%"></path></svg></div></div><svg class="button_spinner button_spinner" data-button="spinner" viewbox="0 0 50 50"><circle class="path path" cx="25" cy="25" fill="none" r="20" stroke-width="5"></circle></svg></a><div class="bot_cta_badge_div"><div class="div-block-2"><div class="div-block-766"><div class="text-block">Sell-Out Risk: <span class="text-span-6">High</span></div></div></div><div class="div-block-765"><div class="text-block-4">|</div></div><div class="div-block-764"><div class="div-block-767"><div class="text-block-279"><span class="text-span-7">FREE</span> shipping</div></div></div></div></div><div class="padding-bottom padding-xsmall"></div><div class="text-size-tiny text-align-center">Try it today with a 30-Day Money Back Guarantee!</div></div></div></div></div><div class="div-block-900"><div class="listicle-banner-sale-badge">Warehouse Sale</div></div></div></div></div></div></section><div class="sticky_bar" id="sticky_bar"><div class="padding-global-20 m-1"><div class="container-small-5"><div class="listicle-holder"><a class="button w-inline-block" href="https://offer.dinosaurized.com/OFFER-SLUG"><div class="button_content" data-button="content"><div class="text-block-581" id="cta_text">YES! PAIN-FREE FEET</div><div class="button_icon w-embed" data-button="icon"><svg aria-hidden="true" class="iconify iconify--heroicons" height="100%" preserveaspectratio="xMidYMid meet" role="img" viewbox="0 0 20 20" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path clip-rule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z" fill="currentColor" fill-rule="evenodd" height="100%" width="100%"></path></svg></div></div><svg class="button_spinner button_spinner" data-button="spinner" viewbox="0 0 50 50"><circle class="path path" cx="25" cy="25" fill="none" r="20" stroke-width="5"></circle></svg></a><div class="padding-bottom padding-xsmall hide"></div><div class="div-block-1356"><div class="frame-6791 _2"><div class="frame-6789"><div class="frame-6791"><div class="_611447c74d1e8c7665470be5_pp4png ph" data-ph="avatar" style="aspect-ratio:1/1"><img alt="" class="ph-ref" loading="lazy" src="https://offers.hike-footwear.com/wf-assets/cdn/683f59f83bf92662dad61203/684f0875240051a6bb0a94bc_Offer_Page_Customer_review_image_5.webp"/><span class="ph-t">IMG 1:1</span><span class="ph-d">Happy customer avatar</span></div><div class="text-349 _2">Christine K.</div></div><img alt="" class="group-1000009911" height="12" loading="lazy" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTIiIGhlaWdodD0iMTMiIHZpZXdCb3g9IjAgMCAxMiAxMyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTExLjI0NDYgNS4xNUMxMS4wNDExIDQuOTQxMDcgMTAuODMyMSA0LjcyMTQzIDEwLjc1MTggNC41MzM5M0MxMC42NzE0IDQuMzQ2NDMgMTAuNjc2OCA0LjA2Nzg2IDEwLjY3MTQgMy43ODM5M0MxMC42NjYxIDMuMjY0MjkgMTAuNjU1NCAyLjY2OTY0IDEwLjI0MjkgMi4yNTcxNEM5LjgzMDM2IDEuODQ0NjQgOS4yMzU3MSAxLjgzMzkzIDguNzE2MDcgMS44Mjg1N0w4LjcxNDc4IDEuODI4NTVDOC40MzEyNiAxLjgyMzIgOC4xNDI1OSAxLjgxNzc1IDcuOTY2MDcgMS43NDgyMUM3Ljc4OTI5IDEuNjc4NTcgNy41NTg5MyAxLjQ1ODkzIDcuMzUgMS4yNTUzNkM2Ljk4MDM2IDAuOTAxNzg2IDYuNTU3MTQgMC41IDYgMC41QzUuNDQyODYgMC41IDUuMDE5NjQgMC45MDE3ODYgNC42NSAxLjI1NTM2QzQuNDQxMDcgMS40NTg5MyA0LjIyMTQzIDEuNjY3ODYgNC4wMzM5MyAxLjc0ODIxQzMuODQ2NDMgMS44Mjg1NyAzLjU2Nzg2IDEuODIzMjEgMy4yODM5MyAxLjgyODU3QzIuNzY0MjkgMS44MzM5MyAyLjE2OTY0IDEuODQ0NjQgMS43NTcxNCAyLjI1NzE0QzEuMzQ0NjQgMi42Njk2NCAxLjMzMzkzIDMuMjY0MjkgMS4zMjg1NyAzLjc4MzkzTDEuMzI4NTUgMy43ODUyMkMxLjMyMzIgNC4wNjg3NCAxLjMxNzc1IDQuMzU3NDEgMS4yNDgyMSA0LjUzMzkzQzEuMTc4NTcgNC43MTA3MSAwLjk1ODkyOSA0Ljk0MTA3IDAuNzU1MzU3IDUuMTVDMC40MDE3ODYgNS41MTk2NCAwIDUuOTQyODYgMCA2LjVDMCA3LjA1NzE0IDAuNDAxNzg2IDcuNDgwMzYgMC43NTUzNTcgNy44NUMwLjk1ODkyOSA4LjA1ODkzIDEuMTY3ODYgOC4yNzg1NyAxLjI0ODIxIDguNDY2MDdDMS4zMjg1NyA4LjY1MzU3IDEuMzIzMjEgOC45MzIxNCAxLjMyODU3IDkuMjE2MDdDMS4zMzM5MyA5LjczNTcxIDEuMzQ0NjQgMTAuMzMwNCAxLjc1NzE0IDEwLjc0MjlDMi4xNjk2NCAxMS4xNTU0IDIuNzY0MjkgMTEuMTY2MSAzLjI4MzkzIDExLjE3MTRMMy4yODUyMyAxMS4xNzE1QzMuNTY4NzQgMTEuMTc2OCAzLjg1NzQxIDExLjE4MjIgNC4wMzM5MyAxMS4yNTE4QzQuMjEwNzEgMTEuMzIxNCA0LjQ0MTA3IDExLjU0MTEgNC42NSAxMS43NDQ2QzUuMDE5NjQgMTIuMDk4MiA1LjQ0Mjg2IDEyLjUgNiAxMi41QzYuNTU3MTQgMTIuNSA2Ljk4MDM2IDEyLjA5ODIgNy4zNSAxMS43NDQ2QzcuNTU4OTMgMTEuNTQxMSA3Ljc3ODU3IDExLjMzMjEgNy45NjYwNyAxMS4yNTE4QzguMTUzNTcgMTEuMTcxNCA4LjQzMjE0IDExLjE3NjggOC43MTYwNyAxMS4xNzE0QzkuMjM1NzEgMTEuMTY2MSA5LjgzMDM2IDExLjE1NTQgMTAuMjQyOSAxMC43NDI5QzEwLjY1NTQgMTAuMzMwNCAxMC42NjYxIDkuNzM1NzEgMTAuNjcxNCA5LjIxNjA3TDEwLjY3MTUgOS4yMTQ3N0MxMC42NzY4IDguOTMxMjYgMTAuNjgyMiA4LjY0MjU5IDEwLjc1MTggOC40NjYwN0MxMC44MjE0IDguMjg5MjkgMTEuMDQxMSA4LjA1ODkzIDExLjI0NDYgNy44NUMxMS41OTgyIDcuNDgwMzYgMTIgNy4wNTcxNCAxMiA2LjVDMTIgNS45NDI4NiAxMS41OTgyIDUuNTE5NjQgMTEuMjQ0NiA1LjE1WiIgZmlsbD0iIzFCNjhFOSIvPgo8cGF0aCBkPSJNOC44Njk2NSA1Ljc1NjM4TDUuNDg4ODggOC44NzczOEM1LjQwMTQ4IDguOTU2ODEgNS4yODU4IDkuMDAwNzEgNS4xNjU4MSA4Ljk5OTk5QzUuMDQ3NTggOS4wMDA0MyA0LjkzMzggOC45NTY0NiA0Ljg0ODUgOC44NzczOEwzLjE1ODExIDcuMzE2ODhDMy4xMTEyMyA3LjI3NzM3IDMuMDczMSA3LjIyOTEgMy4wNDYwMiA3LjE3NDk5QzMuMDE4OTMgNy4xMjA4NyAzLjAwMzQ2IDcuMDYyMDMgMy4wMDA1MiA3LjAwMTk5QzIuOTk3NTggNi45NDE5NSAzLjAwNzIzIDYuODgxOTUgMy4wMjg5MSA2LjgyNTYxQzMuMDUwNTggNi43NjkyNyAzLjA4MzgyIDYuNzE3NzQgMy4xMjY2MyA2LjY3NDEzQzMuMTY5NDUgNi42MzA1MSAzLjIyMDk1IDYuNTk1NzEgMy4yNzgwNCA2LjU3MTgxQzMuMzM1MTMgNi41NDc5MiAzLjM5NjY0IDYuNTM1NDIgMy40NTg4NiA2LjUzNTA3QzMuNTIxMDggNi41MzQ3MiAzLjU4MjczIDYuNTQ2NTMgMy42NDAxIDYuNTY5NzhDMy42OTc0OCA2LjU5MzA0IDMuNzQ5NCA2LjYyNzI2IDMuNzkyNzMgNi42NzAzOUw1LjE2NTgxIDcuOTM1NTFMOC4yMzUwNCA1LjEwOTg5QzguMzI0NzggNS4wMzQyNiA4LjQ0MTMxIDQuOTk1MDYgOC41NjAyNyA1LjAwMDVDOC42NzkyNCA1LjAwNTk0IDguNzkxNDIgNS4wNTU1OSA4Ljg3MzM3IDUuMTM5MDdDOC45NTUzMSA1LjIyMjU1IDkuMDAwNjggNS4zMzM0IDguOTk5OTkgNS40NDg0NUM4Ljk5OTMgNS41NjM0OSA4Ljk1MjYgNS42NzM4MyA4Ljg2OTY1IDUuNzU2MzhaIiBmaWxsPSJ3aGl0ZSIvPgo8L3N2Zz4K" width="12"/></div><div class="frame-6790"><div class="text-349 _2">AND +1,450,000 HAPPY CUSTOMERS</div></div></div></div></div></div></div></div></div></div>
+
+<!-- Sticky bar + reading progress (rewrites the source's obfuscated li.js, same behavior):
+     #sticky_bar gets .is-active once scrolled past 600px and loses it when the final CTA button
+     (#customer-reviews a.button) comes into view above it; CSS only shows it on mobile/tablet.
+     .quiz_progress-pct width = how far down the page you are. -->
+<script>
+(function(){
+  var bar=document.getElementById('sticky_bar'),pct=document.querySelector('[data-quiz="progress-pct"]'),
+      last=document.querySelector('#customer-reviews a.button'),tick=false;
+  function upd(){
+    tick=false;
+    var y=window.scrollY,max=document.documentElement.scrollHeight-innerHeight;
+    if(pct)pct.style.width=Math.min(100,max>0?y/max*100:0)+'%';
+    if(bar)bar.classList.toggle('is-active',y>600&&(!last||last.getBoundingClientRect().top>innerHeight-96));
+  }
+  addEventListener('scroll',function(){if(!tick){tick=true;requestAnimationFrame(upd);}},{passive:true});
+  addEventListener('resize',upd);upd();
+})();
+</script>
+<!-- Noi click-ID sang trang ban. KHONG ban cta_click o day: tags.js da co mot
+     listener bat moi click vao offer.dinosaurized.com roi, ban them lan nua se
+     lam moi cu click dem thanh hai. -->
+<script>
+(function(){
+  var sp=new URLSearchParams(location.search),keep=new URLSearchParams();
+  ['gclid','gbraid','wbraid','fbclid','twclid','msclkid','ttclid','utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(function(k){if(sp.get(k))keep.set(k,sp.get(k));});
+  var extra=keep.toString();
+  function wire(){
+    document.querySelectorAll('a[href*="offer.dinosaurized.com"]').forEach(function(a){
+      if(extra)a.href+=(a.href.indexOf('?')>-1?'&':'?')+extra;
+    });
+  }
+  if(document.readyState!=='loading')wire();else document.addEventListener('DOMContentLoaded',wire);
+})();
+</script>
+</body>
+</html>

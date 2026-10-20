@@ -1,0 +1,110 @@
+<!-- Dinosaurized OTO block (template oto-lastchance, used for downsell-1; layout cloned from
+     offer.dinosaurized.com/hummingbird-feer-oto2-..., Funnelish page 5570690, restyled to the oto-classic design rules:
+     one accent color, price is the loudest element, price above the fold on mobile).
+     Paste into ONE Funnelish Custom HTML block at the top of the step. Product list + YES button + "No thanks" link
+     + stock line stay native Funnelish elements placed right below this block. -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  .otl, .otl * { box-sizing: border-box; }
+  /* zero-specificity reset: element margins below must win over it */
+  :where(.otl) :where(p, h1, h2, h3, ul) { margin: 0; padding: 0; }
+  .otl { --acc: #E75300; --ink: #252A32; --txt: #3a3a3a; --tint: #FFF1E6; --line: #F5D2BC;
+    max-width: 1170px; margin: 0 auto; padding: 0 16px; font-family: Roboto, Arial, sans-serif; color: var(--txt); text-align: center; }
+  .otl img { display: block; max-width: 100%; }
+
+  /* headline */
+  .otl-h { margin-top: 16px; font-family: Montserrat, Arial, sans-serif; font-weight: 800; font-size: 52px; line-height: 1.1; color: var(--ink); }
+  .otl-h .acc { color: var(--acc); white-space: nowrap; }
+  .otl-sub { margin-top: 10px; font-family: Montserrat, Arial, sans-serif; font-weight: 700; font-size: 22px; line-height: 1.3; color: #5a5f66; }
+
+  /* offer card: photo | details */
+  .otl-card { display: flex; align-items: stretch; margin-top: 24px; border: 1px solid var(--line); border-radius: 8px; background: #fff; overflow: hidden; }
+  .otl-photo { flex: 1 1 50%; min-width: 0; background: var(--tint); }
+  .otl-photo img { width: 100%; height: 100%; object-fit: cover; }
+  .otl-info { flex: 1 1 50%; min-width: 0; padding: 24px 28px 28px; text-align: left; }
+
+  .otl-timer { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 6px;
+    background: var(--tint); font-size: 16px; line-height: 1.35; color: var(--ink); }
+  .otl-timer svg { flex: 0 0 30px; }
+  .otl-timer b { color: var(--acc); }
+  .otl-timer .t { font-variant-numeric: tabular-nums; }
+
+  .otl-name { margin-top: 22px; color: var(--ink); font-size: 36px; font-weight: 700; line-height: 1.15; }
+  .otl-now { margin-top: 18px; color: var(--ink); font-size: 22px; font-weight: 700; line-height: 1; }
+  .otl-price { margin-top: 6px; display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; color: var(--ink); font-weight: 700; line-height: 1; }
+  .otl-price .acc { color: var(--acc); font-size: 60px; letter-spacing: -1px; }
+  .otl-price .unit { font-size: 28px; }
+  .otl-price s { color: #8a8f96; font-size: 26px; font-weight: 400; }
+
+  .otl-get { margin-top: 24px; padding-top: 18px; border-top: 1px solid #eee; color: var(--ink); font-size: 19px; font-weight: 700; }
+  .otl-list { list-style: none; margin-top: 12px; }
+  .otl-list li { display: flex; align-items: flex-start; gap: 12px; padding: 7px 0; font-size: 18px; line-height: 1.35; color: var(--ink); }
+  .otl-list li svg { flex: 0 0 24px; margin-top: 1px; }
+
+  @media (max-width: 760px) {
+    .otl-h { margin-top: 12px; font-size: 30px; }
+    .otl-sub { margin-top: 6px; font-size: 16px; }
+    .otl-card { flex-direction: column; margin-top: 16px; }
+    .otl-photo img { height: auto; aspect-ratio: 4 / 3; }
+    .otl-info { padding: 16px 16px 20px; text-align: center; }
+    .otl-timer { font-size: 14px; padding: 8px 10px; gap: 10px; text-align: left; }
+    .otl-timer svg { flex-basis: 26px; width: 26px; height: 26px; }
+    .otl-name { margin-top: 16px; font-size: 26px; }
+    .otl-now { margin-top: 12px; font-size: 18px; }
+    .otl-price { justify-content: center; }
+    .otl-price .acc { font-size: 46px; }
+    .otl-price .unit { font-size: 22px; }
+    .otl-price s { font-size: 20px; }
+    .otl-get { margin-top: 18px; padding-top: 14px; font-size: 17px; }
+    .otl-list { text-align: left; }
+    .otl-list li { font-size: 16px; padding: 6px 0; gap: 10px; }
+    .otl-list li svg { flex-basis: 20px; width: 20px; height: 20px; }
+  }
+</style>
+
+<div class="otl">
+  <h1 class="otl-h">{{HEAD_DARK}} <span class="acc">{{HEAD_ACCENT}}</span></h1>
+  <p class="otl-sub">{{SUB}}</p>
+
+  <div class="otl-card">
+    <div class="otl-photo"><img src="{{HERO_IMG}}" alt="{{HERO_ALT}}"></div>
+    <div class="otl-info">
+      <div class="otl-timer">
+        <svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><circle cx="15" cy="15" r="15" fill="#E75300"/><circle cx="10.5" cy="10.5" r="2.6" fill="none" stroke="#fff" stroke-width="2"/><circle cx="19.5" cy="19.5" r="2.6" fill="none" stroke="#fff" stroke-width="2"/><path d="M20.5 9.5l-11 11" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/></svg>
+        <span><b>{{TIMER_LABEL}}</b> {{TIMER_TEXT}} <b class="t" data-otl-timer="{{TIMER_MINUTES}}">{{TIMER_MINUTES}}:00</b></span>
+      </div>
+      <p class="otl-name">{{PRODUCT_NAME}}</p>
+      <p class="otl-now">{{NOW_LABEL}}</p>
+      <p class="otl-price"><span class="acc">{{PRICE}}</span><span class="unit">{{PRICE_UNIT}}</span><s>{{WAS}}</s></p>
+      <p class="otl-get">{{GET_HEADING}}</p>
+      <ul class="otl-list">
+{{#ITEMS}}        <li><svg width="24" height="24" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="12" fill="#FFF1E6"/><path d="M6.5 12.5l3.6 3.6 7.4-8" fill="none" stroke="#E75300" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></svg><span>{{TEXT}}</span></li>
+{{/ITEMS}}      </ul>
+    </div>
+  </div>
+</div>
+
+<script>
+  /* cart-reserved countdown: starts at data-otl-timer minutes, kept per tab so a reload doesn't reset it, stops at 00:00 */
+  (function () {
+    var els = document.querySelectorAll('[data-otl-timer]');
+    if (!els.length) return;
+    var key = 'otl-timer-' + location.pathname, end = 0;
+    try { end = +sessionStorage.getItem(key) || 0; } catch (e) {}
+    if (!end || end < Date.now()) {
+      end = Date.now() + (+els[0].getAttribute('data-otl-timer') || 15) * 60000;
+      try { sessionStorage.setItem(key, end); } catch (e) {}
+    }
+    function tick() {
+      var s = Math.max(0, Math.round((end - Date.now()) / 1000));
+      var txt = String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0');
+      for (var i = 0; i < els.length; i++) els[i].textContent = txt;
+      if (s > 0) setTimeout(tick, 1000);
+    }
+    tick();
+  })();
+</script>

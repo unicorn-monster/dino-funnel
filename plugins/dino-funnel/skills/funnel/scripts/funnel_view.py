@@ -5,7 +5,7 @@
   python3 .claude/skills/funnel/scripts/funnel_view.py cat-bed    # one product
 
 funnel/ is a derived copy (originals stay where they are) and is rebuilt from scratch on every run:
-  1-pre-sale.html  2-flip-to-win.html  3-sale-page.html  4-checkout-*.html
+  1-pre-sale.html  2-flip-to-win.html  3-sale-page.html  4-checkout-*.html  4-oto-N-<step>.html (upsell/downsell)
   5-bundle/  (bundle images)           6-ads/  (ad copy .md + ad images, prompts and old -vN versions skipped)
 """
 import re, shutil, sys
@@ -29,6 +29,9 @@ def build(p: Path) -> list[str]:
         plan.append((p / "2-sale-page/index.html", "3-sale-page.html"))
     for f in sorted((p / "3-checkout").glob("*.html")):
         plan.append((f, f"4-checkout-{f.name}"))
+    for i, step in enumerate(["upsell-1", "downsell-1", "upsell-2", "downsell-2"], 1):
+        if (p / "6-upsell" / step / "index.html").exists():
+            plan.append((p / "6-upsell" / step / "index.html", f"4-oto-{i}-{step}.html"))
     for f in sorted((p / "4-bundle").glob("*")):
         if f.suffix.lower() in IMG:
             plan.append((f, f"5-bundle/{f.name}"))

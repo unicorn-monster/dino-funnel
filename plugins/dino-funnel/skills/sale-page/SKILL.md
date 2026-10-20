@@ -1,6 +1,6 @@
 ---
 name: sale-page
-description: Build a complete Dinosaurized product sale page (the long offer page that sends buyers to checkout, pasted into a Funnelish Custom HTML block) from just an Amazon product link, using a saved template. Use this whenever the user gives an Amazon link and asks for a "sale page", "trang bán hàng", "offer page", "trang sale theo khung Locket", "làm sale page cho sp này", or wants a page like offer.dinosaurized.com/locket-chest-holster-1 for a new product, even if he doesn't name the template. Also use it to add a new sale-page template. Not for top-5 / buyer's-guide pre-sale pages (that's pre-sale-page).
+description: Build a complete Dinosaurized product sale page (the long offer page that sends buyers to checkout, pasted into a Funnelish Custom HTML block) from just an Amazon product link, using a saved template. Use this whenever the user gives an Amazon link and asks for a "sale page", "trang bán hàng", "offer page", "làm sale page cho sp này", or wants a page like offer.dinosaurized.com/matt-6-26-bird-feeder-2 for a new product, even if he doesn't name the template. Also use it to add a new sale-page template. Not for top-5 / buyer's-guide pre-sale pages (that's pre-sale-page).
 ---
 
 # Sale page
@@ -9,14 +9,13 @@ Turns one Amazon link into a finished sale page: researched facts, direct-respon
 
 ## Templates
 
-Each template is one file, `templates/template-<name>.md`: how the page is structured, the content blocks, brand constants, rules, the finishing checks, and the full page HTML to copy.
+Each template is one file in `templates/`: the full page HTML to copy, with notes on how it's filled.
 
 | Name | Source | What it is |
 |---|---|---|
-| `locket` (`templates/template-locket.md`) | offer.dinosaurized.com/locket-chest-holster-1 | long-form DR product page: hero + specs, problem/mechanism sections, offer box with bonuses, guarantee, FAQ, reviews, sticky bar |
 | `origin` (`templates/template-origin.html`) | offer.dinosaurized.com/matt-6-26-bird-feeder-2-1791173375647585 | pixel clone of the Funnelish bird-feeder page: top bar + logo, gallery hero + bullets + testimonial + accordions, 3 alternating feature rows, 3 "perfect for" cards, offer + 3 bonus rows, guarantee, FAQ, 3 reviews, sticky bar. Plain HTML file, every image is a `div.m` placeholder (drop an `<img>` inside it) |
 
-Default = `origin` (the user 2026-10-07): use it unless the user names another template, don't pick one yourself. For `origin`, the finished `output/window-hummingbird-feeder/2-sale-page/index.html` shows the filled shared slots (logo, rating bar, payment icons, stars, Trustpilot, 120-day badge, bonus badges) to reuse. **Read the whole template file before writing anything**: the HTML at the bottom is also the reference for tone and length.
+Default = `origin` (the user 2026-10-07; the old `locket` template was removed 2026-10-19): use it unless the user names another template, don't pick one yourself. For `origin`, the finished `output/window-hummingbird-feeder/2-sale-page/index.html` shows the filled shared slots (logo, rating bar, payment icons, stars, Trustpilot, 120-day badge, bonus badges) to reuse. **Read the whole template file before writing anything**: its copy is also the reference for tone and length.
 
 ## Output
 
@@ -70,7 +69,7 @@ In research.md, remind the user: Amazon image links can break, re-upload them to
 
 ### 5. Check
 
-Run the "Finish" commands at the end of the template file and fix anything they flag. Then open `index.html` in the user's browser (`open`) and look at it yourself at 375px and 1280px (Playwright via a local `python3 -m http.server`): no broken images, no layout overflow, and every CTA satisfies the template's Landing-page CTA contract.
+Check: every CTA is `href="#next-step"` (`grep -c 'href="#next-step"' index.html`), no `div.m` placeholder text left, no `—`/`&mdash;` in new copy. Then open `index.html` in the user's browser (`open`) and look at it yourself at 375px and 1280px (Playwright via a local `python3 -m http.server`): no broken images, no layout overflow, and every CTA goes to `#next-step`.
 
 For a live Funnelish funnel, confirm the immediate next Funnelish step is Checkout. `#next-step` follows funnel order, so the HTML can be correct while a misplaced step still sends buyers to the wrong page. If the funnel is unavailable, add this as a launch check in `research.md` instead of claiming the routing is verified.
 
@@ -81,5 +80,5 @@ Reply in Vietnamese: the `index.html` path, the proposed product name, what need
 ## Adding a new template
 
 1. Get the page's clean HTML (the source the user pasted, or `curl -sL <url>`; Funnelish serves it minified with unquoted attributes, so prefer the original source).
-2. Write `templates/template-<name>.md` in the same shape as `template-locket.md`: structure table, blocks, playbook, brand constants, rules, finish checks, then the full HTML in one fenced block. Non-ASCII characters inside `<style>` become CSS escapes (`\2713 `).
+2. Write `templates/template-<name>.html` in the same shape as `template-origin.html`: the full page HTML, a notes comment at the top, every image a `div.m` placeholder. Non-ASCII characters inside `<style>` become CSS escapes (`\2713 `).
 3. Add a row to the Templates table above.

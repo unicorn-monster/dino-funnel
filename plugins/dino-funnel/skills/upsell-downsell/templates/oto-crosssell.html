@@ -1,0 +1,124 @@
+<!-- Dinosaurized OTO block (template oto-crosssell, used for upsell-2 = a different product; layout cloned from
+     offer.dinosaurized.com/hanging-bird-feeder-bath-tray-us2-..., restyled to the oto-classic design rules:
+     one accent color, price is the loudest element, price above the fold on mobile).
+     Paste into ONE Funnelish Custom HTML block at the top of the OTO step. The product list + YES button + "No thanks" link
+     stay native Funnelish elements placed right below this block. -->
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  .oto, .oto * { box-sizing: border-box; }
+  .oto { --acc: #E75300; --ink: #252A32; --txt: #3a3a3a; --tint: #FFF1E6;
+    max-width: 1170px; margin: 0 auto; padding: 0 16px; font-family: Roboto, Arial, sans-serif; color: var(--txt); text-align: center; }
+  /* zero-specificity reset: element margins below (.oto-now, .oto-pill...) must win over it */
+  :where(.oto) :where(p, h1, h2, h3) { margin: 0; }
+  .oto img { display: block; max-width: 100%; }
+
+  /* header: logo + STOP headline */
+  .oto-logo { margin: 10px auto 20px; width: 150px; height: auto; }
+  .oto-stop { font-family: Montserrat, Arial, sans-serif; font-weight: 700; font-size: 34px; line-height: 1.25; color: var(--ink); }
+  .oto-stop .acc { color: var(--acc); }
+  .oto-stop .sub { display: block; margin-top: 8px; font-size: 22px; color: #5a5f66; letter-spacing: .3px; }
+
+  /* intro: qualified line + offer line */
+  .oto-intro { max-width: 760px; margin: 22px auto 0; }
+  .oto-qual { color: var(--ink); font-size: 22px; font-weight: 700; line-height: 1.35; }
+  .oto-qual u { text-decoration-color: var(--acc); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+  .oto-offer { margin-top: 8px; font-size: 20px; line-height: 1.4; color: var(--txt); }
+  .oto-offer b { color: var(--ink); }
+  .oto-offer s { color: #8a8f96; }
+
+  /* customer quote under the photo */
+  .oto-quote { margin-top: 16px; padding: 16px 18px; border-left: 3px solid var(--acc); background: #f8f8f8; border-radius: 0 6px 6px 0;
+    text-align: left; font-size: 17px; line-height: 1.55; color: var(--txt); }
+  .oto-quote .stars { color: var(--acc); font-size: 16px; letter-spacing: 2px; }
+  .oto-quote p { margin-top: 6px; }
+  .oto-quote .who { margin-top: 8px; color: var(--ink); font-weight: 700; font-size: 15px; }
+
+  /* two columns: offer | bonuses */
+  .oto-cols { display: flex; align-items: flex-start; gap: 40px; margin-top: 36px; }
+  .oto-col { flex: 1; min-width: 0; }
+
+  .oto-name { padding: 12px 10px; background: var(--acc); color: #fff; font-size: 30px; font-weight: 700; line-height: 1.25; }
+  .oto-now { margin-top: 22px; color: var(--ink); font-size: 24px; font-weight: 700; line-height: 1; }
+  .oto-price { margin-top: 8px; color: var(--ink); font-size: 32px; font-weight: 700; line-height: 1; }
+  .oto-price .acc { color: var(--acc); font-size: 60px; letter-spacing: -1px; }
+  .oto-pill { display: inline-block; margin-top: 18px; padding: 7px 14px; border: 1px solid var(--acc); border-radius: 4px;
+    background: var(--tint); color: var(--acc); font-size: 16px; font-weight: 700; line-height: 1.3; }
+  .oto-hero { margin-top: 18px; }
+  .oto-hero img { width: 100%; height: auto; border-radius: 6px; }
+
+  .oto-bonus-h { padding: 0 0 12px; border-bottom: 1px solid #e6e6e6;
+    color: var(--ink); font-size: 26px; font-weight: 700; line-height: 1.2; letter-spacing: .5px; }
+  .oto-bonuses { padding-top: 6px; }
+  .oto-bonus { display: flex; align-items: center; gap: 16px; padding: 14px 0; border-bottom: 1px solid #eee; }
+  .oto-bonus-img { flex: 0 0 120px; width: 120px; }
+  .oto-bonus-img img { width: 100%; height: 110px; object-fit: scale-down; }
+  .oto-bonus-img.tall img { height: 140px; }
+  .oto-bonus-txt { flex: 1; min-width: 0; text-align: left; }
+  .oto-bonus-t { color: var(--ink); font-size: 22px; font-weight: 700; line-height: 1.2; }
+  .oto-bonus-p { margin-top: 6px; font-size: 20px; font-weight: 700; line-height: 1.2; }
+  .oto-bonus-p s { color: #8a8f96; font-weight: 400; }
+  .oto-bonus-p b { color: var(--acc); }
+
+  @media (max-width: 600px) {
+    .oto-logo { width: 120px; margin-bottom: 14px; }
+    .oto-stop { font-size: 23px; }
+    .oto-stop .sub { margin-top: 6px; font-size: 15px; }
+    .oto-intro { margin-top: 14px; }
+    .oto-qual { font-size: 17px; }
+    .oto-offer { margin-top: 6px; font-size: 16px; }
+    .oto-quote { margin-top: 14px; padding: 14px; font-size: 15px; }
+    .oto-quote .who { font-size: 14px; }
+    .oto-cols { flex-direction: column; gap: 32px; margin-top: 24px; }
+    .oto-col { width: 100%; }
+    .oto-name { padding: 10px; font-size: 21px; }
+    .oto-now { margin-top: 18px; font-size: 19px; }
+    .oto-price { margin-top: 8px; font-size: 24px; }
+    .oto-price .acc { font-size: 46px; }
+    .oto-pill { margin-top: 14px; padding: 6px 10px; font-size: 13px; }
+    .oto-hero { margin-top: 14px; }
+    .oto-bonus-h { font-size: 21px; padding: 0 0 10px; }
+    .oto-bonus { gap: 12px; padding: 12px 0; }
+    .oto-bonus-img { flex-basis: 84px; width: 84px; }
+    .oto-bonus-img img { height: 80px; }
+    .oto-bonus-img.tall img { height: 100px; }
+    .oto-bonus-t { font-size: 19px; }
+    .oto-bonus-p { font-size: 19px; }
+  }
+</style>
+
+<div class="oto">
+  <img class="oto-logo" src="https://img.funnelish.com/15168/120537/1691396760-orange.png" alt="Dinosaurized">
+  <h1 class="oto-stop"><span class="acc">{{STOP_ACCENT}}</span> {{STOP_DARK}}</h1>
+
+  <div class="oto-intro">
+    <p class="oto-qual">{{QUALIFIED}}</p>
+    <p class="oto-offer">{{OFFER_LINE}}</p>
+  </div>
+
+  <div class="oto-cols">
+    <div class="oto-col">
+      <p class="oto-name">{{PRODUCT_NAME}}</p>
+      <h3 class="oto-now">{{NOW_LABEL}}</h3>
+      <h3 class="oto-price"><span class="acc">{{PRICE}}</span> {{PRICE_UNIT}}</h3>
+      <p class="oto-pill">{{PILL}}</p>
+      <div class="oto-hero"><img src="{{HERO_IMG}}" alt="{{HERO_ALT}}"></div>
+      <div class="oto-quote"><span class="stars">&#9733;&#9733;&#9733;&#9733;&#9733;</span><p>{{QUOTE}}</p><p class="who">{{QUOTE_NAME}}</p></div>
+    </div>
+    <div class="oto-col">
+      <p class="oto-bonus-h">{{BONUS_HEADING}}</p>
+      <div class="oto-bonuses">
+{{#BONUSES}}        <div class="oto-bonus">
+          <div class="oto-bonus-img{{TALL}}"><img src="{{IMG}}" alt="{{TITLE}}"></div>
+          <div class="oto-bonus-txt">
+            <p class="oto-bonus-t">{{TITLE}}</p>
+            <p class="oto-bonus-p"><s>{{WAS}}</s> <b>{{NOW}}</b></p>
+          </div>
+        </div>
+{{/BONUSES}}      </div>
+    </div>
+  </div>
+</div>

@@ -1,6 +1,6 @@
 # Dino Funnel
 
-Plugin Claude Code làm trọn funnel cho 1 sản phẩm: pre-sale top 5 → flip to win → sale page → checkout → bundle → ads FB.
+Plugin Claude Code làm trọn funnel cho 1 sản phẩm: pre-sale top 5 → flip to win → sale page → checkout → bundle → upsell/downsell → ads FB.
 
 ## Cài lần đầu
 
@@ -17,7 +17,7 @@ Plugin Claude Code làm trọn funnel cho 1 sản phẩm: pre-sale top 5 → fli
 
 - Sản phẩm mới: `/dino-funnel:funnel <link Amazon> <link sale page>`
 - Làm tiếp sản phẩm cũ: `/dino-funnel:funnel tiếp tục <tên sp>`
-- Gọi riêng từng bước: `/dino-funnel:pre-sale-page`, `/dino-funnel:sale-page`, `/dino-funnel:checkout-funnelish`, `/dino-funnel:bundle`, `/dino-funnel:fb-top5`...
+- Gọi riêng từng bước: `/dino-funnel:pre-sale-page`, `/dino-funnel:sale-page`, `/dino-funnel:checkout-funnelish`, `/dino-funnel:bundle`, `/dino-funnel:upsell-downsell`, `/dino-funnel:fb-top5`...
 
 Mỗi bước Claude dừng lại cho bạn duyệt. Trang top 5 lên topreviewking/topreviewqueen thì gửi folder trang cho Huy deploy.
 
