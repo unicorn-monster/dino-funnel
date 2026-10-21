@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Fill an OTO template with a step's content.json.
 
-  python3 .claude/skills/upsell-downsell/scripts/fill.py output/<sp>/6-upsell/<step>/content.json [--template NAME]
+  python3 .claude/skills/upsell-downsell/scripts/fill.py output/<sp>/6-upsell-downsell/<step>/content.json [--template NAME]
 
 Template defaults to the step folder: upsell-2 -> oto-crosssell, downsell-* -> oto-lastchance, anything else -> oto-classic.
 

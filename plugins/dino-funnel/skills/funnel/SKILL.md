@@ -27,7 +27,12 @@ flip-to-win/         flip-to-win
 4-bundle/            bundle
 5-ads/meta/          fb-top5
 funnel/              flat copy to review in order: python3 ${CLAUDE_PLUGIN_ROOT}/skills/funnel/scripts/funnel_view.py <sp>
+funnel/0-funnel.md   funnel map (slug of every step) + Funnelish product settings (bundles, price, price each, compare at, badge, variants, upsell/downsell products): the ONLY copy, edit it in place after each step (funnel_view.py keeps it)
 ```
+
+**Step numbers** (`0-funnel.md` and the files in `funnel/`, Huy 2026-10-20): step 1 = everything before the sale page, numbered 1.1, 1.2 ... in the order a visitor walks them when there is more than one (several pre-sales, then flip to win); the sale page is always 2, checkout 3, upsell-1 4, downsell-1 5, upsell-2 6, downsell-2 7. `0-funnel.md` sections, in this order (Huy 2026-10-20: bundles first): *Checkout bundles* (one row per checkout bundle: name like `Pack 2` or `1 x Bed`, price, price each like `$14.98/each`, compare at, badge, image preview `![](bundle/<file>)`) + **Variants** + the CDN link list, then *Funnel steps* (# / step / slug or URL / where / status), *Upsell / downsell products* (slug, product, price, variants, image). Unknown = `?`. Example: `output/fruit-fly-trap/funnel/0-funnel.md`.
+
+**Slugs:** the sale page slug is Huy's (template prefix allowed, e.g. `10r-calming-dog-bed`); product slug = it without the prefix. Pre-sale `<product slug>-review`, checkout `<product slug>-checkout`, upsells per `upsell-downsell` (`<product slug>-oto1` / `-ds1` / `-oto2` / `-ds2`). Never add a number yourself: the `-1` / `-2` on live slugs is Funnelish's own suffix. Until Huy creates the sale page, write the proposed product slug (e.g. `gourdian-fruit-fly-trap`) and replace it with the real one once it exists.
 
 ## Steps
 
@@ -42,7 +47,7 @@ Start by listing `output/<sp>/` and telling the user which steps exist and which
 | 5 | `bundle` | offer options, colors | puts the CDN URLs on the checkout options |
 | 6 | `fb-top5` | the LIVE pre-sale URL | uploads the 5 combos + images to Meta |
 
-Invoke each step's skill and follow it fully: its checks are part of the step. After each step: update `0-product-brief.md` (what was decided: name, offer, gifts, links), run `funnel_view.py <sp>`, give the user the result + what they must do (column above), and ask before starting the next step. The user can skip or reorder steps (flip to win is optional; ads can wait for the page to be live).
+Invoke each step's skill and follow it fully: its checks are part of the step. After each step: update `0-product-brief.md` (what was decided: name, offer, gifts, links) and `funnel/0-funnel.md` (slugs, bundles, prices), run `funnel_view.py <sp>`, give the user the result + what they must do (column above), and ask before starting the next step. The user can skip or reorder steps (flip to win is optional; ads can wait for the page to be live).
 
 ## Rules for every step
 

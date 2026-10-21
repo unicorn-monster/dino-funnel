@@ -4,9 +4,14 @@
   python3 .claude/skills/funnel/scripts/funnel_view.py            # every product in output/ (run from the working folder root)
   python3 .claude/skills/funnel/scripts/funnel_view.py cat-bed    # one product
 
-funnel/ is a derived copy (originals stay where they are) and is rebuilt from scratch on every run:
-  1-pre-sale.html  2-flip-to-win.html  3-sale-page.html  4-checkout-*.html  4-oto-N-<step>.html (upsell/downsell)
-  5-bundle/  (bundle images)           6-ads/  (ad copy .md + ad images, prompts and old -vN versions skipped)
+funnel/ is a derived copy (originals stay where they are) and is rebuilt on every run, except funnel/0-funnel.md:
+that file IS the original (slugs + Funnelish product settings, edited in place) and is never touched.
+Step numbers = 0-funnel.md: step 1 is everything before the sale page (1.1, 1.2 ... when there are several: pre-sales, then flip to win),
+the sale page is always 2:
+  0-funnel.md (kept)
+  1-pre-sale.html | 1.1-pre-sale-<name>.html 1.2-flip-to-win.html ...   2-sale-page.html   3-checkout-*.html
+  4-upsell-1.html  5-downsell-1.html  6-upsell-2.html  7-downsell-2.html
+  bundle/  (bundle images)   ads/  (ad copy .md + ad images, prompts and old -vN versions skipped)
 """
 import re, shutil, sys
 from pathlib import Path
@@ -17,36 +22,40 @@ IMG = {".png", ".jpg", ".jpeg", ".webp"}
 
 def build(p: Path) -> list[str]:
     dst = p / "funnel"
+    keep = (dst / "0-funnel.md").read_text() if (dst / "0-funnel.md").exists() else None
     shutil.rmtree(dst, ignore_errors=True)
+    if keep is not None:
+        dst.mkdir(parents=True)
+        (dst / "0-funnel.md").write_text(keep)
     plan = []  # (source, name inside funnel/)
-    pre = sorted(d for d in p.glob("1-pre-sale*") if (d / "index.html").exists())
-    for d in pre:
-        suffix = "" if len(pre) == 1 else "-" + d.name.removeprefix("1-pre-sale").strip("-")
-        plan.append((d / "index.html", f"1-pre-sale{suffix}.html"))
+    step1 = [(d / "index.html", "pre-sale" + ("-" + d.name.removeprefix("1-pre-sale").strip("-") if d.name != "1-pre-sale-page" else ""))
+             for d in sorted(p.glob("1-pre-sale*")) if (d / "index.html").exists()]
     if (p / "flip-to-win/index.html").exists():
-        plan.append((p / "flip-to-win/index.html", "2-flip-to-win.html"))
+        step1.append((p / "flip-to-win/index.html", "flip-to-win"))
+    for i, (src, name) in enumerate(step1, 1):
+        plan.append((src, f"1-{name}.html" if len(step1) == 1 else f"1.{i}-{name}.html"))
     if (p / "2-sale-page/index.html").exists():
-        plan.append((p / "2-sale-page/index.html", "3-sale-page.html"))
+        plan.append((p / "2-sale-page/index.html", "2-sale-page.html"))
     for f in sorted((p / "3-checkout").glob("*.html")):
-        plan.append((f, f"4-checkout-{f.name}"))
-    for i, step in enumerate(["upsell-1", "downsell-1", "upsell-2", "downsell-2"], 1):
-        if (p / "6-upsell" / step / "index.html").exists():
-            plan.append((p / "6-upsell" / step / "index.html", f"4-oto-{i}-{step}.html"))
+        plan.append((f, f"3-checkout-{f.name}"))
+    for i, step in enumerate(["upsell-1", "downsell-1", "upsell-2", "downsell-2"], 4):
+        if (p / "6-upsell-downsell" / step / "index.html").exists():
+            plan.append((p / "6-upsell-downsell" / step / "index.html", f"{i}-{step}.html"))
     for f in sorted((p / "4-bundle").glob("*")):
         if f.suffix.lower() in IMG:
-            plan.append((f, f"5-bundle/{f.name}"))
+            plan.append((f, f"bundle/{f.name}"))
     for f in sorted(p.rglob("*")):
         rel = f.relative_to(p)
         if rel.parts[0] == "funnel" or not f.is_file() or not re.match(r"5-|6-ads", rel.parts[0]):
             continue
         if f.suffix == ".md" and re.search(r"fb-ads|demandgen", f.name):
-            plan.append((f, f"6-ads/{f.name.removeprefix('5-')}"))
+            plan.append((f, f"ads/{f.name.removeprefix('5-')}"))
         elif f.suffix.lower() in IMG and len(rel.parts) > 1 and not re.search(r"-v\d+\.", f.name):
-            plan.append((f, "6-ads/" + "-".join(x.removeprefix("5-") for x in rel.parts)))
+            plan.append((f, "ads/" + "-".join(x.removeprefix("5-") for x in rel.parts)))
     for src, name in plan:
         (dst / name).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src, dst / name)
-    return [name for _, name in plan]
+    return (["0-funnel.md"] if keep is not None else []) + [name for _, name in plan]
 
 
 if __name__ == "__main__":
@@ -55,4 +64,4 @@ if __name__ == "__main__":
         got = build(OUT / n)
         steps = [x for x in got if "/" not in x]
         print(f"{n}: {len(got)} files | {', '.join(steps) or '-'}"
-              f" | bundle {sum(x.startswith('5-bundle/') for x in got)} | ads {sum(x.startswith('6-ads/') for x in got)}")
+              f" | bundle {sum(x.startswith('bundle/') for x in got)} | ads {sum(x.startswith('ads/') for x in got)}")

@@ -59,6 +59,8 @@ Use the listing's hi-res Amazon URLs directly in `index.html` so the page is com
 
 In research.md, remind the user: Amazon image links can break, re-upload them to Shopify before the page goes live.
 
+**Review photos (Trustpilot cards) = real customer photos.** Ours from the white-label Amazon listing or AliExpress reviews. If our product differs from the Amazon reference (no real photo of ours exists), take the reference product's review photos and gen-swap our product in (same method and files as the PDP mosaic, see `pdp-carousel` Rules), never a fully generated scene.
+
 **Testimonial avatars:** pick one from `../assets/avatars/index.md` (who each one is + its Shopify CDN URL; match the reviewer and the buyer) and use the CDN URL directly as the `src`. Already on Shopify, so it stays out of the upload pack.
 
 **Image file names.** Every image file Claude saves or hands over is named `<product-short>-<slot>.<ext>`, kebab-case, describing where it sits on the page: `window-feeder-hero-woodpeckers.jpg`, `window-feeder-dimensions.jpg`, `window-feeder-who-retired-man.webp`, `window-feeder-review-1.jpg` (reviews numbered in page order). Never `who-1.webp`, never an Amazon ID like `71gUrhqayQL._AC_SL1500_.jpg`. These names end up in Shopify Files, so they have to be readable there.

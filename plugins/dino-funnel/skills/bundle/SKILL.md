@@ -35,4 +35,5 @@ Done examples (look at one before starting): `output/cat-bed/4-bundle/` (BOGO, 4
 - JPG, 500x500, white background, ~40-50 KB. File names `<option>-<color>.jpg`, kebab-case, color names as the store spells them.
 - Same layout for every color of an option, so the selector looks consistent when the buyer switches color.
 - No text, badges or prices in the image: Funnelish shows those next to it.
+- **Items never overlap** (Huy 2026-10-20: overlapped packs are hard to read/count). Use a spaced grid with a ~0.12 gap in item units: 2 = `0,0;1.12,0`, 4 = `0,0;1.12,0;0,1.12;1.12,1.12`, 6 = 3x2, 8 = 3-2-3 (`0,0;1.12,0;2.24,0;0.56,1.12;1.68,1.12;0,2.24;1.12,2.24;2.24,2.24`). The built-in `diag2` / `diamond4` / `stagger6` overlap: only use them if the user asks.
 - The product in the image must be the color that option sells.

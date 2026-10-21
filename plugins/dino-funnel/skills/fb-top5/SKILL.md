@@ -105,6 +105,8 @@ Default set:
 
 More images or named IDs: add from the library. A template that shows a failing product: lock who fails per the library's "Tấm vẽ hàng hỏng" notes.
 
+- Truth sheet first (Huy 2026-10-20): before writing any prompt, our product needs `output/<product>/truth-sheet/<key>/sheet.png`; missing → make it with `product-truth-sheet` and get Huy's ok. Upload it with `cdn.py` (Kie result URLs expire) and put that CDN URL right before our real photo in every refs list (after the avatar if any). Each prompt names it: "The [Nth] attached image is a product truth sheet of our [CATEGORY SINGULAR] from several views; reproduce that exact product: [locked details]", where locked details = the counts and shapes from the sheet's identity paragraph.
+
 Image Input = the library's rule 8: every prompt attaches all 5 product images (ours first, then the 4 rivals), plus the avatar first when a person is in the frame (the person on the destination page, e.g. the article author); `refs.json` is the same list for every prompt, with or without the avatar.
 
 - Fill every slot, nothing in brackets left. Image copy comes from the pre-sale page only (its checks, its grades, its claims), plain American English, no em/en dashes.
