@@ -4,8 +4,9 @@
   python3 .claude/skills/funnel/scripts/funnel_view.py            # every product in output/ (run from the working folder root)
   python3 .claude/skills/funnel/scripts/funnel_view.py cat-bed    # one product
 
-funnel/ is a derived copy (originals stay where they are) and is rebuilt on every run, except funnel/0-funnel.md:
-that file IS the original (slugs + Funnelish product settings, edited in place) and is never touched.
+funnel/ is a derived copy (originals stay where they are) and is rebuilt on every run.
+The funnel map is output/<product>/0-funnel.md (slugs + Funnelish product settings, edited in place, Huy 2026-10-23),
+NOT copied into funnel/. Older products still keep theirs at funnel/0-funnel.md: then that file is the original and is never touched.
 Step numbers = 0-funnel.md: step 1 is everything before the sale page (1.1, 1.2 ... when there are several: pre-sales, then flip to win),
 the sale page is always 2:
   0-funnel.md (kept)
@@ -22,7 +23,8 @@ IMG = {".png", ".jpg", ".jpeg", ".webp"}
 
 def build(p: Path) -> list[str]:
     dst = p / "funnel"
-    keep = (dst / "0-funnel.md").read_text() if (dst / "0-funnel.md").exists() else None
+    old = dst / "0-funnel.md"
+    keep = old.read_text() if old.exists() and not (p / "0-funnel.md").exists() else None
     shutil.rmtree(dst, ignore_errors=True)
     if keep is not None:
         dst.mkdir(parents=True)
@@ -39,19 +41,19 @@ def build(p: Path) -> list[str]:
     for f in sorted((p / "3-checkout").glob("*.html")):
         plan.append((f, f"3-checkout-{f.name}"))
     for i, step in enumerate(["upsell-1", "downsell-1", "upsell-2", "downsell-2"], 4):
-        if (p / "6-upsell-downsell" / step / "index.html").exists():
-            plan.append((p / "6-upsell-downsell" / step / "index.html", f"{i}-{step}.html"))
+        if (p / "5-upsell-downsell" / step / "index.html").exists():
+            plan.append((p / "5-upsell-downsell" / step / "index.html", f"{i}-{step}.html"))
     for f in sorted((p / "4-bundle").glob("*")):
         if f.suffix.lower() in IMG:
             plan.append((f, f"bundle/{f.name}"))
     for f in sorted(p.rglob("*")):
         rel = f.relative_to(p)
-        if rel.parts[0] == "funnel" or not f.is_file() or not re.match(r"5-|6-ads", rel.parts[0]):
+        if rel.parts[0] == "funnel" or not f.is_file() or rel.parts[0] != "6-ads":
             continue
         if f.suffix == ".md" and re.search(r"fb-ads|demandgen", f.name):
-            plan.append((f, f"ads/{f.name.removeprefix('5-')}"))
+            plan.append((f, f"ads/{f.name.removeprefix('6-')}"))
         elif f.suffix.lower() in IMG and len(rel.parts) > 1 and not re.search(r"-v\d+\.", f.name):
-            plan.append((f, "ads/" + "-".join(x.removeprefix("5-") for x in rel.parts)))
+            plan.append((f, "ads/" + "-".join(x.removeprefix("6-") for x in rel.parts)))
     for src, name in plan:
         (dst / name).parent.mkdir(parents=True, exist_ok=True)
         shutil.copy2(src, dst / name)
@@ -59,8 +61,12 @@ def build(p: Path) -> list[str]:
 
 
 if __name__ == "__main__":
-    names = sys.argv[1:] or sorted(d.name for d in OUT.iterdir() if d.is_dir())
+    names = sys.argv[1:] or sorted(d.name for d in OUT.iterdir() if d.is_dir() and not d.name.startswith("_"))
     for n in names:
+        if not (OUT / n).is_dir():  # folders are "<YYYY-MM-DD>-<product>": accept the short name too
+            hits = sorted(OUT.glob(f"[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9]-{n}"))
+            assert len(hits) == 1, f"no single output folder for {n!r}: {[h.name for h in hits]}"
+            n = hits[0].name
         got = build(OUT / n)
         steps = [x for x in got if "/" not in x]
         print(f"{n}: {len(got)} files | {', '.join(steps) or '-'}"

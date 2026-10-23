@@ -62,7 +62,8 @@ def wait_urls(ids, on_progress=None):
             assert n.get("fileStatus") != "FAILED", f"{n['id']}: upload failed"
             url = (n.get("image") or {}).get("url") or n.get("url")
             mp4 = [s for s in n.get("sources") or [] if s["mimeType"] == "video/mp4"]
-            url = url or (min([s for s in mp4 if s["height"] >= 480] or mp4, key=lambda s: s["height"])["url"] if mp4 else None)  # 480p is plenty for page slots
+            # sharpest mp4 rendition: 480p looked blurry in a 730px hero slot on retina (oriole pre-sale, Huy 2026-10-23)
+            url = url or (max(mp4, key=lambda s: s["height"])["url"] if mp4 else None)
             if n.get("fileStatus") == "READY" and url:
                 urls[n["id"]] = url
         pending = [i for i in pending if i not in urls]

@@ -11,7 +11,7 @@ import html, json, re, sys
 from pathlib import Path
 
 TPL = Path(__file__).resolve().parent.parent / 'templates'
-WORDS = {'comments': (25, 55), 'reviews': (35, 70)}
+WORDS = {'comments': (8, 80), 'reviews': (35, 70)}
 
 
 def esc(s):
@@ -31,6 +31,10 @@ def check(c):
                 bad.append(f"{key}: {x['name']} = {n} words (want {lo}-{hi})")
             if '—' in x['text']:
                 bad.append(f"{key}: {x['name']} has an em dash")
+    # comments must NOT look the same length (Huy 2026-10-23): one short, one long, one in between
+    n = sorted(len(x['text'].split()) for x in c['comments'])
+    if n[-1] - n[0] < 30:
+        bad.append(f"comments: lengths {n} too similar (want one short ~10-20, one medium ~25-40, one long ~55-75)")
     return bad
 
 

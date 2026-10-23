@@ -8,8 +8,8 @@ description: Full Facebook ad kit for a Top 5 / buyer's-guide funnel from just t
 Input: **one link, the pre-sale page.** Optional: "chỉ copy" (stop after Step 6), "chỉ ảnh" (skip Step 5-6), an image count or T5 IDs.
 
 Output:
-- 5 combos, one per template (T01, T02, T04, T09, T11), saved to `output/<product>/5-ads/meta/fb-ads-top5-<YYYY-MM-DD>.md` and shown in chat.
-- 5 image prompts + images in `output/<product>/5-ads/meta/img-top5/` (Meta = 1:1 only; horizontal Google images live in `5-ads/google/`): `00-prompts-top5-<YYYY-MM-DD>-1x1.md`, `refs.json`, `01.png`..`05.png`.
+- 5 combos, one per template (T01, T02, T04, T09, T11), saved to `output/<product>/6-ads/meta/fb-ads-top5-<YYYY-MM-DD>.md` and shown in chat.
+- 5 image prompts + images in `output/<product>/6-ads/meta/img-top5/` (Meta = 1:1 only; horizontal Google images live in `6-ads/google/`): `00-prompts-top5-<YYYY-MM-DD>-1x1.md`, `refs.json`, `01.png`..`05.png`.
 
 Talk to the user in Vietnamese. Ad copy in plain American English. Ask zero questions unless a page won't load.
 
@@ -83,7 +83,7 @@ grep -ni '<brand>\|<product name>' <file>        # must be empty
 grep -c 'https://' <file>                         # = 5, all the pre-sale URL
 ```
 
-Save to `output/<product>/5-ads/meta/fb-ads-top5-<YYYY-MM-DD>.md` (add `-2`, `-3` if it exists). In the file, each combo is `### Combo N — TXX: <name>`, then `**Primary Text:**` and `**Headline:**`, each followed by its copy inside a ```` ```text ```` fenced block (the user copies from the rendered preview, where plain lines merge: the ✅ list and the CTA line glue onto one line), then `**Notes:**` (1-2 lines: avatar + test role).
+Save to `output/<product>/6-ads/meta/fb-ads-top5-<YYYY-MM-DD>.md` (add `-2`, `-3` if it exists). In the file, each combo is `### Combo N — TXX: <name>`, then `**Primary Text:**` and `**Headline:**`, each followed by its copy inside a ```` ```text ```` fenced block (the user copies from the rendered preview, where plain lines merge: the ✅ list and the CTA line glue onto one line), then `**Notes:**` (1-2 lines: avatar + test role).
 
 Show the combos in chat now (format in Step 9), then go straight on to the images. No waiting for approval.
 
@@ -105,7 +105,7 @@ Default set:
 
 More images or named IDs: add from the library. A template that shows a failing product: lock who fails per the library's "Tấm vẽ hàng hỏng" notes.
 
-- Truth sheet first (Huy 2026-10-20): before writing any prompt, our product needs `output/<product>/truth-sheet/<key>/sheet.png`; missing → make it with `product-truth-sheet` and get Huy's ok. Upload it with `cdn.py` (Kie result URLs expire) and put that CDN URL right before our real photo in every refs list (after the avatar if any). Each prompt names it: "The [Nth] attached image is a product truth sheet of our [CATEGORY SINGULAR] from several views; reproduce that exact product: [locked details]", where locked details = the counts and shapes from the sheet's identity paragraph.
+- Truth sheet first (Huy 2026-10-20): before writing any prompt, our product needs `output/<product>/0-brief/truth-sheet/<key>/sheet.png`; missing → make it with `product-truth-sheet` and get Huy's ok. Upload it with `cdn.py` (Kie result URLs expire) and put that CDN URL right before our real photo in every refs list (after the avatar if any). Each prompt names it: "The [Nth] attached image is a product truth sheet of our [CATEGORY SINGULAR] from several views; reproduce that exact product: [locked details]", where locked details = the counts and shapes from the sheet's identity paragraph.
 
 Image Input = the library's rule 8: every prompt attaches all 5 product images (ours first, then the 4 rivals), plus the avatar first when a person is in the frame (the person on the destination page, e.g. the article author); `refs.json` is the same list for every prompt, with or without the avatar.
 
@@ -118,7 +118,7 @@ Image Input = the library's rule 8: every prompt attaches all 5 product images (
 ## Step 8: Generate (Kie GPT Image 2.5 Flare)
 
 ```
-python3 ${CLAUDE_PLUGIN_ROOT}/skills/assets/scripts/gen.py output/<product>/5-ads/meta/img-top5/00-prompts-top5-<YYYY-MM-DD>-1x1.md
+python3 ${CLAUDE_PLUGIN_ROOT}/skills/assets/scripts/gen.py output/<product>/6-ads/meta/img-top5/00-prompts-top5-<YYYY-MM-DD>-1x1.md --ratio 1:1
 ```
 
 Kie `gpt-image-2-5-flare-image-to-image`, 1K, `aspect_ratio: auto` (the prompt's 1:1 sets the frame), key `KIE_API_KEY` from `.env` at the working folder root, ~6 credits each, all 5 in parallel. Run `--dry` first to check prompt count vs refs. Each printed ratio must be ~1.00; a line with `ERR` or a ratio off 1:1 → fix that prompt and rerun it alone with `--only N` (the old file is kept as `NN-vK.png`).

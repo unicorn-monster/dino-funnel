@@ -1,6 +1,8 @@
 """Generate ad images with Kie GPT Image 2.5 Flare (Khang 2026-10-09; was GPT Image 2). Used for the 1:1 FB ad images and the 1200x628 Discover images.
 
-Usage: python gen.py <prompts.md> [--only 1,3] [--dry]
+Usage: python gen.py <prompts.md> [--only 1,3] [--ratio 1:1] [--dry]
+--ratio: aspect_ratio sent to Kie (default auto, needed for Discover 1.91:1). 1:1 ads: pass --ratio 1:1, with auto the model
+sometimes returns 16:9 (2026-10-22, Skitter SP-01).
 Reads refs.json (same folder as prompts.md): {"1": [url, ...], ...}.
 Writes NN.png next to prompts.md; an existing NN.png is kept as NN-vK.png.
 Run with python3 (needs requests + Pillow) from the working folder root (key: KIE_API_KEY in .env).
@@ -17,6 +19,8 @@ def main() -> None:
     args = [a for a in sys.argv[1:] if not a.startswith("--")]
     md = Path(args[0]).resolve()
     only = None
+    ratio = sys.argv[sys.argv.index("--ratio") + 1] if "--ratio" in sys.argv else "auto"
+    args = [a for a in args if a != ratio]
     if "--only" in sys.argv:
         only = {int(x) for x in sys.argv[sys.argv.index("--only") + 1].split(",")}
     prompts = [re.sub(r"^\d+\. ", "", p.strip()) for p in md.read_text(newline="").split("\r\n\r\n") if p.strip()]
@@ -39,7 +43,7 @@ def main() -> None:
             out.rename(md.parent / f"{i:02d}-v{n}.png")
         try:
             r = k.run_job(key, MODEL,
-                          {"prompt": prompts[i - 1], "input_urls": refs[str(i)], "aspect_ratio": "auto", "resolution": "1K"},
+                          {"prompt": prompts[i - 1], "input_urls": refs[str(i)], "aspect_ratio": ratio, "resolution": "1K"},
                           out)
             from PIL import Image  # upload.py squashes to 1200x628, so the ratio must already be ~1.91
             w, h = Image.open(out).size

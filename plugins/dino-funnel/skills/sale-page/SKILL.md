@@ -15,11 +15,11 @@ Each template is one file in `templates/`: the full page HTML to copy, with note
 |---|---|---|
 | `origin` (`templates/template-origin.html`) | offer.dinosaurized.com/matt-6-26-bird-feeder-2-1791173375647585 | pixel clone of the Funnelish bird-feeder page: top bar + logo, gallery hero + bullets + testimonial + accordions, 3 alternating feature rows, 3 "perfect for" cards, offer + 3 bonus rows, guarantee, FAQ, 3 reviews, sticky bar. Plain HTML file, every image is a `div.m` placeholder (drop an `<img>` inside it) |
 
-Default = `origin` (the user 2026-10-07; the old `locket` template was removed 2026-10-19): use it unless the user names another template, don't pick one yourself. For `origin`, the finished `output/window-hummingbird-feeder/2-sale-page/index.html` shows the filled shared slots (logo, rating bar, payment icons, stars, Trustpilot, 120-day badge, bonus badges) to reuse. **Read the whole template file before writing anything**: its copy is also the reference for tone and length.
+Default = `origin` (the user 2026-10-07; the old `locket` template was removed 2026-10-19): use it unless the user names another template, don't pick one yourself. For `origin`, the finished `output/2026-10-05-window-hummingbird-feeder/2-sale-page/index.html` shows the filled shared slots (logo, rating bar, payment icons, stars, Trustpilot, 120-day badge, bonus badges) to reuse. **Read the whole template file before writing anything**: its copy is also the reference for tone and length.
 
 ## Output
 
-Output is grouped by product: `output/<product>/` (relative to the working folder root) (kebab-case, e.g. `window-bird-feeder/`) holds `1-pre-sale-page/`, `2-sale-page/`, `3-checkout/` (pages get a folder) and all ads in `5-ads/`: `meta/` (1:1 only: copy `fb-ads-*.md` + image folders `img-<sp|top5>/` with their `00-prompts-*.md`) and `google/` (horizontal images + Demand Gen asset sheets). Everything for this page goes in `output/<product>/2-sale-page/`. Below, `<slug>` means `<product>/2-sale-page`:
+Output is grouped by product: `output/<product>/` (relative to the working folder root) (kebab-case, e.g. `window-bird-feeder/`) holds `1-pre-sale-page/`, `2-sale-page/`, `3-checkout/` (pages get a folder) and all ads in `6-ads/`: `meta/` (1:1 only: copy `fb-ads-*.md` + image folders `img-<sp|top5>/` with their `00-prompts-*.md`) and `google/` (horizontal images + Demand Gen asset sheets). Everything for this page goes in `output/<product>/2-sale-page/`. Below, `<slug>` means `<product>/2-sale-page`:
 
 ```
 index.html          the page: what the user pastes into Funnelish

@@ -44,12 +44,13 @@ Build a contact sheet of the 4-5 star photos (ffmpeg crop to square, `tile=`) an
 
 ### 3. Even out the length
 
-the user's rule: the cards must read about the same length. One 250-word wall next to an 11-word line looks fake and breaks the grid.
+the user's rule: the Trustpilot cards must read about the same length. One 250-word wall next to an 11-word line looks fake and breaks the grid.
+Comments are the opposite (Huy 2026-10-23): three comments of the same length look scripted. Mix them: one short (10-20 words, a quick reaction, an emoji is fine), one long (55-75, a little story), one in between (25-40). The photo comment can be the short one.
 
 | Block | Words per item |
 |---|---|
 | Trustpilot cards | 35-70, aim 45-65 |
-| FB comments | 25-55 |
+| FB comments | one 10-20, one 25-40, one 55-75 (`fill.py` warns when the shortest and longest are under 30 words apart) |
 
 - **Too long:** keep the reviewer's opening line and voice, keep the 2-3 strongest specifics (what problem it fixed, the feature they loved, a tip), cut the rest.
 - **Too short:** keep their words and add 1-3 sentences in the same voice. Take the additions from what other buyers of the same listing say (voice of customer in `reviews.json` and the research aspect counts), and only claim what the listing supports. Small human details (where it hangs, coffee, the grandkids) are fine.

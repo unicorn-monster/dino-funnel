@@ -7,11 +7,11 @@ description: Make the bundle images for a Dinosaurized checkout's pack selector 
 
 Funnelish checkout shows one image per offer option. Each image = cutouts of the product composed on white, 500x500. Talk to the user in Vietnamese.
 
-Done examples (look at one before starting): `output/cat-bed/4-bundle/` (BOGO, 4 colors, JPG), `output/bug-zapper/4-bundle/` (1-4 packs, tall product side by side), `output/window-hummingbird-feeder/4-bundle/` (BOGO + gift with a red +).
+Done examples (look at one before starting): `output/2026-10-16-cat-bed/4-bundle/` (BOGO, 4 colors, JPG), `output/2026-10-14-bug-zapper/4-bundle/` (1-4 packs, tall product side by side), `output/2026-10-05-window-hummingbird-feeder/4-bundle/` (BOGO + gift with a red +).
 
 ## Steps
 
-1. **Which images.** Read the offer: `output/<sp>/0-product-brief.md` if present, the sale page offer box (`output/<sp>/2-sale-page/index.html`, `research.md`) and what the user says about the checkout. List one image per option × color, e.g. `bundle-1-<color>`, `bogo-1-1-<color>`, `bogo-2-2-<color>`, `bogo-3-3-gift`. Send the list, wait for an OK.
+1. **Which images.** Read the offer: `output/<sp>/0-brief/0-product-brief.md` if present, the sale page offer box (`output/<sp>/2-sale-page/index.html`, `research.md`) and what the user says about the checkout. List one image per option × color, e.g. `bundle-1-<color>`, `bogo-1-1-<color>`, `bogo-2-2-<color>`, `bogo-3-3-gift`. Send the list, wait for an OK.
 2. **Packshots per color.** One clean white-background photo per color, front-facing, no props, no text: the Amazon listing's variant images (`"hiRes"`, see pre-sale-page *Amazon research*), or the AliExpress / supplier variant photo. Save to `output/<sp>/4-bundle/src/<color>.jpg`. Gift images (ebook mockup, a small item) go in `src/` too.
 3. **Cut out** each: `python3 ${CLAUDE_PLUGIN_ROOT}/skills/flip-to-win/scripts/cutout.py src/<color>.jpg src/cut-<color>.png --max 1000` (`--seed x,y` for white holes inside the product). Composite one on a dark background and look at it: no white halo, no grey floor shadow left.
 4. **Compose** with `python3 ${CLAUDE_PLUGIN_ROOT}/skills/bundle/scripts/compose.py src/cut-<color>.png <name>.jpg --layout <layout> [--gift src/cut-gift.png]`:
