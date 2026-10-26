@@ -18,6 +18,7 @@ Plugin Claude Code làm trọn funnel cho 1 sản phẩm: pre-sale top 5 → fli
 - Sản phẩm mới: `/dino-funnel:funnel <link Amazon> <link sale page>`
 - Làm tiếp sản phẩm cũ: `/dino-funnel:funnel tiếp tục <tên sp>`
 - Gọi riêng từng bước: `/dino-funnel:pre-sale-page`, `/dino-funnel:sale-page`, `/dino-funnel:checkout-funnelish`, `/dino-funnel:bundle`, `/dino-funnel:upsell-downsell`, `/dino-funnel:fb-top5`...
+- Bảng tổng của 1 sp (slug từng bước, gói checkout, giá upsell/downsell) nằm ở `output/<sp>/0-funnel.md`, Claude tự cập nhật sau mỗi bước. Cần làm lại hay bổ sung: "làm 0-funnel.md cho sp <tên>" hoặc "funnel sp <tên> tới bước nào rồi, cập nhật 0-funnel.md".
 
 Mỗi bước Claude dừng lại cho bạn duyệt. Trang top 5 lên topreviewking/topreviewqueen thì gửi folder trang cho Huy deploy.
 

@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<!--
+
+# Template: 10r-basic
+
+Source: live page `https://try.javvycoffee.com/ps02` (Javvy Protein Coffee, "11 Reasons Why This High-Protein Iced Coffee is the #1 Trending Drink for Fall 2026"; Webflow), cloned 2026-10-26. Same design family as `10r-hw` (Hike copied this Javvy layout: `compare2-javvy-logo`, `#sticky_bar`, `.adv_cta_*` exist in both), but the plain version: no reading-progress bar, no author story, no failures intro.
+Format: brand-voice **"11 Reasons Why This [Product] is the #1 [Trend]" listicle, one long scroll**: dark sale bar (offer line + HRS/MIN/SEC countdown) → H1 + one-line dek with an underlined deal link → author line (avatar, name, "Last Updated" 3 days ago) → "Read this BEFORE…" callout → **3-column comparison table** (ours vs 2 alternative CATEGORIES, not brands; 4 rows, the last one = price as smiley faces) → TLDR line → **10 numbered reasons** (1:1 image left / h2 + paragraph + 👉 link right on desktop; h2 → image → text on mobile) → **#11 = the offer** on a cream band ("Reaching #11 means one thing…" + offer card: bundle image left, FREE GIFTS kicker, % OFF headline, button, DEAL ENDING IN countdown, Sell-Out Risk, guarantee) → footer (offer disclaimer + legal links). Mobile/tablet only: sticky bottom CTA bar.
+
+How it was built (code, not visuals): the live DOM captured in Chrome at 390px and 1280px after every script ran and every lazy image loaded; everything hidden at both widths removed (Cyber Monday bar variant, "New flavor" badge, hidden comparison numbers + footnote, A/B and intl blocks), tracking / Webflow + Javvy runtime / jQuery / GTM / Converge pixel / Typekit removed. CSS = Javvy's shared Webflow stylesheet (2.2 MB) + every inline `<style>`, pruned in Chrome to the selector parts that match this DOM (428 rules, 36 KB). Verified: the pruned page and the same page with the FULL stylesheet give identical boxes for all 369 elements at 390px and 1280px. Against the live page: same layout and page height ±5px at 1280; line breaks differ a little because of the font swap below.
+
+**Font swap:** the source's main face is `filson-pro` (Adobe Fonts / Typekit, licensed per domain, can't be self-hosted). Replaced by **Figtree** (Google Fonts, free; Javvy's own page loads it too), same geometric look, a bit narrower (paragraphs wrap a word later). Inter 500 (the clock labels) is unchanged.
+
+## Research for this template: our product + 2 alternative categories, NO competitor brands
+
+Like `adv-5r` / `10r-hw`, skip SKILL.md A-to-Z step 4 (no competitor harvest).
+- **10 reasons** = the top praise themes in our reviews, ranked by count (aspect chips pos/neg + `themes.json`), one reason = one theme. Order like the source: the core product promise first (#1-#4), money/time (#5-#6), everyday result (#7), range/variants (#8), guarantee (#9), social proof/community (#10).
+- **Comparison table** = ours vs the 2 things a buyer would otherwise use (source: "Mainstream Coffees", "Protein Drinks"). Category-level facts, not brands (spec ranges from listings, "most [X]"). 3 rows where the number/spec makes ours win + the Price row (smileys). Every cell must be true for a typical product of that category.
+
+## Placeholders to replace globally
+
+| Token | Replace with |
+|---|---|
+| `/SLUG/` | `/<slug>/` (fonts + any asset paths you add) |
+| `https://offer.dinosaurized.com/OFFER-SLUG` | offer URL (10 places: the 8 `.listicle-link` 👉 links in #3-#10, the offer card button, the sticky bar button). Funnelish: `#next-step` |
+| `href="#"` (2 footer links) | the site's Terms / Privacy pages, or delete them |
+| `Javvy` (copy) | our product / brand name (Title Case). In the H1 area, TLDR, reasons, #11 text, footer |
+
+## Fonts (self-hosted, `public/<slug>/assets/fonts/`)
+
+`D=public/<slug>/assets/fonts; mkdir -p $D` then:
+
+```
+curl -sL -o "$D/Figtree.woff2" "https://fonts.gstatic.com/s/figtree/v9/_Xms-HUzqDCFdgfMm4S9DaRvzig.woff2"
+curl -sL -o "$D/Inter-Medium.woff2" "https://fonts.gstatic.com/s/inter/v20/UcCO3FwrK3iLTeHuS_nVMrMxCp50SjIw2boKoduKmMEVuI6fAZ9hiJ-Ek-_EeA.woff2"
+```
+
+(Google Fonts latin subsets; Figtree is one variable file 300-900. `file $D/*` must say "Web Open Font Format". A URL 404s one day → open `https://fonts.googleapis.com/css2?family=Figtree:wght@300..900&family=Inter:wght@500` with a Chrome UA and take the `/* latin */` URLs.)
+
+## Slot map (in page order)
+
+Copy style: brand voice speaking to the reader ("you", "your", "we" for the brand), upbeat, one idea per reason. Each reason = `h2` "N. [benefit as a result for the reader]" (8-14 words, sentence case) + ONE paragraph in `div.p-listicle` (32-56 words: the everyday situation → what ours does → the payoff), an occasional `<strong>` on the hard number. Source puts a `*` after outcome claims (FDA disclaimer for a food product): drop them unless the product needs a disclaimer.
+
+| Block (selector) | What to write | Original size |
+|---|---|---|
+| `<title>` | same as the H1 | |
+| `.nav-txt-1` | sale name between ✨ (`✨ BLACK FRIDAY EARLY ACCESS ✨`) | 3 words |
+| `.flex-promo .nav-txt-2` x4 | `up to` / `58% OFF` (gold) / `with` / `FREE GIFTS`: the offer from the offer page | 6 words |
+| `h1#headline-listicle` | `[N] Reasons Why This [Product] is the #1 [Trend / pick] for [Season Year]` | 15 words |
+| `p.conclusion-p.bfcm` | dek: `and how you can lock in a massive <span class="text-span-143">[sale name] deal early!</span>` (the span is underlined) | 12 words |
+| `.author-text` | `By <strong>First L.</strong>`; the date fills itself (3 days ago) | |
+| `.listicle-note-w .p-listicle-summary` | `<strong>"Read this</strong> BEFORE your next [purchase moment]!"` | 7 words |
+| comparison: `.compare2-p-category` x4 + emoji `.compare2-p-emoji` | row names (Calories / Protein / Sugar / Price) + one emoji each. Keep the last row = Price | 1-2 words |
+| comparison: ours column `.compare2-p-javvy` (+ `.small` sub-line) | our value per row (`120cal` / `in 2 scoops`); Price row = green happy face (keep) | |
+| comparison: 2 other columns, header `p` | the 2 alternative categories (`Mainstream Coffees`, `Protein Drinks`) | 2 words |
+| comparison: `.compare2-p-others` (+ optional `.small.sweeteners` note) | their typical value/range per row; Price row = grey face (keep) | |
+| `p.conclusion-p.compare2` (TLDR) | `<strong>TLDR:</strong> [Using/Owning] [Product] has [N]+ [life-changing] benefits 👇` | 11 words |
+| Reasons 1-10 `.listicle-row-new h2` | `N. [Benefit]` | 8-14 words |
+| Reasons 1-10 `.p-listicle` | one paragraph | #1 56, #2 51, #3 45, #4 47, #5 37, #6 37, #7 39, #8 32, #9 41, #10 37 words |
+| Reasons 3-10 `.listicle-link strong` | soft CTA after 👉, Title Case, 3-7 words, tied to that reason ("Start Saving With Every Cup") | |
+| `.reason12-w h2` | `Reaching #11 means one thing: you're truly serious about [the outcome].` | 14 words |
+| `.reason12-w .p-listicle` | `✨ We don't hand these out every day… consider this an exclusive [Brand] hookup, just for you.` | 17 words |
+| `.lbh-blackfriday` (badge on the card) | sale name between ✨ | 3 words |
+| `.style-guide-card` | kicker `FREE GIFTS WITH YOUR ORDER` (or what the offer gives) | 5 words |
+| `h1.adv_cta_heading-2` | `<span class="span-red">UP TO [N]% OFF</span> FOR A LIMITED TIME ONLY!` | 9 words |
+| `.adv_cta_subtitle_text` | scarcity line ("This limited-time deal is in high demand and stock keeps selling out.") | 12 words |
+| `.button-text-bolder-2` | `GET [N]% OFF` | 3 words |
+| `.dealending` | `DEAL ENDING IN:` (keep; the countdown fills itself) | |
+| `.bot_cta_badge_div` | `Sell-Out Risk: High` / `FREE shipping` (keep unless shipping isn't free) | |
+| `.text-size-tiny` | `Try it today with a 120-Day Money-Back Guarantee!` | 8 words |
+| `#sticky_bar .button-text-2` | `YES, GET [N]% OFF` | 4 words |
+| `#sticky_bar .lowest-price-p strong` | `[SALE NAME] DISCOUNT ACTIVE` (the animated % icon before it is inline SVG, keep) | 5 words |
+| `.text-block-222` (footer) | offer disclaimer. Source = Javvy subscription terms; write ours ("*Special discount valid on orders placed on [url] by [date] at 11:59pm PST…"): the 2 `[data-compliance]` spans fill the page URL and today's date | 60 words |
+| `.footer4_credit-text` | `© [Year] [Company]. All rights reserved.` + legal links | |
+
+**Dinosaurized guarantee is 120 days**, not 30: #9 heading + paragraph, `.text-size-tiny`, the #9 image (seal).
+
+## Media placeholders (`.ph`)
+
+Every image is a `<div class="… ph" data-ph="image|avatar">` that keeps the original `<img>`'s classes and an `aspect-ratio`, so the box is already the right size. Inside it:
+- `.ph-ref` = the **original image, hotlinked** from assets.javvycoffee.com so you can SEE what goes in each slot. Reference only: a competitor's files, can disappear any day. Never ship them.
+- `.ph-t` = type + ratio, `.ph-d` = the slot's role, product-agnostic.
+
+Swap each `.ph` for the real element, then delete the `.ph` CSS block at the end of `<style>` once none are left (it also holds the placeholder-only width fix for the offer card):
+
+- **reason image** (`.li-video-embed-w`, a 1:1 box, 16px radius, overflow hidden; 310px on desktop, full width on mobile): `<img src="/<slug>/assets/<file>.webp" loading="lazy" alt="" class="potential-gif-embed">` (the class gives `object-fit: cover; width/height 100%`). Square sources, ≥800px. A video works too: `<video class="potential-gif-embed" autoplay muted loop playsinline webkit-playsinline preload="metadata"><source src="/<slug>/assets/<file>.mp4" type="video/mp4"></video>` (the source files are named `play_480p.mp4.webp`: Javvy turned clips into stills).
+- **offer image** (`.photo-wrappers.bfcm`, light purple panel, half the card on desktop): `<img src="…" loading="lazy" alt="" class="image-89">`, bundle cut-out on transparent (source 400x361).
+- **author avatar** (50px circle): `<img src="…" loading="lazy" alt="" class="auth-image">`, square source.
+- **logo** (comparison table header, ~60x28): `<img src="…" loading="lazy" alt="" class="compare2-javvy-logo sp4">`, dark on transparent.
+
+| Slot | `.ph-t` | `.ph-d` (role) |
+|---|---|---|
+| author | IMG 1:1 | Author avatar: the author holding our product, smiling |
+| logo | LOGO | Our brand logo, dark on transparent |
+| #1 | IMG 1:1 | Styled packshot of our product + the result it gives, seasonal props around it |
+| #2 | IMG 1:1 | Two friends sharing a moment, our product in the scene (the craving / social pain) |
+| #3 | IMG 1:1 | Customer relaxed at home using our product (lifestyle) |
+| #4 | IMG 1:1 | Close-up of our product in a hand (the detail that proves the claim) |
+| #5 | IMG 1:1 | Customer selfie outdoors holding our product (on the go, saves money) |
+| #6 | IMG 1:1 | Hand preparing / setting up our product at home, pack next to it (how easy) |
+| #7 | IMG 1:1 | Customer at a desk, happy, our product in hand (everyday use) |
+| #8 | IMG 1:1 | Flat lay of every variant / color / flavor we sell (the range) |
+| #9 | IMG 1:1 | Our product + a money-back guarantee seal (120 DAY, never 30) |
+| #10 | IMG 1:1 | Grid of 6 customer photos with our product + a "happy customers" banner |
+| offer | IMG 400:361 | Our product bundle + gift box cut-out, transparent background |
+
+**Every slot shows OUR product** (the source has no "before" or competitor image anywhere). Real customer photos first (review gallery), generated images only for what reviews can't show (#1 styled packshot, #8 range, #9 seal, #10 grid: SKILL.md truth-sheet rules). Pick each image to fit that reason's heading; the roles above are what the source used.
+
+Small UI icons (comparison smiley faces, gift icon) are inlined as data URIs, the sticky-bar % icon is an inline SVG frame of the source's Lottie: keep them.
+
+## Do not touch
+
+- `#js-clock` (`#js-clock-hours/-minutes/-seconds`), `.countdown-hour`, `#date-output[data-date]`, `[data-compliance]`: filled by the script at the end of `<body>` (header + DEAL ENDING IN count down to local midnight; "Last Updated" = 3 days ago).
+- `#sticky_bar` + the `listicle_cta_btn` attribute on both buttons: the sticky-bar script reads them (on after 1500px, off while the offer-card button is on screen and near the page bottom, like live). CSS shows the bar only below 992px.
+- The Webflow grid ids (`id="w-node-…"`) on reason cells: the CSS places the image / h2 / text cells by them. Copying a reason duplicates its ids: still works (CSS matches every element with that id).
+- `<head>`: `/tags.js`, favicons, `noindex, nofollow`. The click-ID passthrough script at the end (selector `a[href*="offer.dinosaurized.com"]`).
+- The CSS is pruned to this DOM. A NEW class added to the HTML has no rule: reuse the classes already on the page.
+
+## Leftover grep
+
+grep -nE 'Javvy|javycoffee|javvycoffee|ph-ref|[Pp]rotein [Cc]offee|[Ii]ced [Cc]offee|coffee run|Jade M|Cyber Monday|30.[Dd]ay|100 MILLION|Peppermint|Cookie Butter|\$1\.20|OFFER-SLUG|/SLUG/' index.html   # must be empty (case-sensitive: the CSS class names keep a lowercase "javvy"; add 58%/Black Friday when the offer differs)
+grep -c 'data-ph=' index.html                                                                                          # 0 when all media are in
+
+## Template-specific traps
+
+| Trap | Fix |
+|---|---|
+| H1 says **11** reasons, the page shows 10 + the offer as "#11" | keep that trick: H1 number = reasons + 1, `.reason12-w h2` says "Reaching #[N+1]". Changing the count → H1, `<title>`, TLDR "[N]+ benefits", #11 heading |
+| Reasons #1 and #2 have no 👉 link (no `.listicle-paragraph-w` / `.div-block-1543`), #3-#10 do | to add one to #1/#2, copy the `.listicle-paragraph-w` wrapper from #3 (it holds the text + the link) |
+| Seasonal copy (Holiday, Fall 2026, Black Friday, peppermint) | evergreen by default (SKILL.md rule); a seasonal sale name only if the offer runs one, and then everywhere it appears (bar, dek, badge, sticky line, footer) |
+| `*` after claims + Javvy's health wording (digestion, cravings, energy crash) | no health claims for people: write each reason as a product benefit the listing supports; drop the `*` unless the footer carries a matching disclaimer |
+| "30-Day Money-Back Guarantee" (#9 heading, #9 text, `.text-size-tiny`, #9 image seal) | 120-Day everywhere |
+| "100 MILLION coffees", "1M+ happy customers" (#10) | only real numbers from the user; otherwise a community line without a number |
+| Comparison table looks rigged if ours wins with made-up numbers | category facts only (ranges from real listings). The Price row is faces, not prices: keep it that way unless the user gives real prices |
+| Colors: Javvy purple `#2a2552` (bar, button, headings), gold `.span-gold`, red `.span-red`, light purple offer panel, cream #11 band | match the checkout (SKILL.md *Hosting on Funnelish* → Colors): `!important` overrides appended to `<style>`, check with a computed-style scan that no purple is left |
+| Funnelish hosting | `.page-wrapper > main.main-wrapper` clashes with Funnelish's `core.min.css` like listical&quiz and 10r-hw, but here the main has no `.publisher`: append `.section_row:has(.page-wrapper){max-width:none!important}` and `.page-wrapper>.main-wrapper{display:block;min-height:0}`. Test by loading that core.min.css in the local preview before pasting |
+
+## Changes vs the live page
+
+- Removed: every block hidden at both 390 and 1280 (listed above), Javvy "magic" scripts (A/B routing, intl text swaps, count-UP header clock), Webflow runtime + IX2 + jQuery, Finsweet scripts, GTM / Converge / tracking pixels, Typekit, the empty `try.shopfurme.com` link inside the offer subtitle, Webflow `data-*` attributes, `srcset` (CDN resize URLs).
+- Header clock: the live one counts UP from 02:02:06 (stored per day in localStorage) and fights with the DEAL ENDING IN countdown; both now count DOWN to local midnight.
+- Sticky bar script rewritten from Javvy's `listicles_pc.js` with the same thresholds; the bar's Lottie % icon frozen as one inline SVG frame.
+- `filson-pro` → Figtree (see Font swap). All media → `.ph` placeholders with the original hotlinked inside as a reference.
+
+This comment is template notes only: drop it from the built index.html (it would ship to a public page).
+
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="color-scheme" content="light">
+<title>11 Reasons Why This High-Protein Iced Coffee is the #1 Trending Drink for Fall 2026</title>
+<script src="/tags.js?v=8d6afa76" defer></script>
+<link rel="icon" href="/favicon.ico" sizes="32x32">
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<style>
+@font-face { font-family: Figtree; src: url("/SLUG/assets/fonts/Figtree.woff2") format("woff2"); font-weight: 300 900; font-style: normal; font-display: swap; }
+@font-face { font-family: Inter; src: url("/SLUG/assets/fonts/Inter-Medium.woff2") format("woff2"); font-weight: 500; font-style: normal; font-display: swap; }
+html { text-size-adjust: 100%; font-family: sans-serif; }
+body { margin: 0px; }
+main, section { display: block; }
+a { background-color: rgba(0, 0, 0, 0); }
+a:active, a:hover { outline: 0px; }
+strong { font-weight: bold; }
+h1 { margin: 0.67em 0px; font-size: 2em; }
+img { border: 0px; }
+svg:not(:root) { overflow: hidden; }
+* { box-sizing: border-box; }
+html { height: 100%; }
+body { color: rgb(51, 51, 51); background-color: rgb(255, 255, 255); min-height: 100%; margin: 0px; font-family: Arial, sans-serif; font-size: 14px; line-height: 20px; }
+img { vertical-align: middle; max-width: 100%; display: inline-block; }
+.w-inline-block { max-width: 100%; display: inline-block; }
+h1, h2 { margin-bottom: 10px; font-weight: bold; }
+h1 { margin-top: 20px; font-size: 38px; line-height: 44px; }
+h2 { margin-top: 20px; font-size: 32px; line-height: 36px; }
+p { margin-top: 0px; margin-bottom: 10px; }
+.w-embed::before, .w-embed::after { content: " "; grid-area: 1 / 1 / 2 / 2; display: table; }
+.w-embed::after { clear: both; }
+:root { --primary-white: white; --black: black; --primary-purple: #2a2552; --secondary: #3d348b; --deactivated-gray: #777; --primary: #010101; --javy-red: #b32134; --light-grey: #f4f4f4; --deactivated-gray-2: #cbcbcb; --primary-cosmic: var(--black); --white: white; --primary-black: #010101; --deactivated: #79749f; --light-gray: #fafafc; --border-radius-small: 8px; --inactive-state: #d4d2e4; --primary-gold: #fa0; --primary-cream: #fff9e6; --original-dark: #fa0; --original-light: #fffcd9; --mocha-dark: #93471d; --mocha-light: #fce5d9; --caramel-dark: #c96614; --caramel-light: #ffe7ca; --vanilla-light: #e0fafa; --vanilla-dark: #00cddc; --javy-green-2: #ccf281; --lighter-cream: #fff6ee; --cream-javy: #fff3d9; --antique-white: #ffedd7; --new-cream-2: #f8f4ee; --accessible-components-dark-grey: #9b9b9b; --border-radius-xsmall: 4px; --dark-grey: #b0b0b0; --nice-green: #2ea07c; --cream-javy-2: #fff9ed; --javy-cream: #ffedd7; --javy-yellow: #fbaa19; --refreshers-orange: #ffeee0; --refreshers-blu: #e8f8ff; --lighter-pruple: #f5f4ff; --cream-light: #fff9e6; --light-blue: #eff6ff; --azureish-white: #daf0f2; --light-goldenrod-yellow: #f9f6d1; --nyanza: #dff9e0; --diamond: #c4fffa; --pale-lavender: #ddd9ff; --light-red: #ffd3d3; --lighter-purple: #bab8ca; --light-grays: #f0f4f7; --new-cream-3: #fff7e2; --spring: #dcffb8; --cyber-monday: #2a2552; --border-purple: #cecce0; --accent-color: #3aecba; --transparent: transparent; --refreshers-shadow-blu: #daeaf380; --javy-green: #29af5c; --bb-violet: #8e72e2; --bb-rich-purple: #24135f; --bb-regular-price-box: #f6f6f9; --bb-light-beige: #f9f6e7; --bb-new-purple: #4b3192; --creamer-new: #f7f5ed; --new-cream: #fffef9; --border-cream: #eee7d0; --tiktok-pink: #ff004f; --tiktok-blue: #00f2ea; --holidays: #0b4c3b; --bb-badge-new: #dfe3ff; --bb-badge-new-text: #1c00ff; }
+.w-layout-grid { gap: 16px; grid-template-rows: auto auto; grid-template-columns: 1fr 1fr; grid-auto-columns: 1fr; display: grid; }
+body { background-color: var(--primary-white); color: rgb(0, 0, 0); font-family: Figtree, sans-serif; font-size: 1rem; font-weight: 400; line-height: 1.5; }
+h1 { letter-spacing: -0.065rem; margin-top: 0px; margin-bottom: 0px; font-family: Kefir, sans-serif; font-size: 2.75rem; font-weight: 600; line-height: 1.2; }
+h2 { letter-spacing: -0.065rem; margin-top: 0px; margin-bottom: 0px; font-family: Kefir, sans-serif; font-size: 2.5rem; font-weight: 700; line-height: 1.2; }
+p { margin-bottom: 0px; }
+a { border-color: var(--black); color: var(--black); text-decoration: none; }
+img { max-width: 100%; display: inline-block; }
+strong { font-weight: 700; }
+.text-align-center { text-align: center; }
+.page-wrapper { width: 100%; position: relative; }
+.text-size-tiny { font-size: 0.75rem; }
+.padding-small { padding: 1rem 1.5rem; }
+.button { background-color: var(--primary-purple); min-height: 4.25rem; color: var(--primary-white); text-align: center; cursor: pointer; border: 2px solid rgba(0, 0, 0, 0); border-radius: 100px; justify-content: center; align-items: center; padding: 1rem 2rem; font-weight: 700; transition: background-color 0.2s cubic-bezier(0.25, 1, 0.5, 1); position: relative; overflow: hidden; }
+.button:hover { color: var(--primary-white); background-color: rgb(79, 69, 173); }
+.button.is-full { column-gap: 0.75rem; text-align: center; justify-content: center; align-items: center; width: 100%; padding-left: 2rem; padding-right: 2rem; display: flex; }
+.button.is-full.is-squared { background-color: var(--primary-purple); border-radius: 8px; }
+.max-width-medium { flex-flow: column; justify-content: center; align-items: center; max-width: 73rem; display: flex; }
+.padding-xsmall { padding: 0.5rem; }
+.padding-global { z-index: 999; width: 100%; padding-left: 2.5rem; padding-right: 2.5rem; position: relative; }
+.padding-global.m1 { position: static; }
+.heading-style-h1 { font-family: Kefir, sans-serif; font-size: 2.75rem; font-weight: 600; line-height: 1.2; }
+.heading-style-h1.listicle { letter-spacing: -0.08rem; font-family: Figtree, sans-serif; font-size: 2.75rem; font-weight: 700; }
+.heading-style-h1.listicle.pc-sp1.smaller { font-size: 2.65rem; }
+.heading-style-h1.listicle.pc-sp1.smaller.new-11 { font-size: 2.4rem; }
+.heading-style-h1.listicle.pc-sp1.smaller.new-11.ps02 { font-size: 2.3rem; }
+.padding-section-small { padding-top: 2.875rem; padding-bottom: 2.875rem; }
+.padding-section-small.padding-bottom-none { padding-bottom: 0px; }
+.icon-embed-xsmall { flex-direction: column; justify-content: center; align-items: center; width: 1.5rem; height: 1.5rem; display: block; }
+.footer { gap: 0.5rem 1rem; background-color: var(--primary-purple); color: var(--primary-white); border-top: 1px solid rgb(0, 0, 0); flex-direction: row; align-items: center; }
+.container-small { width: 100%; max-width: 54rem; margin-left: auto; margin-right: auto; }
+.container-tiny { width: 100%; max-width: 48rem; margin-left: auto; margin-right: auto; }
+.divider { z-index: 10; column-gap: 1rem; color: rgb(0, 0, 0); justify-content: center; align-items: center; width: 100%; margin-left: auto; margin-right: auto; display: flex; position: relative; }
+.divider.bf { column-gap: 0.5rem; }
+.divider-line { background-color: rgba(0, 0, 0, 0.11); width: 100%; height: 1px; }
+.divider-line.expand { flex: 1 1 0%; }
+.style-guide-card { text-align: center; letter-spacing: 1px; text-transform: uppercase; flex: 0 0 auto; align-self: center; font-size: 0.75rem; font-weight: 700; }
+.footer-link { color: rgb(255, 255, 255); font-weight: 400; text-decoration: underline; }
+.countdown-hour { font-weight: 800; }
+.countdown-hour.red { color: rgb(207, 0, 0); margin-left: 0.25rem; }
+.dealending { color: rgb(0, 0, 0); text-align: center; justify-content: center; align-items: center; min-height: 2rem; padding: 0.25rem 1rem; font-size: 0.75rem; font-weight: 800; display: flex; }
+.sticky-headers { z-index: 99999; position: sticky; top: 0px; }
+.text-block-222 { border-bottom: 1px solid rgb(255, 255, 255); margin-bottom: 2rem; padding-bottom: 1rem; font-size: 0.65rem; }
+.compliance-bolds { font-weight: 700; }
+.footer-content { flex-direction: column; justify-content: center; align-items: center; padding-top: 1rem; padding-bottom: 1rem; font-size: 0.75rem; display: flex; }
+.listicle-holder { flex-direction: column; display: flex; position: sticky; bottom: 0px; }
+.heading-style-h2-3 { position: relative; }
+.heading-style-h2-3.listicle { letter-spacing: -0.05rem; font-family: Figtree, sans-serif; font-size: 1.75rem; font-weight: 700; line-height: 1.2; }
+.padding-bottom-43 { padding-top: 0px; padding-left: 0px; padding-right: 0px; }
+.div-block-765 { margin-left: 13px; margin-right: 13px; }
+.p-listicle { letter-spacing: -0.02em; font-size: 1.15rem; font-weight: 400; line-height: 1.5; }
+.text-block-4 { font-size: 18px; font-weight: 200; }
+.padding-global-8 { padding-left: 2.5rem; padding-right: 2.5rem; }
+.sticky_bar { pointer-events: none; padding-top: 1rem; padding-bottom: 1rem; display: none; }
+.sticky_bar.is-active { pointer-events: auto; }
+.author-text { margin-left: 12px; font-size: 13px; line-height: 17px; display: inline-block; }
+.div-block-767 { margin-left: 8px; }
+.padding-section-cta { padding-top: 5rem; padding-bottom: 5rem; }
+.padding-section-cta.li-new { gap: 3rem; flex-flow: column; padding-top: 3rem; display: flex; }
+.header_content { text-align: center; border-bottom: 1px solid rgb(235, 235, 235); flex-direction: column; justify-content: center; align-items: flex-start; padding-bottom: 2rem; display: flex; }
+.header_content.left-aligned { text-align: left; }
+.header_content.left-aligned.sp-2 { border-bottom-style: none; padding-bottom: 1rem; }
+.button-text-bolder-2 { letter-spacing: 0px; margin-right: 0.5rem; font-weight: 900; }
+.text-block { font-weight: 500; line-height: 18px; }
+.text-span-7 { font-weight: 800; }
+.text-block-279 { font-weight: 500; line-height: 18px; }
+.div-block-764 { align-items: baseline; display: flex; }
+.div-block-2 { align-items: baseline; display: flex; }
+.adv_cta_heading-2 { color: rgb(0, 0, 0); text-align: center; font-family: Figtree, sans-serif; font-size: 1.7rem; font-weight: 900; line-height: 1.2; }
+.section_listicle_1 { position: relative; overflow: hidden; }
+.bot_cta_badge_div { background-color: rgb(255, 246, 238); border: 1px dashed rgb(255, 237, 215); border-radius: 4px; justify-content: center; align-items: center; padding-top: 10px; padding-bottom: 10px; font-size: 0.75rem; display: flex; }
+.bold-text-18 { color: rgb(0, 35, 126); }
+.listicle_reasons { row-gap: 4rem; flex-direction: column; display: flex; }
+.button-text-2 { letter-spacing: 0.011em; }
+.auth-left { align-items: center; display: flex; }
+.arrow-btn-listicle { flex-direction: column; justify-content: center; align-items: center; width: 1.5rem; height: 1.5rem; display: block; position: absolute; inset: auto 1.5rem auto auto; }
+.adv_cta_top_div { flex-direction: column; align-items: center; display: block; }
+.adv_cta_subtitle_text { text-align: center; font-size: 13px; line-height: 18px; }
+.image-89 { width: 100%; max-width: none; height: auto; display: block; }
+.section_cta-protein { background-color: rgb(248, 244, 238); }
+.section_cta-protein.gradient-sale { background-color: rgb(253, 253, 231); }
+.adv_cta_div { text-align: left; background-color: rgb(255, 255, 255); border: 2px dashed rgb(255, 255, 255); border-radius: 8px; justify-content: space-between; display: flex; position: relative; overflow: hidden; box-shadow: rgba(0, 0, 0, 0.06) 0px 4px 12px; }
+.auth-image { border-radius: 200px; width: 50px; height: 50px; overflow: hidden; }
+.adv_cta_right_div { text-align: left; width: 50%; padding: 3rem; }
+.photo-wrappers { background-color: rgb(244, 244, 244); justify-content: center; align-items: center; width: 50%; display: flex; position: relative; }
+.photo-wrappers.bfcm { background-color: rgb(238, 236, 255); }
+.text-span-10 { color: rgb(0, 0, 0); font-weight: 600; }
+.div-block-766 { margin-left: 8px; }
+.div-block-900 { justify-content: center; align-items: center; width: 80%; height: 40px; margin-left: auto; margin-right: auto; display: flex; position: absolute; inset: -1.5rem 0% auto; }
+.p-listicle-summary { letter-spacing: -0.02em; font-size: 1.15rem; line-height: 1.5; }
+.p-listicle-summary.pc { font-style: normal; }
+.text-span-6 { color: rgb(200, 32, 47); font-weight: 800; }
+.cta-content-2 { border: 1px dashed rgb(0, 0, 0); flex-direction: column; align-items: center; margin-left: auto; margin-right: auto; display: flex; position: relative; }
+.author-and-view-div { flex-flow: row; justify-content: space-between; width: 100%; display: flex; }
+.button-10 { color: rgb(255, 255, 255); text-align: center; cursor: pointer; background-color: rgb(42, 37, 82); border: 2px solid rgba(0, 0, 0, 0); border-radius: 100px; padding: 1.25rem 2rem; font-weight: 700; transition: background-color 0.2s cubic-bezier(0.25, 1, 0.5, 1); position: relative; overflow: hidden; }
+.button-10:hover { color: rgb(255, 255, 255); background-color: rgb(79, 69, 173); }
+.button-10.is-full { text-align: center; justify-content: center; align-items: center; width: 100%; min-height: 4.5rem; padding-left: 2rem; padding-right: 2rem; display: flex; }
+.button-10.is-full.is-squared { background-color: rgb(42, 37, 82); border-radius: 8px; }
+.span-red { color: var(--javy-red); }
+.span-gold { -webkit-text-fill-color: transparent; background-image: linear-gradient(90deg, rgb(232, 172, 33), rgb(252, 220, 109)); background-clip: text; }
+.potential-gif-embed { width: 100%; height: 100%; }
+.pccomparison-content { justify-content: center; align-items: flex-end; width: 100%; display: flex; }
+.pccomparison-content.listicle { box-shadow: none; border: 1px solid rgb(231, 231, 231); }
+.pccomparison-content.listicle.compare2 { border-style: none; border-color: rgb(0, 0, 0); justify-content: center; align-items: flex-start; margin-top: 16px; }
+.pccomparison-content.listicle.compare2.sp4 { margin-top: 4px; }
+.pc-compare-column { width: 25%; }
+.pc-compare-column.points.listicle.compare2 { height: 100%; }
+.pc-compare-column.points.listicle.compare2.text { padding-top: 24px; }
+.pc-compare-column.listicle { padding-bottom: 4px; }
+.pc-compare-column.listicle.compare2-green { background-color: rgb(232, 255, 255); border: 2px solid rgb(190, 230, 230); border-radius: 10px; padding-top: 40px; padding-bottom: 8px; }
+.pc-compare-column.listicle.compare2-green.sp4 { padding-top: 20px; }
+.pc-compare-column.listicle.compare2 { padding-top: 36px; padding-bottom: 0px; }
+.pc-compare-column.listicle.compare2.sp4 { padding-top: 15px; }
+.pc-compare-column-row { border-bottom: 1px dashed rgb(201, 201, 201); justify-content: center; align-items: center; height: 56px; padding-top: 16px; padding-bottom: 16px; display: flex; }
+.pc-compare-column-row.header { border-bottom-style: none; height: 70px; font-weight: 500; }
+.pc-compare-column-row.header.listicle { height: 44px; }
+.pc-compare-column-row.header.listicle.compare2 { height: auto; padding-top: 0px; padding-bottom: 0px; }
+.pc-compare-column-row.header.listicle.compare2.letscompare { border-bottom-style: none; padding-top: 0px; }
+.pc-compare-column-row.category { justify-content: flex-start; align-items: center; padding-left: 22px; }
+.pc-compare-column-row.category.noborder { border-bottom-style: none; }
+.pc-compare-column-row.category.compare2 { height: 50px; }
+.pc-compare-column-row.grey { color: rgb(201, 52, 52); border-bottom-style: solid; border-bottom-color: rgb(231, 231, 231); font-size: 1rem; }
+.pc-compare-column-row.grey.noborder { border-bottom-style: none; }
+.pc-compare-column-row.compare2-green { border-bottom-style: solid; border-bottom-color: rgba(190, 230, 230, 0.58); height: 50px; margin-left: 12px; margin-right: 12px; position: relative; }
+.pc-compare-column-row.compare2-green.noborder { border-bottom-style: none; }
+.pc-compare-column-row.compare2-green.scooptxt { flex-flow: column; padding-top: 12px; }
+.pc-compare-column-row._3, .pc-compare-column-row.compare2 { height: 50px; }
+.pc-compare-column-row.compare2.small-txt { gap: 2px; flex-flow: column; padding-top: 14px; padding-bottom: 18px; }
+.div-block-1344 { gap: 4px; justify-content: center; align-items: center; width: 100%; height: 54px; display: flex; }
+.div-block-1344.listicle { color: rgb(255, 255, 255); background-color: rgb(42, 37, 82); border-right: 1px solid rgba(255, 255, 255, 0.06); height: 44px; }
+.div-block-1344.listicle.compare2 { color: rgb(0, 0, 0); background-color: rgba(255, 255, 255, 0); border-bottom: 1px dashed rgb(201, 201, 201); flex-flow: column; justify-content: flex-end; align-items: center; height: auto; font-weight: 500; position: relative; }
+.div-block-1344.listicle.compare2.text { border-bottom-style: dashed; justify-content: center; align-items: flex-start; padding-top: 47px; padding-bottom: 20px; padding-left: 22px; }
+.div-block-1344.listicle.compare2.text.sp4 { border-top-style: none; padding-top: 28px; }
+.div-block-1344.listicle.compare2.text.sp4.white { background-color: rgb(255, 255, 255); }
+.div-block-1344.listicle.compare2.sp4 { background-color: rgb(255, 245, 245); border-top: 1px dashed rgb(201, 201, 201); }
+.comparison-product-w { gap: 8px; justify-content: flex-start; align-items: center; height: 32px; display: flex; }
+.listicle-note-w { background-color: rgb(255, 248, 241); border-left: 3px solid rgb(42, 37, 82); width: 100%; margin-bottom: 14px; padding: 10px; font-style: italic; }
+.conclusion-p, .conclusion-p.compare2 { margin-top: 16px; }
+.conclusion-p.compare2.bfcm.text-bfcm { margin-top: 4px; font-size: 23px; }
+.listicle-comparison-face { height: 24px; }
+.listicle-comparison-face.javvy { height: 28px; }
+.gift-icon { width: 12px; }
+.div-block-1351 { gap: 6px; display: flex; }
+.nav-new { flex-flow: column; width: 100%; display: flex; position: relative; }
+.lowest-price-p { color: rgb(42, 187, 72); text-transform: uppercase; font-size: 12px; font-weight: 700; }
+.lowest-price-p.black { color: rgb(0, 0, 0); font-size: 14px; }
+.image-213 { width: 40px; height: 40px; }
+.image-213.small { width: 24px; height: 24px; }
+.compare2-javvy-logo { width: 100%; max-height: 40px; }
+.compare2-javvy-logo.sp4 { margin-bottom: 20px; }
+.li-compare2-category-title-w { justify-content: center; align-items: center; height: 56px; display: flex; }
+.li-compare2-category-title-w.sp4 { color: var(--javy-red); }
+.compare2-p-javvy { font-size: 18px; font-weight: 500; }
+.compare2-p-javvy.small { opacity: 0.6; font-size: 12px; font-weight: 400; line-height: 1; }
+.compare2-p-javvy.small.sweeteners { opacity: 100; color: rgb(112, 109, 133); font-size: 10px; }
+.compare2-p-others { color: rgb(112, 109, 133); }
+.compare2-p-category { opacity: 1; font-size: 18px; font-weight: 500; }
+.nav-single { gap: 20px; color: rgb(255, 255, 255); background-color: rgb(42, 37, 82); justify-content: center; align-items: center; width: 100%; padding-top: 10px; padding-bottom: 10px; display: flex; }
+.nav-single.bfcm { background-color: rgb(0, 0, 0); background-image: none; background-size: auto; padding-top: 8px; padding-bottom: 8px; }
+.nav-single.bfcm { background-color: var(--secondary); background-image: none; background-size: auto; padding-top: 8px; padding-bottom: 8px; }
+.nav-single.bfcm.black { background-color: rgb(42, 37, 82); background-image: linear-gradient(90deg, rgb(18, 15, 31), rgb(33, 32, 37)); background-position: 0px 0px; }
+.nav-single.black { background-color: rgb(0, 0, 0); background-image: none; background-size: auto; padding-top: 8px; padding-bottom: 8px; }
+.nav-single.bfcm { background-color: rgb(61, 52, 139); background-image: none; background-size: auto; padding-top: 8px; padding-bottom: 8px; }
+.nav-july4-txt-w { flex-flow: column; justify-content: center; align-items: center; display: flex; }
+.nav-july4-txt-w.z-index-md { z-index: 2; position: relative; }
+.nav-july4-clock-w { gap: 1px; background-color: rgb(255, 255, 255); border-radius: 5px; justify-content: center; align-items: flex-start; width: 150px; padding: 5px 10px; display: flex; }
+.nav-july4-clock-w.z-index-md { z-index: 2; position: relative; }
+.nav-txt-1 { text-transform: uppercase; font-size: 18px; font-weight: 900; line-height: 1.2; }
+.nav-txt-1.new { text-transform: none; }
+.nav-txt-2 { text-transform: uppercase; font-weight: 700; display: block; }
+.nav-txt-2.mixed-typography { text-transform: none; font-weight: 400; }
+.nav-txt-2.bold-promo { font-weight: 800; }
+.nav-july4-clock-column { flex-flow: column; justify-content: center; align-items: center; display: flex; }
+.july4-clock-label { color: var(--primary-purple); text-transform: uppercase; font-family: Inter, sans-serif; font-size: 12px; font-weight: 500; line-height: 1.2; }
+.july4-clock-number { color: var(--primary-purple); font-family: Figtree, sans-serif; font-size: 22px; font-weight: 900; line-height: 1; }
+.july4-clock-divider { color: var(--primary-purple); padding-left: 0.15rem; padding-right: 0.15rem; font-weight: 800; }
+.listicle-link { font-size: 18px; font-weight: 700; text-decoration: underline; }
+.li-video-w { border-radius: 8px; flex-flow: column; width: 100%; display: flex; position: relative; overflow: hidden; }
+.li-video-w.sp3 { border-radius: 16px; }
+.li-video-embed-w { aspect-ratio: 1 / 1; border-radius: 15px 15px 0px 0px; width: 100%; max-width: 310px; margin-bottom: 20px; position: relative; overflow: hidden; }
+.li-video-embed-w.sp-3 { margin-bottom: 0px; }
+.reason12-w { text-align: center; flex-flow: column; justify-content: center; align-items: center; max-width: 610px; margin-left: auto; margin-right: auto; display: flex; }
+.div-block-1543 { gap: 4px; justify-content: flex-start; align-items: center; display: flex; }
+.link-emoji { font-size: 18px; font-weight: 700; }
+.listicle-row-new { gap: 1rem 3rem; grid-template-rows: auto auto; grid-template-columns: 0.75fr 1fr; grid-auto-columns: 1fr; align-items: center; display: grid; position: relative; }
+.listicle-paragraph-w { gap: 2rem; flex-flow: column; justify-content: center; align-items: flex-start; display: flex; }
+.lbh-blackfriday { color: rgb(255, 255, 255); font-size: 22px; }
+.bf-li-cta-badge { background-color: var(--secondary); text-transform: uppercase; border-radius: 10px; justify-content: center; align-items: center; height: 40px; padding: 8px 16px; font-size: 24px; font-weight: 900; display: flex; }
+.bf-li-cta-badge.bfcm-color { background-color: var(--black); }
+.bf-li-cta-badge.bfcm-color.black { background-image: linear-gradient(90deg, rgb(18, 15, 31), rgb(33, 32, 37)); }
+.first-video-wrapper { position: relative; top: -2px; overflow: hidden; }
+.first-video-wrapper.sp3 { top: 0px; }
+.li-sticky-bfcm { gap: 6px; justify-content: center; align-items: center; width: 100%; display: flex; }
+.flex-promo { gap: 4px; display: flex; }
+.text-span-143 { text-decoration: underline; }
+@media screen and (max-width: 991px) {
+h1 { font-size: 2.5rem; }
+h2 { font-size: 2.25rem; }
+.button.is-full.is-squared { border-radius: 8px; }
+.button.is-full.is-squared.bf { background-color: var(--primary-purple); box-shadow: none; color: rgb(255, 255, 255); background-image: none; border-style: none; }
+.padding-global { padding-left: 2rem; padding-right: 2rem; }
+.padding-global.m1 { padding-left: 1rem; padding-right: 1rem; }
+.heading-style-h1 { font-size: 2.5rem; }
+.heading-style-h2-3 { font-size: 2.25rem; }
+.heading-style-h2-3.listicle { font-size: 2rem; }
+.padding-bottom-43 { padding-top: 0px; padding-left: 0px; padding-right: 0px; }
+.padding-global-8.m-1 { padding-left: 1rem; padding-right: 1rem; }
+.sticky_bar { background-color: rgb(255, 255, 255); width: 100%; position: sticky; bottom: 0px; }
+.sticky_bar.is-active { z-index: 9999; display: block; }
+.sticky_bar.co71 { padding-bottom: 0.5rem; }
+.padding-section-cta { padding-top: 2.5rem; padding-bottom: 2.5rem; }
+.header_content { text-align: left; align-items: stretch; padding-top: 0px; padding-bottom: 1rem; }
+.header_content.left-aligned.sp-2 { padding-bottom: 1rem; }
+.listicle_reasons { row-gap: 3rem; }
+.button-text-2 { font-weight: 900; }
+.adv_cta_right_div { padding-top: 2rem; padding-left: 2rem; padding-right: 2rem; }
+.button-10.is-full.is-squared { border-radius: 8px; }
+.pc-compare-column-row.header.listicle.compare2.letscompare { padding-top: 47px; }
+.pc-compare-column-row.header.listicle.compare2.letscompare.sp4 { padding-top: 6px; }
+.div-block-1344 { padding-bottom: 2px; font-size: 14px; }
+.div-block-1344.listicle.compare2.text { padding-top: 6px; padding-bottom: 14px; }
+.lowest-price-p { color: rgb(42, 187, 72); text-align: left; text-transform: uppercase; margin-right: 18px; font-size: 14px; font-weight: 700; }
+.lowest-price-p.black { color: rgb(0, 0, 0); }
+.image-213 { width: 40px; height: 40px; }
+.image-213.small { width: 24px; height: 24px; }
+.compare2-javvy-logo { max-height: 34px; }
+.li-video-embed-w { max-width: 100%; }
+.reason12-w { max-width: 550px; }
+.listicle-row-new { gap: 2rem 3rem; grid-template-rows: auto auto auto; grid-template-columns: 1fr; grid-auto-flow: row; width: 100%; min-height: auto; }
+.listicle-paragraph-w { gap: 1.5rem; }
+.first-video-wrapper { top: 0px; }
+.li-sticky-bfcm { gap: 6px; justify-content: center; align-items: center; height: auto; margin-top: 8px; display: flex; }
+}
+@media screen and (max-width: 767px) {
+h1 { font-size: 2.25rem; }
+h2 { font-size: 2rem; }
+.padding-small { padding: 1.25rem; }
+.padding-global { padding-left: 2rem; padding-right: 2rem; }
+.heading-style-h1 { font-size: 2.25rem; }
+.heading-style-h1.listicle { font-size: 2.5rem; }
+.heading-style-h1.listicle.pc-sp1.smaller { font-size: 2.5rem; }
+.padding-section-small { padding-top: 2rem; padding-bottom: 2rem; }
+.countdown-hour { padding-left: 0.15rem; padding-right: 0.15rem; }
+.footer-content { row-gap: 1rem; flex-direction: column; align-items: center; padding-top: 1rem; padding-bottom: 1rem; }
+.heading-style-h2-3 { font-size: 2rem; }
+.heading-style-h2-3.listicle { font-size: 1.75rem; }
+.padding-bottom-43 { padding-top: 0px; padding-left: 0px; padding-right: 0px; }
+.padding-global-8 { padding-left: 2rem; padding-right: 2rem; }
+.padding-global-8.li-new { padding-left: 1.5rem; padding-right: 1.5rem; }
+.padding-section-cta { padding-top: 3rem; padding-bottom: 3rem; }
+.header_content { padding-top: 0px; }
+.adv_cta_div { flex-direction: column; }
+.adv_cta_right_div, .photo-wrappers { width: 100%; }
+.photo-wrappers.bfcm { padding-top: 20px; padding-bottom: 20px; }
+.pc-compare-column { width: 27%; }
+.pc-compare-column.points { width: 20%; }
+.pc-compare-column.points.listicle.compare2.text { width: 25%; padding-top: 36px; }
+.pc-compare-column.listicle { width: 20%; }
+.pc-compare-column.listicle.compare2-green { width: 25%; }
+.pc-compare-column.listicle.compare2 { width: 25%; padding-top: 34px; }
+.pc-compare-column-row { font-size: 13px; }
+.pc-compare-column-row.header.listicle { height: 36px; }
+.pc-compare-column-row.header.listicle.compare2.letscompare { padding-top: 36px; }
+.pc-compare-column-row.category { padding-left: 14px; }
+.pc-compare-column-row.grey { height: 44px; font-size: 0.9rem; }
+.pc-compare-column-row.grey.noborder.compare2 { height: 56px; }
+.div-block-1344 { flex-flow: column; font-size: 12px; }
+.div-block-1344.listicle { height: 36px; }
+.div-block-1344.listicle.compare2.text { padding-bottom: 14px; padding-left: 16px; }
+.div-block-1344.listicle.compare2.text.sp4 { padding-top: 18px; }
+.comparison-product-w { gap: 6px; position: relative; }
+.listicle-comparison-face { height: 20px; }
+.listicle-comparison-face.javvy { height: 22px; }
+.compare2-javvy-logo { max-height: 32px; }
+.li-compare2-category-title-w { text-align: center; max-width: 80px; padding-top: 6px; font-size: 13px; line-height: 1.3; }
+.compare2-p-javvy { font-size: 16px; }
+.compare2-p-javvy.small.sweeteners { font-size: 9px; }
+.compare2-p-category { font-size: 15px; }
+.li-video-w { border-radius: 8px; }
+.listicle-row-new { grid-template-columns: 1fr; }
+.lbh-blackfriday { font-size: 20px; }
+.first-video-wrapper { top: -17px; }
+}
+@media screen and (max-width: 479px) {
+h1 { font-size: 2rem; }
+h2 { font-size: 1.75rem; }
+.page-wrapper { position: relative; }
+.padding-global.m1 { padding-left: 1rem; padding-right: 1rem; position: static; }
+.heading-style-h1 { font-size: 2.25rem; }
+.heading-style-h1.listicle { font-size: 2rem; }
+.heading-style-h1.listicle.pc-sp1 { font-size: 7.75vw; }
+.heading-style-h1.listicle.pc-sp1.smaller { font-size: 7.75vw; }
+.heading-style-h1.listicle.pc-sp1.smaller.new-11 { font-size: 6.6vw; }
+.heading-style-h1.listicle.pc-sp1.smaller.new-11.ps02 { font-size: 7vw; }
+.footer { position: relative; }
+.divider-line { flex: 1 1 0%; width: 20%; }
+.heading-style-h2-3 { font-size: 2rem; line-height: 1.3; }
+.heading-style-h2-3.listicle { font-size: 1.75rem; }
+.padding-bottom-43 { padding-top: 0px; padding-left: 0px; padding-right: 0px; }
+.padding-global-8.m-1, .padding-global-8.li-new { padding-left: 1rem; padding-right: 1rem; }
+.sticky_bar.co71 { opacity: 0; transition: opacity 0.2s; display: block; }
+.sticky_bar.co71.is-active { opacity: 1; }
+.author-text { margin-left: 10px; font-size: 12px; line-height: 15px; }
+.padding-section-cta { padding-top: 2rem; padding-bottom: 2rem; }
+.adv_cta_heading-2 { text-align: center; font-size: 2rem; }
+.auth-left { padding-top: 0px; }
+.adv_cta_subtitle_text { text-align: center; }
+.adv_cta_div { border-style: none; border-radius: 8px; flex-direction: column; }
+.adv_cta_right_div { width: 100%; padding: 1rem; }
+.photo-wrappers { background-color: rgb(255, 255, 255); }
+.div-block-900 { width: 90%; }
+.p-listicle-summary.pc { font-size: 1rem; }
+.cta-content-2 { padding-top: 0px; padding-bottom: 0px; }
+.author-and-view-div { flex-wrap: wrap; }
+.potential-gif-embed { object-fit: cover; }
+.pccomparison-content.listicle.compare2 { margin-top: 8px; }
+.pccomparison-content.listicle.compare2.sp4 { margin-top: 0px; }
+.pc-compare-column.points.listicle.compare2.text { padding-top: 28px; }
+.pc-compare-column.points.listicle.compare2.text.sp4 { padding-top: 27px; }
+.pc-compare-column.listicle { flex: 1 1 0%; width: auto; padding-bottom: 0px; }
+.pc-compare-column.listicle.compare2-green { padding-top: 30px; }
+.pc-compare-column.listicle.compare2 { padding-top: 27px; }
+.pc-compare-column.listicle.compare2.sp4 { padding-top: 12px; }
+.pc-compare-column-row { text-align: center; padding-left: 4px; padding-right: 4px; font-size: 12px; }
+.pc-compare-column-row.header.listicle { padding-left: 0px; padding-right: 0px; }
+.pc-compare-column-row.header.listicle.compare2.letscompare { padding-top: 27px; }
+.pc-compare-column-row.header.listicle.compare2._3 { padding-left: 4px; }
+.pc-compare-column-row.header.listicle.compare2._3.sp4, .pc-compare-column-row.category { padding-left: 0px; }
+.pc-compare-column-row.category.compare2 { height: 44px; }
+.pc-compare-column-row.grey { font-size: 0.7rem; }
+.pc-compare-column-row.compare2-green { height: 44px; margin-left: 3px; margin-right: 3px; }
+.pc-compare-column-row._3 { height: 44px; padding-left: 8px; }
+.pc-compare-column-row.compare2 { height: 44px; }
+.div-block-1344 { height: auto; line-height: 1.2; }
+.div-block-1344.listicle.compare2.text { padding-bottom: 14px; padding-left: 0px; }
+.comparison-product-w { gap: 4px; }
+.listicle-note-w { margin-bottom: 10px; padding: 8px 8px 8px 6px; }
+.conclusion-p { margin-top: 12px; font-size: 14px; }
+.conclusion-p.compare2 { margin-top: 12px; }
+.conclusion-p.compare2.bfcm.text-bfcm { margin-top: 4px; font-size: 19px; }
+.listicle-comparison-face { height: 20px; }
+.lowest-price-p.black { font-size: 13px; }
+.lowest-price-p.black.nynm { font-size: 12px; }
+.image-213 { width: 34px; height: 34px; }
+.image-213.small { width: 18px; height: 18px; }
+.compare2-javvy-logo { width: 80%; }
+.li-compare2-category-title-w { height: 46px; font-size: 12px; }
+.li-compare2-category-title-w.sp4 { height: 50px; padding-top: 2px; font-size: 12px; }
+.compare2-p-javvy { text-align: center; font-size: 14px; }
+.compare2-p-javvy.small { font-size: 10px; }
+.compare2-p-javvy.small.sweeteners { font-size: 9px; }
+.compare2-p-others { text-align: center; }
+.compare2-p-category { font-size: 13px; }
+.paragraph-123 { padding-left: 4px; }
+.nav-single { gap: 8px; padding-left: 3%; padding-right: 3%; }
+.nav-single.bfcm { padding-left: 2%; padding-right: 2%; }
+.nav-single.bfcm { padding-left: 1%; padding-right: 1%; }
+.nav-single.bfcm.black { background-color: rgb(42, 37, 82); }
+.nav-single.black { padding-left: 2%; padding-right: 2%; }
+.nav-single.bfcm { padding-left: 1%; padding-right: 1%; }
+.nav-july4-txt-w.z-index-md { z-index: 999; margin-top: 3px; }
+.nav-july4-clock-w { gap: 2px; width: 122px; padding-left: 8px; padding-right: 8px; }
+.nav-txt-1 { font-size: 3.4vw; }
+.nav-txt-1.new { text-transform: none; }
+.nav-txt-2 { font-size: 3.25vw; }
+.july4-clock-label { font-size: 11px; }
+.july4-clock-number { font-size: 19px; font-weight: 900; }
+.july4-clock-divider { padding-left: 0px; padding-right: 0px; font-size: 14px; }
+.li-video-w { max-width: none; }
+.reason12-w { max-width: 360px; }
+.listicle-row-new { row-gap: 1.5rem; grid-template-columns: 1fr; }
+.lbh-blackfriday { font-size: 4vw; }
+.bf-li-cta-badge { height: 40px; font-size: 5vw; }
+.first-video-wrapper { top: -3px; }
+.flex-promo { gap: 5px; }
+.text-span-143 { text-decoration: underline; }
+}
+#w-node-e48bdb06-dcde-bc22-beea-6d8bea6fc285-4d5d54db { grid-area: span 2 / span 1 / span 2 / span 1; }
+#w-node-e48bdb06-dcde-bc22-beea-6d8bea6fc28f-4d5d54db { align-self: end; }
+#w-node-e48bdb06-dcde-bc22-beea-6d8bea6fc293-4d5d54db { align-self: start; }
+#w-node-_58ffd46f-a42d-061a-7eb2-ed9d4c0f80a3-4d5d54db { grid-area: span 2 / span 1 / span 2 / span 1; }
+#w-node-_9bd7a336-369f-fcb3-4cc8-7fce52ab8f8c-4d5d54db { align-self: end; }
+#w-node-_9bd7a336-369f-fcb3-4cc8-7fce52ab8f8f-4d5d54db { align-self: start; }
+#w-node-ecc4e522-a21d-983a-677a-0de35b4b3b2f-4d5d54db { grid-area: span 2 / span 1 / span 2 / span 1; }
+#w-node-c4428978-8bc7-f441-95c0-4ae2fc125b93-4d5d54db { align-self: end; }
+#w-node-c4428978-8bc7-f441-95c0-4ae2fc125b96-4d5d54db { align-self: start; }
+#w-node-bb251b1c-fb6c-dc1a-f4b9-624de6ed3009-4d5d54db { grid-area: span 2 / span 1 / span 2 / span 1; }
+#w-node-c8421eda-e23c-f9d0-27e1-304414bf95d1-4d5d54db { align-self: end; }
+#w-node-c8421eda-e23c-f9d0-27e1-304414bf95d5-4d5d54db { align-self: start; }
+#w-node-_45d9ad2a-9cee-d9d8-bca3-88b4d2f39ea5-4d5d54db { grid-area: span 2 / span 1 / span 2 / span 1; }
+#w-node-_4ba57e98-1cb3-7e2b-4d32-f9dd96481b40-4d5d54db { align-self: end; }
+#w-node-_4ba57e98-1cb3-7e2b-4d32-f9dd96481b44-4d5d54db { align-self: start; }
+#w-node-_447c8ce7-f8d8-c8d4-9f2b-d49f34270ed3-4d5d54db { grid-area: span 2 / span 1 / span 2 / span 1; }
+#w-node-_51930798-899f-6f7f-2f88-3c520072f795-4d5d54db { align-self: end; }
+#w-node-_51930798-899f-6f7f-2f88-3c520072f799-4d5d54db { align-self: start; }
+#w-node-_0b87320a-16b1-97ea-3f8b-8e80499a0b91-4d5d54db { grid-area: span 2 / span 1 / span 2 / span 1; }
+#w-node-_5b7ca766-d178-573a-954f-76adae158124-4d5d54db { align-self: end; }
+#w-node-_5b7ca766-d178-573a-954f-76adae158128-4d5d54db { align-self: start; }
+#w-node-a09773bc-9bbf-19e1-8e0f-b10ad67c7413-4d5d54db { grid-area: span 2 / span 1 / span 2 / span 1; }
+#w-node-_2b3c4f0d-2181-3111-4f26-994770f8c3a0-4d5d54db { align-self: end; }
+#w-node-_2b3c4f0d-2181-3111-4f26-994770f8c3a4-4d5d54db { align-self: start; }
+#w-node-bdba3cf7-1857-6fd7-e092-99a2a24c7f01-4d5d54db { grid-area: span 2 / span 1 / span 2 / span 1; }
+#w-node-_30d5c1f8-71c9-9c06-117a-e00294c368f3-4d5d54db { align-self: end; }
+#w-node-_30d5c1f8-71c9-9c06-117a-e00294c368f7-4d5d54db { align-self: start; }
+#w-node-_43ab74f9-b096-8cc8-5010-b304073cb469-4d5d54db { grid-area: span 2 / span 1 / span 2 / span 1; }
+#w-node-_63fb455d-a61c-dd99-bafc-2006adc84071-4d5d54db { align-self: end; }
+#w-node-_63fb455d-a61c-dd99-bafc-2006adc84075-4d5d54db { align-self: start; }
+@media screen and (max-width: 991px) {
+#w-node-e48bdb06-dcde-bc22-beea-6d8bea6fc28f-4d5d54db, #w-node-_9bd7a336-369f-fcb3-4cc8-7fce52ab8f8c-4d5d54db, #w-node-c4428978-8bc7-f441-95c0-4ae2fc125b93-4d5d54db, #w-node-c8421eda-e23c-f9d0-27e1-304414bf95d1-4d5d54db, #w-node-_4ba57e98-1cb3-7e2b-4d32-f9dd96481b40-4d5d54db, #w-node-_51930798-899f-6f7f-2f88-3c520072f795-4d5d54db, #w-node-_5b7ca766-d178-573a-954f-76adae158124-4d5d54db, #w-node-_2b3c4f0d-2181-3111-4f26-994770f8c3a0-4d5d54db, #w-node-_30d5c1f8-71c9-9c06-117a-e00294c368f3-4d5d54db, #w-node-_63fb455d-a61c-dd99-bafc-2006adc84071-4d5d54db { order: -9999; }
+}
+@media screen and (max-width: 767px) {
+#w-node-d3829d43-9f3c-f8b7-6dc6-4752d5470b2c-d5470b1c { grid-area: 4 / 1 / 5 / 2; }
+}
+body { -webkit-font-smoothing: antialiased; text-rendering: optimizelegibility; }
+[tabindex]:focus-visible, input[type="file"]:focus-visible { outline: rgb(77, 101, 255) solid 0.125rem; outline-offset: 0.125rem; }
+.container-small { margin-right: auto !important; margin-left: auto !important; }
+::selection { color: rgb(255, 255, 255); background: rgb(42, 37, 82); }
+:root { --grey-50: 249, 250, 251; --grey-500: 107, 114, 128; --blue-800: 42, 37, 82; }
+/* ---- media placeholders: template only. .ph = the slot (right size), .ph-ref = the ORIGINAL media
+   hotlinked from the source page as a visual reference, .ph-t/.ph-d = what goes there. Swap every .ph for
+   your real <img>/<video> and delete this block (see notes). Hover/tap a slot for its full caption. ---- */
+.ph { position: relative; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; align-items: flex-start; gap: 6px; padding: 8px; box-sizing: border-box; overflow: hidden; background: repeating-linear-gradient(45deg, #eef1ea 0 12px, #e3e8dd 12px 24px); outline: 2px dashed #9aa58f; outline-offset: -2px; color: #3d4a33; font: 11px/1.35 ui-monospace, Menlo, monospace; letter-spacing: 0; text-align: left; }
+.ph-ref { position: absolute; inset: 0; width: 100%; height: 100%; max-width: none; object-fit: cover; border-radius: inherit; }
+.ph:has(.ph-ref) { background: none; }
+.ph-t, .ph-d { position: absolute; z-index: 1; left: 8px; transition: opacity .2s; }
+.ph-t { top: 8px; right: 8px; width: fit-content; max-width: calc(100% - 16px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-size: 10px; font-weight: 700; background: #2b3920; color: #fff; padding: 2px 6px; border-radius: 4px; }
+.ph-d { right: 8px; bottom: 8px; font-size: 10px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; box-sizing: content-box; max-height: 2.7em; overflow: hidden; background: rgba(255, 255, 255, .9) padding-box; padding: 0 6px; border: 4px solid rgba(255, 255, 255, .9); border-width: 4px 0; border-radius: 6px; }
+.ph:hover .ph-t { white-space: normal; }
+.ph:hover .ph-d { -webkit-line-clamp: unset; max-height: none; }
+.auth-image.ph, .compare2-javvy-logo.ph { padding: 0; gap: 0; outline-width: 1px; }
+.auth-image.ph .ph-t, .auth-image.ph .ph-d, .compare2-javvy-logo.ph .ph-d { display: none; }
+.compare2-javvy-logo.ph { width: 60px; height: auto; }
+.image-89.ph { height: auto; }
+.cta-content-2:has(.image-89.ph), .cta-content-2:has(.image-89.ph) .text-align-center, .cta-content-2:has(.image-89.ph) .max-width-medium, .adv_cta_div:has(.image-89.ph) { width: 100%; } /* the real image's intrinsic width does this: without it the offer card shrinks on desktop */
+
+</style>
+</head>
+<body><div class="page-wrapper"><div class="sticky-headers"><div class="nav-new"><div class="nav-single bfcm black"><div class="nav-july4-txt-w z-index-md"><div class="nav-txt-1 new span-gold">✨ BLACK FRIDAY EARLY ACCESS ✨</div><div class="flex-promo"><div class="nav-txt-2 mixed-typography">up to</div><div class="nav-txt-2 bold-promo span-gold">58% OFF</div><div class="nav-txt-2 mixed-typography">with</div><div class="nav-txt-2 bold-promo">FREE GIFTS</div></div></div><div class="nav-july4-clock-w z-index-md" id="js-clock"><div class="nav-july4-clock-column"><div class="july4-clock-number" id="js-clock-hours">02</div><div class="july4-clock-label">Hrs</div></div><div class="july4-clock-divider">:</div><div class="nav-july4-clock-column"><div class="july4-clock-number" id="js-clock-minutes">07</div><div class="july4-clock-label">min</div></div><div class="july4-clock-divider">:</div><div class="nav-july4-clock-column"><div class="july4-clock-number" id="js-clock-seconds">45</div><div class="july4-clock-label">sec</div></div></div></div></div></div><main class="main-wrapper barba-container"><div class="listicle_header"><div class="padding-global m1"><div class="container-tiny"><div class="padding-section-small padding-bottom-none"><div class="header_content left-aligned sp-2"><div class="ll-split-test ll-split-choice"><h1 class="heading-style-h1 listicle pc-sp1 smaller new-11 ps02" id="headline-listicle">11 Reasons Why This High-Protein Iced Coffee is the #1 Trending Drink for Fall 2026<br/></h1><p class="conclusion-p compare2 bfcm text-bfcm">and how you can lock in a massive <span class="text-span-143">Black Friday deal early!</span></p></div><div class="padding-bottom-43 padding-small"></div><div class="author-and-view-div"><div class="auth-left"><div class="auth-image ph" data-ph="avatar" style="aspect-ratio:1/1"><img alt="" class="ph-ref" loading="lazy" src="https://assets.javvycoffee.com/66e0a9b786f105ff696cfcb1_ps02-avi.webp"/><span class="ph-t">IMG 1:1</span><span class="ph-d">Author avatar: the author holding our product, smiling</span></div><div class="author-text">By<strong class="bold-text-18"> </strong><span class="text-span-10"><strong>Jade M.</strong><br/></span>Last Updated <span class="last-updated" data-date="updated" id="date-output">Oct 23, 2026</span><br/></div></div></div><div class="padding-bottom-43 padding-small"></div><div class="listicle-note-w"><div class="p-listicle-summary pc"><strong>"Read this</strong> BEFORE your next coffee run!"<br/></div></div><div class="pccomparison-content listicle compare2 sp4"><div class="pc-compare-column points listicle compare2 text sp4"><div class="pc-compare-column-row header listicle compare2 letscompare sp4"><div class="div-block-1344 listicle compare2 text sp4 white"></div></div><div class="pc-compare-column-row category compare2"><div class="comparison-product-w"><p class="compare2-p-emoji">📋</p><p class="compare2-p-category">Calories</p></div></div><div class="pc-compare-column-row category compare2"><div class="comparison-product-w"><p class="compare2-p-emoji">💪</p><p class="compare2-p-category">Protein</p></div></div><div class="pc-compare-column-row category compare2"><div class="comparison-product-w"><p class="compare2-p-emoji">🥄</p><p class="compare2-p-category">Sugar</p></div></div><div class="pc-compare-column-row category noborder compare2"><div class="comparison-product-w"><p class="compare2-p-emoji">💰</p><p class="compare2-p-category">Price</p></div></div></div><div class="pc-compare-column listicle compare2-green sp4"><div class="pc-compare-column-row compare2-green"><div class="div-block-1344"><div class="compare2-javvy-logo sp4 ph" data-ph="image" style="aspect-ratio:310/148"><img alt="" class="ph-ref" loading="lazy" src="https://assets.javvycoffee.com/673f5ae58cfb1d06dd96a4e3_javvy-blu.svg"/><span class="ph-t">LOGO</span><span class="ph-d">Our brand logo, dark on transparent</span></div></div></div><div class="pc-compare-column-row compare2-green scooptxt"><p class="compare2-p-javvy">120cal</p><p class="compare2-p-javvy small">in 2 scoops</p></div><div class="pc-compare-column-row compare2-green scooptxt"><p class="compare2-p-javvy">20g</p><p class="compare2-p-javvy small">in 2 scoops</p></div><div class="pc-compare-column-row compare2-green"><p class="compare2-p-javvy">&lt;1g</p></div><div class="pc-compare-column-row compare2-green noborder"><img alt="" class="listicle-comparison-face javvy" loading="lazy" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgY2xpcC1wYXRoPSJ1cmwoI2NsaXAwXzE1OTlfNTI3KSI+CjxnIGNsaXAtcGF0aD0idXJsKCNjbGlwMV8xNTk5XzUyNykiPgo8ZyBjbGlwLXBhdGg9InVybCgjY2xpcDJfMTU5OV81MjcpIj4KPHBhdGggZD0iTTEwLjAwMDMgMTguMzMzNEMxNC42MDI3IDE4LjMzMzQgMTguMzMzNyAxNC42MDI0IDE4LjMzMzcgMTAuMDAwMUMxOC4zMzM3IDUuMzk3NzEgMTQuNjAyNyAxLjY2Njc1IDEwLjAwMDMgMS42NjY3NUM1LjM5Nzk1IDEuNjY2NzUgMS42NjY5OSA1LjM5NzcxIDEuNjY2OTkgMTAuMDAwMUMxLjY2Njk5IDE0LjYwMjQgNS4zOTc5NSAxOC4zMzM0IDEwLjAwMDMgMTguMzMzNFoiIHN0cm9rZT0iIzY3QTUxNiIgc3Ryb2tlLXdpZHRoPSIxLjY2NjY3IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTYuNjY2OTkgMTEuNjY2N0M2LjY2Njk5IDExLjY2NjcgNy45MTY5OSAxMy4zMzM0IDEwLjAwMDMgMTMuMzMzNEMxMi4wODM3IDEzLjMzMzQgMTMuMzMzNyAxMS42NjY3IDEzLjMzMzcgMTEuNjY2NyIgc3Ryb2tlPSIjNjdBNTE2IiBzdHJva2Utd2lkdGg9IjEuNjY2NjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNNy41IDcuNUg3LjUwODMzIiBzdHJva2U9IiM2N0E1MTYiIHN0cm9rZS13aWR0aD0iMS42NjY2NyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjxwYXRoIGQ9Ik0xMi41IDcuNUgxMi41MDgzIiBzdHJva2U9IiM2N0E1MTYiIHN0cm9rZS13aWR0aD0iMS42NjY2NyIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIi8+CjwvZz4KPC9nPgo8L2c+CjxkZWZzPgo8Y2xpcFBhdGggaWQ9ImNsaXAwXzE1OTlfNTI3Ij4KPHJlY3Qgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiBmaWxsPSJ3aGl0ZSIvPgo8L2NsaXBQYXRoPgo8Y2xpcFBhdGggaWQ9ImNsaXAxXzE1OTlfNTI3Ij4KPHJlY3Qgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiBmaWxsPSJ3aGl0ZSIvPgo8L2NsaXBQYXRoPgo8Y2xpcFBhdGggaWQ9ImNsaXAyXzE1OTlfNTI3Ij4KPHJlY3Qgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiBmaWxsPSJ3aGl0ZSIvPgo8L2NsaXBQYXRoPgo8L2RlZnM+Cjwvc3ZnPgo="/></div></div><div class="pc-compare-column listicle compare2 sp4"><div class="pc-compare-column-row header listicle compare2 _3 sp4"><div class="div-block-1344 listicle compare2 sp4"><div class="li-compare2-category-title-w sp4"><p class="paragraph-123">Mainstream Coffees</p></div></div></div><div class="pc-compare-column-row _3"><p class="compare2-p-others">150-400cal</p></div><div class="pc-compare-column-row _3"><p class="compare2-p-others">2-12g</p></div><div class="pc-compare-column-row _3"><p class="compare2-p-others">20-50g</p></div><div class="pc-compare-column-row grey noborder compare2 _3"><img alt="" class="listicle-comparison-face" loading="lazy" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPG1hc2sgaWQ9Im1hc2swXzE1OTlfNTQ5IiBzdHlsZT0ibWFzay10eXBlOmx1bWluYW5jZSIgbWFza1VuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeD0iMCIgeT0iMCIgd2lkdGg9IjE4IiBoZWlnaHQ9IjE4Ij4KPHBhdGggZD0iTTE4IDBIMFYxOEgxOFYwWiIgZmlsbD0id2hpdGUiLz4KPC9tYXNrPgo8ZyBtYXNrPSJ1cmwoI21hc2swXzE1OTlfNTQ5KSI+CjxwYXRoIGQ9Ik05IDE4QzEzLjk3MDYgMTggMTggMTMuOTcwNiAxOCA5QzE4IDQuMDI5NDQgMTMuOTcwNiAwIDkgMEM0LjAyOTQ0IDAgMCA0LjAyOTQ0IDAgOUMwIDEzLjk3MDYgNC4wMjk0NCAxOCA5IDE4WiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTkuMDAwOTggMTYuNTAwMkMxMy4xNDMxIDE2LjUwMDIgMTYuNTAxIDEzLjE0MjMgMTYuNTAxIDkuMDAwMjRDMTYuNTAxIDQuODU4MTEgMTMuMTQzMSAxLjUwMDI0IDkuMDAwOTggMS41MDAyNEM0Ljg1ODg0IDEuNTAwMjQgMS41MDA5OCA0Ljg1ODExIDEuNTAwOTggOS4wMDAyNEMxLjUwMDk4IDEzLjE0MjMgNC44NTg4NCAxNi41MDAyIDkuMDAwOTggMTYuNTAwMloiIHN0cm9rZT0iIzcwNkQ4NSIgc3Ryb2tlLXdpZHRoPSIxLjY2NjY3IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTEyLjAwMSAxMi4wMDAyQzEyLjAwMSAxMi4wMDAyIDEwLjg3NiAxMC41MDAyIDkuMDAwOTggMTAuNTAwMkM3LjEyNTk4IDEwLjUwMDIgNi4wMDA5OCAxMi4wMDAyIDYuMDAwOTggMTIuMDAwMiIgc3Ryb2tlPSIjNzA2RDg1IiBzdHJva2Utd2lkdGg9IjEuNjY2NjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNNi43NSA2Ljc1SDYuNzU4MzMiIHN0cm9rZT0iIzcwNkQ4NSIgc3Ryb2tlLXdpZHRoPSIxLjY2NjY3IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTExLjI1IDYuNzVIMTEuMjU4MyIgc3Ryb2tlPSIjNzA2RDg1IiBzdHJva2Utd2lkdGg9IjEuNjY2NjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L2c+Cjwvc3ZnPgo="/></div></div><div class="pc-compare-column listicle compare2 sp4"><div class="pc-compare-column-row header listicle compare2"><div class="div-block-1344 listicle compare2 sp4"><div class="li-compare2-category-title-w sp4"><p>Protein Drinks</p></div></div></div><div class="pc-compare-column-row compare2"><p class="compare2-p-others">160-200cal</p></div><div class="pc-compare-column-row compare2"><p class="compare2-p-others">20g</p></div><div class="pc-compare-column-row compare2 small-txt"><p class="compare2-p-others">5g</p><p class="compare2-p-javvy small sweeteners">or artificial sweeteners</p></div><div class="pc-compare-column-row grey noborder compare2"><img alt="" class="listicle-comparison-face" loading="lazy" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPG1hc2sgaWQ9Im1hc2swXzE1OTlfNTQ5IiBzdHlsZT0ibWFzay10eXBlOmx1bWluYW5jZSIgbWFza1VuaXRzPSJ1c2VyU3BhY2VPblVzZSIgeD0iMCIgeT0iMCIgd2lkdGg9IjE4IiBoZWlnaHQ9IjE4Ij4KPHBhdGggZD0iTTE4IDBIMFYxOEgxOFYwWiIgZmlsbD0id2hpdGUiLz4KPC9tYXNrPgo8ZyBtYXNrPSJ1cmwoI21hc2swXzE1OTlfNTQ5KSI+CjxwYXRoIGQ9Ik05IDE4QzEzLjk3MDYgMTggMTggMTMuOTcwNiAxOCA5QzE4IDQuMDI5NDQgMTMuOTcwNiAwIDkgMEM0LjAyOTQ0IDAgMCA0LjAyOTQ0IDAgOUMwIDEzLjk3MDYgNC4wMjk0NCAxOCA5IDE4WiIgZmlsbD0id2hpdGUiLz4KPHBhdGggZD0iTTkuMDAwOTggMTYuNTAwMkMxMy4xNDMxIDE2LjUwMDIgMTYuNTAxIDEzLjE0MjMgMTYuNTAxIDkuMDAwMjRDMTYuNTAxIDQuODU4MTEgMTMuMTQzMSAxLjUwMDI0IDkuMDAwOTggMS41MDAyNEM0Ljg1ODg0IDEuNTAwMjQgMS41MDA5OCA0Ljg1ODExIDEuNTAwOTggOS4wMDAyNEMxLjUwMDk4IDEzLjE0MjMgNC44NTg4NCAxNi41MDAyIDkuMDAwOTggMTYuNTAwMloiIHN0cm9rZT0iIzcwNkQ4NSIgc3Ryb2tlLXdpZHRoPSIxLjY2NjY3IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTEyLjAwMSAxMi4wMDAyQzEyLjAwMSAxMi4wMDAyIDEwLjg3NiAxMC41MDAyIDkuMDAwOTggMTAuNTAwMkM3LjEyNTk4IDEwLjUwMDIgNi4wMDA5OCAxMi4wMDAyIDYuMDAwOTggMTIuMDAwMiIgc3Ryb2tlPSIjNzA2RDg1IiBzdHJva2Utd2lkdGg9IjEuNjY2NjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8cGF0aCBkPSJNNi43NSA2Ljc1SDYuNzU4MzMiIHN0cm9rZT0iIzcwNkQ4NSIgc3Ryb2tlLXdpZHRoPSIxLjY2NjY3IiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiLz4KPHBhdGggZD0iTTExLjI1IDYuNzVIMTEuMjU4MyIgc3Ryb2tlPSIjNzA2RDg1IiBzdHJva2Utd2lkdGg9IjEuNjY2NjciIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPgo8L2c+Cjwvc3ZnPgo="/></div></div></div><p class="conclusion-p compare2"><strong>TLDR: </strong>Drinking Javvy Protein Coffee has 11+ life changing benefits 👇</p></div></div></div></div></div><section class="section_listicle_1" id="start-reading"><div class="padding-global m1"><div class="container-tiny"><div class="padding-section-small"><div class="listicle_reasons"><div class="w-layout-grid listicle-row-new"><div id="w-node-e48bdb06-dcde-bc22-beea-6d8bea6fc285-4d5d54db"><div class="li-video-w sp3"><div class="first-video-wrapper sp3"><div class="li-video-embed-w sp-3"><div class="potential-gif-embed ph" data-ph="image" style="aspect-ratio:1/1"><img alt="" class="ph-ref" loading="lazy" src="https://assets.javvycoffee.com/6ad28026183a89c79fe9aa64_play_480p.mp4.webp"/><span class="ph-t">IMG 1:1</span><span class="ph-d">Benefit 1: styled packshot of our product + the result it gives, seasonal props around it</span></div></div></div></div></div><h2 class="heading-style-h2-3 listicle" id="w-node-e48bdb06-dcde-bc22-beea-6d8bea6fc28f-4d5d54db">1. Upgrades your coffee with more protein, and 0g of added sugar<br/></h2><div class="p-listicle" id="w-node-e48bdb06-dcde-bc22-beea-6d8bea6fc293-4d5d54db">Upgrading your coffee is the easiest way to hit your health and wellness goals this Holiday Season! Keep all of the flavor and indulgence but drop the sugar bombs and artificial junk. Finally an iced coffee that works with your body, not against it — so you feel your best even when the calendar fills up.*<br/></div></div><div class="w-layout-grid listicle-row-new"><div id="w-node-_58ffd46f-a42d-061a-7eb2-ed9d4c0f80a3-4d5d54db"><div class="li-video-w sp3"><div class="first-video-wrapper sp3"><div class="li-video-embed-w sp-3"><div class="potential-gif-embed ph" data-ph="image" style="aspect-ratio:1/1"><img alt="" class="ph-ref" loading="lazy" src="https://assets.javvycoffee.com/6ad977573f8092ef3862b24b_6ad295cd68244e79f9ea45fc_play_480p.mp4.webp.webp"/><span class="ph-t">IMG 1:1</span><span class="ph-d">Benefit 2: two friends sharing a moment, our product in the scene (the craving / social pain)</span></div></div></div></div></div><h2 class="heading-style-h2-3 listicle" id="w-node-_9bd7a336-369f-fcb3-4cc8-7fce52ab8f8c-4d5d54db">2. Beats the sugar cravings to keep you feeling satisfied<br/></h2><div class="p-listicle" id="w-node-_9bd7a336-369f-fcb3-4cc8-7fce52ab8f8f-4d5d54db">Cookie trays, candy canes and peppermint lattes are everywhere this time of year. The protein and caffeine in Javvy keep you full and satisfied, so you’re not reaching for every sweet thing within your reach.* And with <strong>0g of added sugar in every scoop,</strong> your coffee isn’t adding to the pile.<br/></div></div><div class="w-layout-grid listicle-row-new"><div id="w-node-ecc4e522-a21d-983a-677a-0de35b4b3b2f-4d5d54db"><div class="li-video-w sp3"><div class="first-video-wrapper sp3"><div class="li-video-embed-w sp-3"><div class="potential-gif-embed ph" data-ph="image" style="aspect-ratio:1/1"><img alt="" class="ph-ref" loading="lazy" src="https://assets.javvycoffee.com/6ad9775595376d96432806ee_6ad2802491615388cefced00_Image.webp.webp"/><span class="ph-t">IMG 1:1</span><span class="ph-d">Benefit 3: customer relaxed at home using our product (lifestyle)</span></div></div></div></div></div><h2 class="heading-style-h2-3 listicle" id="w-node-c4428978-8bc7-f441-95c0-4ae2fc125b93-4d5d54db">3. It’s packed with other functional nutrition ingredients<br/></h2><div class="listicle-paragraph-w"><div class="p-listicle" id="w-node-c4428978-8bc7-f441-95c0-4ae2fc125b96-4d5d54db">The holiday season is a peak period of time to improve your nutritional needs. Javvy has prebiotics inside and no artificial junk, to support smoother digestion and a happy gut.* It’s a delicious way to show your digestive system and body some love this season.<br/></div><div class="div-block-1543"><p class="link-emoji">👉</p><a class="listicle-link" href="https://offer.dinosaurized.com/OFFER-SLUG"><strong>Better Digestion Support Starts Here</strong></a></div></div></div><div class="w-layout-grid listicle-row-new"><div id="w-node-bb251b1c-fb6c-dc1a-f4b9-624de6ed3009-4d5d54db"><div class="li-video-w sp3"><div class="first-video-wrapper sp3"><div class="li-video-embed-w sp-3"><div class="potential-gif-embed ph" data-ph="image" style="aspect-ratio:1/1"><img alt="" class="ph-ref" loading="lazy" src="https://assets.javvycoffee.com/6ad280265d311b8b8bfae728_Image-1.webp"/><span class="ph-t">IMG 1:1</span><span class="ph-d">Benefit 4: close-up of our product in a hand (the detail that proves the claim)</span></div></div></div></div></div><h2 class="heading-style-h2-3 listicle" id="w-node-c8421eda-e23c-f9d0-27e1-304414bf95d1-4d5d54db">4. It tastes like your favorite holiday coffee, not a protein shake<br/></h2><div class="listicle-paragraph-w"><div class="p-listicle" id="w-node-c8421eda-e23c-f9d0-27e1-304414bf95d5-4d5d54db">While other brands flavor their protein to taste like coffee, we use 100% real coffee! You get all of the flavor, texture and aroma of your favorite café order — in holiday flavors like Peppermint Mocha and Cookie Butter. No more chalky, gritty or thick protein shakes!<br/></div><div class="div-block-1543"><p class="link-emoji">👉</p><a class="listicle-link" href="https://offer.dinosaurized.com/OFFER-SLUG">Enjoy Real Coffee Taste, Every Time</a></div></div></div><div class="w-layout-grid listicle-row-new"><div id="w-node-_45d9ad2a-9cee-d9d8-bca3-88b4d2f39ea5-4d5d54db"><div class="li-video-w sp3"><div class="first-video-wrapper sp3"><div class="li-video-embed-w sp-3"><div class="potential-gif-embed ph" data-ph="image" style="aspect-ratio:1/1"><img alt="" class="ph-ref" loading="lazy" src="https://assets.javvycoffee.com/6ad28028eb7f76e9bd75d28d_Image-2.webp"/><span class="ph-t">IMG 1:1</span><span class="ph-d">Benefit 5: customer selfie outdoors holding our product (on the go, saves money)</span></div></div></div></div></div><h2 class="heading-style-h2-3 listicle" id="w-node-_4ba57e98-1cb3-7e2b-4d32-f9dd96481b40-4d5d54db">5. It replaces your coffee-shop habit and saves you $1,000s for the holidays<br/></h2><div class="listicle-paragraph-w"><div class="p-listicle" id="w-node-_4ba57e98-1cb3-7e2b-4d32-f9dd96481b44-4d5d54db">A daily café drink adds up fast — and the holiday menu costs even more. Skip the lines, save time and cash, and put that money toward gifts instead. Javvy is as low as $1.20 a coffee.<br/></div><div class="div-block-1543"><p class="link-emoji">👉</p><a class="listicle-link" href="https://offer.dinosaurized.com/OFFER-SLUG">Start Saving With Every Cup</a></div></div></div><div class="w-layout-grid listicle-row-new"><div id="w-node-_447c8ce7-f8d8-c8d4-9f2b-d49f34270ed3-4d5d54db"><div class="li-video-w sp3"><div class="first-video-wrapper sp3"><div class="li-video-embed-w sp-3"><div class="potential-gif-embed ph" data-ph="image" style="aspect-ratio:1/1"><img alt="" class="ph-ref" loading="lazy" src="https://assets.javvycoffee.com/6ad28025e1b5ac8e73e3622e_Image-3.webp"/><span class="ph-t">IMG 1:1</span><span class="ph-d">Benefit 6: hand preparing / setting up our product at home, pack next to it (how easy)</span></div></div></div></div></div><h2 class="heading-style-h2-3 listicle" id="w-node-_51930798-899f-6f7f-2f88-3c520072f795-4d5d54db">6. You can skip the Holiday lines, and have your iced coffee in seconds<br/></h2><div class="listicle-paragraph-w"><div class="p-listicle" id="w-node-_51930798-899f-6f7f-2f88-3c520072f799-4d5d54db">Make your favorite coffees right from home with one scoop mixed into water or your favorite milk (or milk alternative). Make it yours with any of your favorite add-ins — we suggest our protein creamer of course!<br/></div><div class="div-block-1543"><p class="link-emoji">👉</p><a class="listicle-link" href="https://offer.dinosaurized.com/OFFER-SLUG">Skip the Line, Brew at Home or Anywhere</a></div></div></div><div class="w-layout-grid listicle-row-new"><div id="w-node-_0b87320a-16b1-97ea-3f8b-8e80499a0b91-4d5d54db"><div class="li-video-w sp3"><div class="first-video-wrapper sp3"><div class="li-video-embed-w sp-3"><div class="potential-gif-embed ph" data-ph="image" style="aspect-ratio:1/1"><img alt="" class="ph-ref" loading="lazy" src="https://assets.javvycoffee.com/6ad2802466b628366b0bd797_Image-4.webp"/><span class="ph-t">IMG 1:1</span><span class="ph-d">Benefit 7: customer at a desk, happy, our product in hand (everyday use)</span></div></div></div></div></div><h2 class="heading-style-h2-3 listicle" id="w-node-_5b7ca766-d178-573a-954f-76adae158124-4d5d54db">7. You can avoid the mid-morning crash during the busiest weeks of the year<br/></h2><div class="listicle-paragraph-w"><div class="p-listicle" id="w-node-_5b7ca766-d178-573a-954f-76adae158128-4d5d54db">The caffeine gives you an initial boost, while the protein keeps your energy steady. Not to mention no more sugar rush. No jitters, no crash — just clear focus from your first meeting to the last gift you wrap.<br/></div><div class="div-block-1543"><p class="link-emoji">👉</p><a class="listicle-link" href="https://offer.dinosaurized.com/OFFER-SLUG">Stay Clear, Stay Focused</a></div></div></div><div class="w-layout-grid listicle-row-new"><div id="w-node-a09773bc-9bbf-19e1-8e0f-b10ad67c7413-4d5d54db"><div class="li-video-w sp3"><div class="first-video-wrapper sp3"><div class="li-video-embed-w sp-3"><div class="potential-gif-embed ph" data-ph="image" style="aspect-ratio:1/1"><img alt="" class="ph-ref" loading="lazy" src="https://assets.javvycoffee.com/6ad295cf3c8b9a2ff3525dc0_Image.webp"/><span class="ph-t">IMG 1:1</span><span class="ph-d">Benefit 8: flat lay of every variant / color / flavor we sell (the range)</span></div></div></div></div></div><h2 class="heading-style-h2-3 listicle" id="w-node-_2b3c4f0d-2181-3111-4f26-994770f8c3a0-4d5d54db">8. You’ll never run out of fun guilt-free flavors<br/></h2><div class="listicle-paragraph-w"><div class="p-listicle" id="w-node-_2b3c4f0d-2181-3111-4f26-994770f8c3a4-4d5d54db">You can keep up your health and wellness goals when you find something that you love. Javvy always has new flavors to try so there’s always something new to satisfy your cravings!<br/></div><div class="div-block-1543"><p class="link-emoji">👉</p><a class="listicle-link" href="https://offer.dinosaurized.com/OFFER-SLUG">Check out all of the tasty flavors</a></div></div></div><div class="w-layout-grid listicle-row-new"><div id="w-node-bdba3cf7-1857-6fd7-e092-99a2a24c7f01-4d5d54db"><div class="li-video-w sp3"><div class="first-video-wrapper sp3"><div class="li-video-embed-w sp-3"><div class="potential-gif-embed ph" data-ph="image" style="aspect-ratio:1/1"><img alt="" class="ph-ref" loading="lazy" src="https://assets.javvycoffee.com/6ad7cbde94b62b3ddfabfa24_ps02-9.webp"/><span class="ph-t">IMG 1:1</span><span class="ph-d">Benefit 9: our product + a money-back guarantee seal (120 DAY, never 30)</span></div></div></div></div></div><h2 class="heading-style-h2-3 listicle" id="w-node-_30d5c1f8-71c9-9c06-117a-e00294c368f3-4d5d54db">9. Great reviews and a 30-Day Money-Back Guarantee<br/></h2><div class="listicle-paragraph-w"><div class="p-listicle" id="w-node-_30d5c1f8-71c9-9c06-117a-e00294c368f7-4d5d54db">It’s hard to change coffee habits, especially during the holidays. We’re so confident you’ll love Javvy that we back it with a 30-Day Money-Back Guarantee. Don’t love it? Let us know and we’ll happily refund your purchase. Full refund, no hoops.<br/></div><div class="div-block-1543"><p class="link-emoji">👉</p><a class="listicle-link" href="https://offer.dinosaurized.com/OFFER-SLUG">Start Your Risk-Free Coffee Journey</a></div></div></div><div class="w-layout-grid listicle-row-new"><div id="w-node-_43ab74f9-b096-8cc8-5010-b304073cb469-4d5d54db"><div class="li-video-w sp3"><div class="first-video-wrapper sp3"><div class="li-video-embed-w sp-3"><div class="potential-gif-embed ph" data-ph="image" style="aspect-ratio:1/1"><img alt="" class="ph-ref" loading="lazy" src="https://assets.javvycoffee.com/6ad7cbf059e67e0af86cdff4_ps02-10.webp"/><span class="ph-t">IMG 1:1</span><span class="ph-d">Benefit 10: grid of 6 customer photos with our product + a "happy customers" banner</span></div></div></div></div></div><h2 class="heading-style-h2-3 listicle" id="w-node-_63fb455d-a61c-dd99-bafc-2006adc84071-4d5d54db">10. Join the community that’s made over 100 MILLION coffees<br/></h2><div class="listicle-paragraph-w"><div class="p-listicle" id="w-node-_63fb455d-a61c-dd99-bafc-2006adc84075-4d5d54db">In just seconds you can make your favorite coffees right from home with Javvy’s Iced Protein Coffees. Choose from 1,000s of quick and easy recipes — including holiday ones — and join the fastest-growing better-for-you coffee community!<br/></div><div class="div-block-1543"><p class="link-emoji">👉</p><a class="listicle-link" href="https://offer.dinosaurized.com/OFFER-SLUG">Join Millions of Javvy Fans</a></div></div></div></div></div></div></div></section><section class="section_cta-protein gradient-sale" id="customer-reviews"><div class="padding-global-8 li-new"><div class="container-tiny"><div class="padding-section-cta li-new"><div class="reason12-w"><h2 class="heading-style-h2-3 listicle li-new">Reaching #11 means one thing: you’re truly serious about a better morning coffee routine.<br/></h2><div class="padding-bottom-43 padding-small"></div><div class="p-listicle">✨ We don’t hand these out every day… consider this an exclusive Javvy hookup, just for you.<br/></div></div><div class="cta-content-2"><div class="text-align-center"><div class="max-width-medium"><div class="adv_cta_div"><div class="photo-wrappers bfcm"><div class="image-89 ph" data-ph="image" style="aspect-ratio:400/361"><img alt="" class="ph-ref" loading="lazy" src="https://assets.javvycoffee.com/6ad28a3248e7d9f75bdd26bc_v3-pc-bundle-img.webp"/><span class="ph-t">IMG 400:361</span><span class="ph-d">Offer: our product bundle + gift box cut-out, transparent background</span></div></div><div class="adv_cta_right_div"><div class="divider bf"><div class="divider-line expand"></div><div class="div-block-1351"><img alt="" class="gift-icon" loading="lazy" src="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTMiIGhlaWdodD0iMTMiIHZpZXdCb3g9IjAgMCAxMyAxMyIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTExLjkwMTggMy45NzU1OVY1Ljc5MDk3QzExLjkwMTggNS45MDIyMiAxMS44NTc2IDYuMDA4OSAxMS43NzkgNi4wODc1NkMxMS43MDAzIDYuMTY2MjIgMTEuNTkzNiA2LjIxMDQxIDExLjQ4MjQgNi4yMTA0MUgxMC44NzIxVjEyLjE2MTJDMTAuODcyMSAxMi4yNzI0IDEwLjgyNzkgMTIuMzc5MSAxMC43NDkyIDEyLjQ1NzhDMTAuNjcwNiAxMi41MzY0IDEwLjU2MzkgMTIuNTgwNiAxMC40NTI3IDEyLjU4MDZIMS44Njg4NEMxLjc1NzYgMTIuNTgwNiAxLjY1MDkxIDEyLjUzNjQgMS41NzIyNSAxMi40NTc4QzEuNDkzNTkgMTIuMzc5MSAxLjQ0OTQgMTIuMjcyNCAxLjQ0OTQgMTIuMTYxMlY2LjIxMDQxSDAuODM5MTE3QzAuNzI3ODc0IDYuMjEwNDEgMC42MjExODkgNi4xNjYyMiAwLjU0MjUyOCA2LjA4NzU2QzAuNDYzODY4IDYuMDA4OSAwLjQxOTY3OCA1LjkwMjIyIDAuNDE5Njc4IDUuNzkwOTdWMy45NzU1OUMwLjQxOTY3OCAzLjg2NDM1IDAuNDYzODY4IDMuNzU3NjYgMC41NDI1MjggMy42NzlDMC42MjExODkgMy42MDAzNCAwLjcyNzg3NCAzLjU1NjE1IDAuODM5MTE3IDMuNTU2MTVIMTEuNDgyNEMxMS41OTM2IDMuNTU2MTUgMTEuNzAwMyAzLjYwMDM0IDExLjc3OSAzLjY3OUMxMS44NTc2IDMuNzU3NjYgMTEuOTAxOCAzLjg2NDM1IDExLjkwMTggMy45NzU1OVoiIGZpbGw9IiNGRTRGNjAiLz4KPHBhdGggZD0iTTExLjQ4MjQgMy41NTYxNUgwLjgzOTExN0MwLjcyNzg3NCAzLjU1NjE1IDAuNjIxMTg5IDMuNjAwMzQgMC41NDI1MjggMy42NzlDMC40NjM4NjggMy43NTc2NiAwLjQxOTY3OCAzLjg2NDM1IDAuNDE5Njc4IDMuOTc1NTlWNS43OTA5N0MwLjQxOTY3OCA1LjkwMjIyIDAuNDYzODY4IDYuMDA4OSAwLjU0MjUyOCA2LjA4NzU2QzAuNjIxMTg5IDYuMTY2MjIgMC43Mjc4NzQgNi4yMTA0MSAwLjgzOTExNyA2LjIxMDQxSDQuNTM1NDJWNy4yNjMyQzQuNTM1NSA3LjMzNDI4IDQuNTUzNjMgNy40MDQxNiA0LjU4ODEzIDcuNDY2MzFDNC42MjI2MiA3LjUyODQ1IDQuNjcyMzQgNy41ODA4MSA0LjczMjYxIDcuNjE4NDZDNC43OTI4OSA3LjY1NjEyIDQuODYxNzQgNy42Nzc4NSA0LjkzMjcyIDcuNjgxNkM1LjAwMzY5IDcuNjg1MzUgNS4wNzQ0NSA3LjY3MTAxIDUuMTM4MzYgNy42Mzk5MUw1Ljk3NzI0IDcuMjI5NjVDNi4wMzQ2OSA3LjIwMTUgNi4wOTc4MiA3LjE4Njg3IDYuMTYxNzkgNy4xODY4N0M2LjIyNTc3IDcuMTg2ODcgNi4yODg5IDcuMjAxNSA2LjM0NjM1IDcuMjI5NjVMNy4xODMxMyA3LjYzOTkxQzcuMjQ3MDQgNy42NzEwMSA3LjMxNzggNy42ODUzNSA3LjM4ODc3IDcuNjgxNkM3LjQ1OTc1IDcuNjc3ODUgNy41Mjg2IDcuNjU2MTIgNy41ODg4OCA3LjYxODQ2QzcuNjQ5MTUgNy41ODA4MSA3LjY5ODg3IDcuNTI4NDUgNy43MzMzNiA3LjQ2NjMxQzcuNzY3ODYgNy40MDQxNiA3Ljc4NTk5IDcuMzM0MjggNy43ODYwNyA3LjI2MzJWNi4yMTA0MUgxMS40ODI0QzExLjU5MzYgNi4yMTA0MSAxMS43MDAzIDYuMTY2MjIgMTEuNzc5IDYuMDg3NTZDMTEuODU3NiA2LjAwODkgMTEuOTAxOCA1LjkwMjIyIDExLjkwMTggNS43OTA5N1YzLjk3NTU5QzExLjkwMTggMy44NjQzNSAxMS44NTc2IDMuNzU3NjYgMTEuNzc5IDMuNjc5QzExLjcwMDMgMy42MDAzNCAxMS41OTM2IDMuNTU2MTUgMTEuNDgyNCAzLjU1NjE1WiIgZmlsbD0iI0ZGNkQ3QSIvPgo8cGF0aCBkPSJNMTEuOTAxOCAzLjk3NTU5VjQuMzQyNkgxLjYyNTU2QzEuNTE0MzIgNC4zNDI2IDEuNDA3NjQgNC4zODY3OSAxLjMyODk4IDQuNDY1NDVDMS4yNTAzMiA0LjU0NDExIDEuMjA2MTMgNC42NTA4IDEuMjA2MTMgNC43NjIwNFY2LjIxMDQxSDAuODM5MTE3QzAuNzI3ODc0IDYuMjEwNDEgMC42MjExODkgNi4xNjYyMiAwLjU0MjUyOCA2LjA4NzU2QzAuNDYzODY4IDYuMDA4OSAwLjQxOTY3OCA1LjkwMjIyIDAuNDE5Njc4IDUuNzkwOTdWMy45NzU1OUMwLjQxOTY3OCAzLjg2NDM1IDAuNDYzODY4IDMuNzU3NjYgMC41NDI1MjggMy42NzlDMC42MjExODkgMy42MDAzNCAwLjcyNzg3NCAzLjU1NjE1IDAuODM5MTE3IDMuNTU2MTVIMTEuNDgyNEMxMS41OTM2IDMuNTU2MTUgMTEuNzAwMyAzLjYwMDM0IDExLjc3OSAzLjY3OUMxMS44NTc2IDMuNzU3NjYgMTEuOTAxOCAzLjg2NDM1IDExLjkwMTggMy45NzU1OVoiIGZpbGw9IiNGRTkyOUYiLz4KPHBhdGggZD0iTTEuNDQ4NzMgNi4yMTAzM0gxMC44Nzg4VjcuMDIyOTlIMS40NDg3M1Y2LjIxMDMzWiIgZmlsbD0iI0U4NDg1NyIvPgo8cGF0aCBkPSJNNy43ODU2NSAzLjU1NjE1VjcuMjYzMkM3Ljc4NTY1IDcuNTUzNjcgNy40ODY1NCA3Ljc5MDkxIDcuMTU2NDkgNy42MjY4MVYxMi41ODA2SDUuMTY0MTZWNy42MjYwMkM0LjgzMTIzIDcuNzkwNjUgNC41MzM2OSA3LjU1MTMxIDQuNTMzNjkgNy4yNjI0MlYzLjU1NjE1SDcuNzg1NjVaIiBmaWxsPSIjRDZGNEZDIi8+CjxwYXRoIGQ9Ik03Ljc4NTgxIDcuMjYzMkM3Ljc4NTczIDcuMzM0MjggNy43Njc1OSA3LjQwNDE2IDcuNzMzMSA3LjQ2NjMxQzcuNjk4NjEgNy41Mjg0NSA3LjY0ODg5IDcuNTgwODEgNy41ODg2MSA3LjYxODQ2QzcuNTI4MzQgNy42NTYxMiA3LjQ1OTQ4IDcuNjc3ODUgNy4zODg1MSA3LjY4MTZDNy4zMTc1NCA3LjY4NTM1IDcuMjQ2NzcgNy42NzEwMSA3LjE4Mjg2IDcuNjM5OTFMNi4zNDM5OSA3LjIyOTY1QzYuMjg2NTQgNy4yMDE1IDYuMjIzNDEgNy4xODY4NyA2LjE1OTQzIDcuMTg2ODdDNi4wOTU0NiA3LjE4Njg3IDYuMDMyMzMgNy4yMDE1IDUuOTc0ODggNy4yMjk2NUw1LjEzODEgNy42Mzk5MUM1LjA3NDE5IDcuNjcxMDEgNS4wMDM0MyA3LjY4NTM1IDQuOTMyNDUgNy42ODE2QzQuODYxNDggNy42Nzc4NSA0Ljc5MjYyIDcuNjU2MTIgNC43MzIzNSA3LjYxODQ2QzQuNjcyMDcgNy41ODA4MSA0LjYyMjM2IDcuNTI4NDUgNC41ODc4NiA3LjQ2NjMxQzQuNTUzMzcgNy40MDQxNiA0LjUzNTIzIDcuMzM0MjggNC41MzUxNiA3LjI2MzJWMy41NTYxNUg3Ljc4NTgxVjcuMjYzMloiIGZpbGw9IiNFOEY4RkMiLz4KPHBhdGggZD0iTTQuNTM0NjcgMy41NTYxNUg3Ljc4NjM3VjQuMzQyNkg0LjUzNDY3VjMuNTU2MTVaIiBmaWxsPSIjRjFGQUZDIi8+CjxwYXRoIGQ9Ik0xMS45MDE2IDMuMTM2NjRIOS44NzI4QzEwLjEyNDcgMi43NzQ3MSAxMC4yNDcyIDIuMzM4NDIgMTAuMjIwNSAxLjg5ODI2QzEwLjE5MzkgMS40NTgxMSAxMC4wMTk1IDEuMDM5ODEgOS43MjU3NCAwLjcxMDk3QzguNTc4MzEgLTAuNTY4NTgxIDYuODIwMDcgMC4wMjc4MDg5IDYuMTYwNTEgMS4zNTI3MUM1LjQ3NDIgLTAuMDI1OTMxNyAzLjY4NjM0IC0wLjUwNTkyNyAyLjY1MTkgMC42NDg4NEMxLjkxOTk4IDEuNDY1NyAxLjk3MjY3IDIuNDU0NTIgMi40NDgyMSAzLjEzNjY0SDAuNDE5NDM5QzAuMzA4MTk3IDMuMTM2NjQgMC4yMDE1MTEgMy4xODA4MyAwLjEyMjg1MSAzLjI1OTQ5QzAuMDQ0MTkwNyAzLjMzODE1IDAgMy40NDQ4MyAwIDMuNTU2MDhWNi4yMTAzNEMwIDYuMzIxNTggMC4wNDQxOTA3IDYuNDI4MjYgMC4xMjI4NTEgNi41MDY5MkMwLjIwMTUxMSA2LjU4NTU4IDAuMzA4MTk3IDYuNjI5NzcgMC40MTk0MzkgNi42Mjk3N0gxLjAyOTcyVjEyLjU4MDZDMS4wMjk3MiAxMi42OTE4IDEuMDczOTEgMTIuNzk4NSAxLjE1MjU3IDEyLjg3NzFDMS4yMzEyMyAxMi45NTU4IDEuMzM3OTIgMTMgMS40NDkxNiAxM0gxMC44NzE5QzEwLjk4MzEgMTMgMTEuMDg5OCAxMi45NTU4IDExLjE2ODQgMTIuODc3MUMxMS4yNDcxIDEyLjc5ODUgMTEuMjkxMyAxMi42OTE4IDExLjI5MTMgMTIuNTgwNlY2LjYyOTc3SDExLjkwMTZDMTIuMDEyOCA2LjYyOTc3IDEyLjExOTUgNi41ODU1OCAxMi4xOTgyIDYuNTA2OTJDMTIuMjc2OCA2LjQyODI2IDEyLjMyMSA2LjMyMTU4IDEyLjMyMSA2LjIxMDM0VjMuNTU2MDhDMTIuMzIxIDMuNDQ0ODMgMTIuMjc2OCAzLjMzODE1IDEyLjE5ODIgMy4yNTk0OUMxMi4xMTk1IDMuMTgwODMgMTIuMDEyOCAzLjEzNjY0IDExLjkwMTYgMy4xMzY2NFpNNi43NDkyOSAyLjI2MDhDNi45MDIzOSAxLjA2ODAyIDguMjg5MTYgMC4zNjU3MTkgOS4wNDQxNSAxLjIwODc5TDkuMDk5NzIgMS4yNzA5MkM5Ljc0NDYxIDEuOTkwNTIgOS4yMzA4IDMuMTM2NjQgOC4yNjYzNSAzLjEzNjY0SDYuNjM3MDlMNi43NDkyOSAyLjI2MDhaTTcuMzY2MzkgNy4yNjMxM0M2LjI1NzI0IDYuNzE5OTUgNi4yODk3NSA2LjcxOTk1IDYuMTYwNTEgNi43MTk5NUM2LjAzMTI3IDYuNzE5OTUgNi4wNjM3NyA2LjcxOTk1IDQuOTU0NjIgNy4yNjMxM1YzLjk3NTUxSDcuMzY2MzlWNy4yNjMxM1pNMy4yMjEwMyAxLjI3MDkyTDMuMjc2ODcgMS4yMDg3OUM0LjAzNSAwLjM2MjMxMSA1LjQxOTE1IDEuMDcwOSA1LjU3MTk4IDIuMjYwOEw1LjY4NDE4IDMuMTM2NjRINC4wNTQ0QzMuMDg4MTIgMy4xMzY2NCAyLjU3NzQ1IDEuOTg5NzMgMy4yMjEwMyAxLjI3MDkyWk0wLjgzODg3NyAzLjk3NTUxSDQuMTE1NzRWNS43OTA5SDAuODM4ODc3VjMuOTc1NTFaTTEuODY4NiA2LjYyOTc3SDQuMTE1NzRWNy45MzU1NEM0LjExNTc0IDguMjIxNTQgNC40MDk2MSA4LjQ2NDI5IDQuNzQ2MjEgOC4yOTk0VjEyLjE2MTFIMS44Njg2VjYuNjI5NzdaTTEwLjQ1MjQgMTIuMTYxMUg3LjU3NjExVjkuMjc3NDhDNy41NzYxMSA5LjE2NjI0IDcuNTMxOTIgOS4wNTk1NSA3LjQ1MzI2IDguOTgwODlDNy4zNzQ2IDguOTAyMjMgNy4yNjc5MiA4Ljg1ODA0IDcuMTU2NjcgOC44NTgwNEM3LjA0NTQzIDguODU4MDQgNi45Mzg3NSA4LjkwMjIzIDYuODYwMDkgOC45ODA4OUM2Ljc4MTQyIDkuMDU5NTUgNi43MzcyMyA5LjE2NjI0IDYuNzM3MjMgOS4yNzc0OFYxMi4xNjExSDUuNTgzNzhWNy44ODgwOUw2LjE2MDUxIDcuNjA2MDJDNy43MzM0IDguMzc2NzQgNy42NTM0NSA4LjM1NDcyIDcuNzg1ODMgOC4zNTQ3MkM3Ljg5NzA3IDguMzU0NzIgOC4wMDM3NiA4LjMxMDUzIDguMDgyNDIgOC4yMzE4N0M4LjE2MTA4IDguMTUzMjEgOC4yMDUyNyA4LjA0NjUyIDguMjA1MjcgNy45MzUyOFY2LjYyOTc3SDEwLjQ1MTlMMTAuNDUyNCAxMi4xNjExWk0xMS40ODIxIDUuNzkwOUg4LjIwNTI3VjMuOTc1NTFIMTEuNDgyMVY1Ljc5MDlaIiBmaWxsPSJibGFjayIvPgo8L3N2Zz4K"/><div class="style-guide-card">FREE GIFTS WITH YOUR ORDER</div></div><div class="divider-line expand"></div></div><div class="padding-bottom-43 padding-xsmall"></div><h1 class="adv_cta_heading-2"><span class="span-red">UP TO 58% OFF</span> FOR A LIMITED TIME ONLY!</h1><div class="adv_cta_top_div"><div class="padding-bottom-43 padding-xsmall"></div><div class="adv_cta_subtitle_text">This limited-time deal is in high demand and stock keeps selling out.<strong><br/></strong></div><div class="padding-bottom-43 padding-small"></div><a class="button-10 is-full is-squared w-inline-block" href="https://offer.dinosaurized.com/OFFER-SLUG" listicle_cta_btn="" role="button"><div class="button-text-bolder-2">GET 58% OFF</div><div class="icon-embed-xsmall w-embed"><svg aria-hidden="true" class="iconify iconify--heroicons" height="100%" preserveaspectratio="xMidYMid meet" role="img" viewbox="0 0 20 20" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path clip-rule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z" fill="currentColor" fill-rule="evenodd" height="100%" width="100%"></path></svg></div></a><div class="dealending">DEAL ENDING IN: <span class="countdown-hour red" id="listicle-count4">14:32:53</span></div><div class="bot_cta_badge_div"><div class="div-block-2"><div class="div-block-766"><div class="text-block">Sell-Out Risk: <span class="text-span-6">High</span></div></div></div><div class="div-block-765"><div class="text-block-4">|</div></div><div class="div-block-764"><div class="div-block-767"><div class="text-block-279"><span class="text-span-7">FREE</span> shipping</div></div></div></div><div></div></div><div class="padding-bottom-43 padding-xsmall"></div><div class="text-size-tiny text-align-center">Try it today with a 30-Day Money-Back Guarantee!</div></div></div></div></div><div class="div-block-900"><div class="bf-li-cta-badge bfcm-color black"><p class="lbh-blackfriday">✨ BLACK FRIDAY EARLY ACCESS ✨</p></div></div></div></div></div></div></section><div class="sticky_bar co71" id="sticky_bar"><div class="padding-global-8 m-1"><div class="container-small"><div class="listicle-holder"><a class="button is-full is-squared bf w-inline-block" href="https://offer.dinosaurized.com/OFFER-SLUG" listicle_cta_btn="" role="button"><div class="button-text-2">YES, GET 58% OFF</div><div class="arrow-btn-listicle w-embed"><svg aria-hidden="true" class="iconify iconify--heroicons" height="100%" preserveaspectratio="xMidYMid meet" role="img" viewbox="0 0 20 20" width="100%" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><path clip-rule="evenodd" d="M3 10a.75.75 0 0 1 .75-.75h10.638L10.23 5.29a.75.75 0 1 1 1.04-1.08l5.5 5.25a.75.75 0 0 1 0 1.08l-5.5 5.25a.75.75 0 1 1-1.04-1.08l4.158-3.96H3.75A.75.75 0 0 1 3 10Z" fill="currentColor" fill-rule="evenodd" height="100%" width="100%"></path></svg></div></a><div class="li-sticky-bfcm"><div class="image-213 small"><svg height="480" preserveaspectratio="xMidYMid meet" style="width: 100%; height: 100%; transform: translate3d(0px, 0px, 0px); content-visibility: visible;" viewbox="0 0 480 480" width="480" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"><defs><clippath id="__lottie_element_3"><rect height="480" width="480" x="0" y="0"></rect></clippath></defs><g clip-path="url(#__lottie_element_3)"><g opacity="1" style="display: block;" transform="matrix(11.600000381469727,0,0,11.600000381469727,-21.84661865234375,-37.636627197265625)"><g opacity="1" transform="matrix(1,0,0,1,22.766000747680664,23.441999435424805)"><path d=" M1.6649999618530273,-17.54400062561035 C1.6649999618530273,-17.54400062561035 3.8929998874664307,-15.387999534606934 3.8929998874664307,-15.387999534606934 C4.423999786376953,-14.87399959564209 5.1620001792907715,-14.633999824523926 5.89300012588501,-14.73799991607666 C5.89300012588501,-14.73799991607666 8.96500015258789,-15.17199993133545 8.96500015258789,-15.17199993133545 C10.243000030517578,-15.352999687194824 11.4350004196167,-14.487000465393066 11.657999992370605,-13.21500015258789 C11.657999992370605,-13.21500015258789 12.194999694824219,-10.15999984741211 12.194999694824219,-10.15999984741211 C12.322999954223633,-9.432999610900879 12.777999877929688,-8.805000305175781 13.430000305175781,-8.458999633789062 C13.430000305175781,-8.458999633789062 16.17099952697754,-7.005000114440918 16.17099952697754,-7.005000114440918 C17.312000274658203,-6.39900016784668 17.766000747680664,-4.998000144958496 17.198999404907227,-3.8369998931884766 C17.198999404907227,-3.8369998931884766 15.836999893188477,-1.0520000457763672 15.836999893188477,-1.0520000457763672 C15.512999534606934,-0.3880000114440918 15.512999534606934,0.3880000114440918 15.836999893188477,1.0509999990463257 C15.836999893188477,1.0509999990463257 17.198999404907227,3.8380000591278076 17.198999404907227,3.8380000591278076 C17.766000747680664,4.998000144958496 17.312000274658203,6.39900016784668 16.17099952697754,7.004000186920166 C16.17099952697754,7.004000186920166 13.430000305175781,8.458000183105469 13.430000305175781,8.458000183105469 C12.777999877929688,8.803999900817871 12.322999954223633,9.432000160217285 12.194999694824219,10.15999984741211 C12.194999694824219,10.15999984741211 11.657999992370605,13.21500015258789 11.657999992370605,13.21500015258789 C11.4350004196167,14.487000465393066 10.243000030517578,15.35200023651123 8.96500015258789,15.170999526977539 C8.96500015258789,15.170999526977539 5.89300012588501,14.737000465393066 5.89300012588501,14.737000465393066 C5.1620001792907715,14.633999824523926 4.423999786376953,14.873000144958496 3.8929998874664307,15.38700008392334 C3.8929998874664307,15.38700008392334 1.6649999618530273,17.542999267578125 1.6649999618530273,17.542999267578125 C0.7369999885559082,18.44099998474121 -0.7369999885559082,18.44099998474121 -1.6649999618530273,17.542999267578125 C-1.6649999618530273,17.542999267578125 -3.8949999809265137,15.38700008392334 -3.8949999809265137,15.38700008392334 C-4.425000190734863,14.873000144958496 -5.164000034332275,14.633999824523926 -5.894999980926514,14.737000465393066 C-5.894999980926514,14.737000465393066 -8.96500015258789,15.170999526977539 -8.96500015258789,15.170999526977539 C-10.244000434875488,15.35200023651123 -11.435999870300293,14.487000465393066 -11.659000396728516,13.21500015258789 C-11.659000396728516,13.21500015258789 -12.194999694824219,10.15999984741211 -12.194999694824219,10.15999984741211 C-12.322999954223633,9.432000160217285 -12.777999877929688,8.803999900817871 -13.430000305175781,8.458000183105469 C-13.430000305175781,8.458000183105469 -16.17099952697754,7.004000186920166 -16.17099952697754,7.004000186920166 C-17.312000274658203,6.39900016784668 -17.767000198364258,4.998000144958496 -17.200000762939453,3.8380000591278076 C-17.200000762939453,3.8380000591278076 -15.838000297546387,1.0509999990463257 -15.838000297546387,1.0509999990463257 C-15.513999938964844,0.3880000114440918 -15.513999938964844,-0.3880000114440918 -15.838000297546387,-1.0520000457763672 C-15.838000297546387,-1.0520000457763672 -17.200000762939453,-3.8369998931884766 -17.200000762939453,-3.8369998931884766 C-17.767000198364258,-4.998000144958496 -17.312000274658203,-6.39900016784668 -16.17099952697754,-7.005000114440918 C-16.17099952697754,-7.005000114440918 -13.430000305175781,-8.458999633789062 -13.430000305175781,-8.458999633789062 C-12.777999877929688,-8.805000305175781 -12.322999954223633,-9.432999610900879 -12.194999694824219,-10.15999984741211 C-12.194999694824219,-10.15999984741211 -11.659000396728516,-13.21500015258789 -11.659000396728516,-13.21500015258789 C-11.435999870300293,-14.487000465393066 -10.244000434875488,-15.352999687194824 -8.96500015258789,-15.17199993133545 C-8.96500015258789,-15.17199993133545 -5.894999980926514,-14.73799991607666 -5.894999980926514,-14.73799991607666 C-5.164000034332275,-14.633999824523926 -4.425000190734863,-14.87399959564209 -3.8949999809265137,-15.387999534606934 C-3.8949999809265137,-15.387999534606934 -1.6649999618530273,-17.54400062561035 -1.6649999618530273,-17.54400062561035 C-0.7369999885559082,-18.441999435424805 0.7369999885559082,-18.441999435424805 1.6649999618530273,-17.54400062561035z" fill-opacity="0" stroke="rgb(0,0,0)" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="1" stroke-width="2"></path></g></g><g opacity="1" style="display: block;" transform="matrix(11.600000381469727,0,0,11.600000381469727,149.43899536132812,141.47900390625)"><g opacity="1" transform="matrix(1,0,0,1,8,8)"><path d=" M-7,7 C-7,7 7,-7 7,-7" fill-opacity="0" stroke="rgb(0,0,0)" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="1" stroke-width="2"></path></g></g><g opacity="1" style="display: block;" transform="matrix(11.600000381469727,0,0,11.600000381469727,199.28298950195312,192.572998046875)"><g opacity="1" transform="matrix(1,0,0,1,8.5,8.5)"><path d=" M3.5,0 C3.5,1.9329999685287476 1.9329999685287476,3.5 0,3.5 C-1.9329999685287476,3.5 -3.5,1.9329999685287476 -3.5,0 C-3.5,-1.9329999685287476 -1.9329999685287476,-3.5 0,-3.5 C1.9329999685287476,-3.5 3.5,-1.9329999685287476 3.5,0z" fill-opacity="0" stroke="rgb(0,0,0)" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="1" stroke-width="2"></path></g></g><g opacity="1" style="display: block;" transform="matrix(11.600000381469727,0,0,11.600000381469727,87.99600219726562,80.03599548339844)"><g opacity="1" transform="matrix(1,0,0,1,8.5,8.5)"><path d=" M3.5,0 C3.5,1.9329999685287476 1.9329999685287476,3.5 0,3.5 C-1.9329999685287476,3.5 -3.5,1.9329999685287476 -3.5,0 C-3.5,-1.9329999685287476 -1.9329999685287476,-3.5 0,-3.5 C1.9329999685287476,-3.5 3.5,-1.9329999685287476 3.5,0z" fill-opacity="0" stroke="rgb(0,0,0)" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="1" stroke-width="2"></path></g></g></g></svg></div><p class="lowest-price-p black nynm"><span><strong>BLACK FRIDAY EARLY ACCESS</strong></span> DISCOUNT ACTIVE</p></div></div></div></div></div></main><div class="footer"><div class="padding-global m1"><div class="footer-content"><div><div class="text-block-222">*Special sale discount is valid only on the first delivery of a new Javvy Coffee subscription created on <span class="compliance-bolds" data-compliance="url">this page</span> by <span class="compliance-bolds" data-compliance="date">today</span> at <span class="compliance-bolds">11:59pm PST</span> and includes the price of free gifts. Javvy Coffee subscription renews every 30 days at a discounted rate of the price listed at checkout. Max one offer per customer; cannot be combined with any other offers or sales.</div></div><div class="footer4_credit-text" id="w-node-d3829d43-9f3c-f8b7-6dc6-4752d5470b2c-d5470b1c">© 2026 Javvy Coffee Company. All right reserved. <a class="footer-link" href="#">Terms of Service</a> | <a class="footer-link" href="#">Privacy Policy</a></div></div></div></div></div>
+
+<!-- Countdown, dates, sticky bar (rewrites the source's listicles_pc.js + inline scripts):
+     #js-clock (header HRS:MIN:SEC) and .countdown-hour (offer card "DEAL ENDING IN") count down to local midnight.
+     [data-date=updated] = 3 days ago ("Oct 23, 2026"); footer [data-compliance] = this page's URL / today's date.
+     #sticky_bar (mobile/tablet only, by CSS) turns on after 1500px, off while a [listicle_cta_btn] button outside it
+     is on screen and within 130px of the page bottom. -->
+<script>
+(function(){
+  function p(n){return n<10?'0'+n:''+n;}
+  var M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function clock(){
+    var now=new Date(),end=new Date(now);end.setHours(24,0,0,0);
+    var s=Math.max(0,Math.floor((end-now)/1000)),h=Math.floor(s/3600),m=Math.floor(s%3600/60);s=s%60;
+    var hh=document.getElementById('js-clock-hours'),mm=document.getElementById('js-clock-minutes'),ss=document.getElementById('js-clock-seconds');
+    if(hh){hh.textContent=p(h);mm.textContent=p(m);ss.textContent=p(s);}
+    document.querySelectorAll('.countdown-hour').forEach(function(e){e.textContent=p(h)+':'+p(m)+':'+p(s);});
+  }
+  clock();setInterval(clock,1000);
+  var d=new Date();d.setDate(d.getDate()-3);
+  document.querySelectorAll('[data-date="updated"]').forEach(function(e){e.textContent=M[d.getMonth()]+' '+d.getDate()+', '+d.getFullYear();});
+  var t=new Date();
+  document.querySelectorAll('[data-compliance="url"]').forEach(function(e){e.textContent=location.protocol+'//'+location.host+location.pathname;});
+  document.querySelectorAll('[data-compliance="date"]').forEach(function(e){e.textContent=p(t.getMonth()+1)+'/'+p(t.getDate())+'/'+t.getFullYear();});
+
+  var bar=document.getElementById('sticky_bar');if(!bar)return;
+  var btn=bar.querySelector('[listicle_cta_btn]'),
+      ctas=[].slice.call(document.querySelectorAll('[listicle_cta_btn]')).filter(function(b){return !bar.contains(b);}),
+      on=false,START=1500;
+  function upd(){
+    var vh=Math.max(document.documentElement.clientHeight,innerHeight),y=scrollY;
+    var ctaOn=ctas.some(function(b){var r=b.getBoundingClientRect();return r.bottom>80&&r.top<vh&&r.bottom<vh;});
+    var atEnd=y+innerHeight>=document.body.scrollHeight-130;
+    if(!on&&y>=START&&!ctaOn&&!atEnd){on=true;btn.style.pointerEvents='auto';bar.classList.add('is-active');bar.style.display='';}
+    else if((on&&y<START)||ctaOn||atEnd){on=false;btn.style.pointerEvents='none';bar.classList.remove('is-active');bar.style.display='none';}
+  }
+  btn.style.pointerEvents='none';
+  addEventListener('scroll',upd,{passive:true});
+})();
+</script>
+<!-- Noi click-ID sang trang ban. KHONG ban cta_click o day: tags.js da co mot
+     listener bat moi click vao offer.dinosaurized.com roi, ban them lan nua se
+     lam moi cu click dem thanh hai. -->
+<script>
+(function(){
+  var sp=new URLSearchParams(location.search),keep=new URLSearchParams();
+  ['gclid','gbraid','wbraid','fbclid','twclid','msclkid','ttclid','utm_source','utm_medium','utm_campaign','utm_content','utm_term'].forEach(function(k){if(sp.get(k))keep.set(k,sp.get(k));});
+  var extra=keep.toString();
+  function wire(){
+    document.querySelectorAll('a[href*="offer.dinosaurized.com"]').forEach(function(a){
+      if(extra)a.href+=(a.href.indexOf('?')>-1?'&':'?')+extra;
+    });
+  }
+  if(document.readyState!=='loading')wire();else document.addEventListener('DOMContentLoaded',wire);
+})();
+</script>
+</body>
+</html>

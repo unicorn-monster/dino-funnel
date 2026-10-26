@@ -27,8 +27,9 @@ Done examples (look at one before starting): `output/2026-10-16-cat-bed/4-bundle
 
    Doesn't look right (items too far apart, overlapping a key detail): pass a custom layout `"x,y;x,y"` in units of the item's own width/height, back to front. `python3 compose.py --selftest` checks the script.
 5. **Approve one color first.** Make every option for one color, show them, wait for the user's OK, then run the same commands for the other colors.
-6. **Upload**: `python3 ${CLAUDE_PLUGIN_ROOT}/skills/assets/scripts/cdn.py output/<sp>/4-bundle/*.jpg --prefix bundle-<sp>` and write the printed URLs into `output/<sp>/4-bundle/cdn-urls.md` (file → URL, per option and color).
-7. **Hand over**: copy the final images to `~/Downloads/<sp>-images/` (bundle images only there), `open` that folder, run `python3 ${CLAUDE_PLUGIN_ROOT}/skills/funnel/scripts/funnel_view.py <sp>`, and reply with a table: option, color, file, CDN URL.
+6. **Funnel table**: write one row per option × color into the *Checkout bundles* table of `output/<sp>/0-funnel.md` (bundle name, color, price, price each, badge, image preview). No `0-funnel.md` yet: copy `${CLAUDE_PLUGIN_ROOT}/skills/funnel/templates/0-funnel.md` first (format rules in its comment).
+7. **Upload**: `python3 ${CLAUDE_PLUGIN_ROOT}/skills/assets/scripts/cdn.py output/<sp>/4-bundle/*.jpg --prefix bundle-<sp>` and write the printed URLs into `output/<sp>/4-bundle/cdn-urls.md` (file → URL, per option and color).
+8. **Hand over**: copy the final images to `~/Downloads/<product>-bundle-img/` (bundle images only there; Huy 2026-10-26: folder named `-bundle-img`, e.g. `grill-brush-bundle-img`), `open` that folder, run `python3 ${CLAUDE_PLUGIN_ROOT}/skills/funnel/scripts/funnel_view.py <sp>`, and reply with a table: option, color, file, CDN URL.
 
 ## Rules
 
