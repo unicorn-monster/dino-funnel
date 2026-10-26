@@ -158,7 +158,7 @@ When filled prompts for a product are saved to a file, they go in `output/<produ
 
 **Ad copy link:** "SP" means the sale-page *image* library, not the landing page. Combos link to the funnel's pre-sale page (`<product slug>-review`) when one exists; the sale page only when there is no pre-sale (Huy 2026-10-23).
 
-**Hand-off after gen** (Huy 2026-10-20): copy every generated image to `~/Downloads/<product>-ads-<sp|top5>/` (Google ratios: `~/Downloads/<product>-ads-<sp|top5>-<ratio>/`) named `<product-short>-<sp|top5>-NN.png`, `open` that folder, then run `funnel_view.py <product>`. Separate from `~/Downloads/<product>-images/`, which holds bundle images only.
+**Hand-off after gen** (Huy 2026-10-20): copy every generated image to `~/Downloads/<product>-meta-ads/` (Meta, SP and Top 5 in the same folder, Huy 2026-10-26; Google ratios: `~/Downloads/<product>-ads-<sp|top5>-<ratio>/`) named `<product-short>-<sp|top5>-NN.png`, `open` that folder, then run `funnel_view.py <product>`. Separate from `~/Downloads/<product>-bundle-img/`, which holds bundle images only.
 
 ## Aspect ratios
 
