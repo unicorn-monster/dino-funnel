@@ -11,7 +11,7 @@ import html, json, re, sys
 from pathlib import Path
 
 TPL = Path(__file__).resolve().parent.parent / 'templates'
-WORDS = {'comments': (8, 80), 'reviews': (35, 70)}
+WORDS = {'comments': (8, 80), 'reviews': (10, 95)}
 
 
 def esc(s):
@@ -35,6 +35,10 @@ def check(c):
     n = sorted(len(x['text'].split()) for x in c['comments'])
     if n[-1] - n[0] < 30:
         bad.append(f"comments: lengths {n} too similar (want one short ~10-20, one medium ~25-40, one long ~55-75)")
+    # Trustpilot cards too (Huy 2026-10-26): same-length cards look written by one person
+    n = sorted(len(x['text'].split()) for x in c['reviews'])
+    if n[-1] - n[0] < 45 or sum(k < 30 for k in n) < 2 or sum(k > 55 for k in n) < 2:
+        bad.append(f"reviews: lengths {n} too similar (want 2 short 10-30, 2 medium 35-55, 2 long 55-90)")
     return bad
 
 

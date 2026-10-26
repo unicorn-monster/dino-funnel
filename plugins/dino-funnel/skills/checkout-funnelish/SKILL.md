@@ -42,14 +42,14 @@ Build a contact sheet of the 4-5 star photos (ffmpeg crop to square, `tile=`) an
 - No reviewer appears twice across the sale page, the comments and the grid.
 - Keep real names exactly as written, any format ("Jen Murdock", "Amanda", "Sydney W."): the mix of formats is what makes it look real. Replace only names that don't read as a person: handles, usernames, initials-only, "Amazon Customer" (CC → "Christina C.", SL1026 → "Sarah L.", spychic → "Stephanie P."), keeping the original initials where they fit. Also replace a name whose gender clashes with the text or the comment avatar ("Alex P" writing "my husband's car" → "Alexis P.").
 
-### 3. Even out the length
+### 3. Mix the lengths
 
-the user's rule: the Trustpilot cards must read about the same length. One 250-word wall next to an 11-word line looks fake and breaks the grid.
-Comments are the opposite (Huy 2026-10-23): three comments of the same length look scripted. Mix them: one short (10-20 words, a quick reaction, an emoji is fine), one long (55-75, a little story), one in between (25-40). The photo comment can be the short one.
+Same-length items look written by one person (Huy 2026-10-23 for the comments, 2026-10-26 for the Trustpilot cards too; the old "cards all the same length" rule is gone). Only walls of 100+ words are out: they break the grid.
+Comments (Huy 2026-10-23): three comments of the same length look scripted. Mix them: one short (10-20 words, a quick reaction, an emoji is fine), one long (55-75, a little story), one in between (25-40). The photo comment can be the short one.
 
 | Block | Words per item |
 |---|---|
-| Trustpilot cards | 35-70, aim 45-65 |
+| Trustpilot cards | mixed: 2 short (10-30, a quick reaction), 2 medium (35-55), 2 long (55-90, a little story); spread them across the grid so short and long cards sit side by side (`fill.py` warns when they are too similar) |
 | FB comments | one 10-20, one 25-40, one 55-75 (`fill.py` warns when the shortest and longest are under 30 words apart) |
 
 - **Too long:** keep the reviewer's opening line and voice, keep the 2-3 strongest specifics (what problem it fixed, the feature they loved, a tip), cut the rest.
@@ -75,7 +75,7 @@ Run `python3 ${CLAUDE_PLUGIN_ROOT}/skills/checkout-funnelish/scripts/fill.py out
 
 ### 6. Check
 
-`curl` every Amazon photo URL (expect 200), serve the folder with `python3 -m http.server` on a free port, and look at both files in Playwright: grid at 1280px, comments at 480px. No broken images, card lengths look even. Then `open` both files for the user.
+`curl` every Amazon photo URL (expect 200), serve the folder with `python3 -m http.server` on a free port, and look at both files in Playwright: grid at 1280px, comments at 480px. No broken images, short and long cards mixed across the grid. Then `open` both files for the user.
 
 ### 7. Hand over
 
